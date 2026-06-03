@@ -45,12 +45,20 @@ make quick
 - `reports/latest_candidates.csv`：自动发现和排序后的中证宽基 ETF 候选池。
 - `data/raw/etf_spot_YYYYMMDD.csv`：全 ETF 现货行情快照。
 - `data/raw/history/*.csv`：候选 ETF 历史 K 线缓存。
-- `data/processed/training_panel.csv`：模型训练面板。
+- `data/processed/training_panel.csv`：完整模型训练面板。
+- `data/processed/historical_dataset_lite.csv`：有未来收益标签的历史数据集。
+- `data/processed/train_dataset_lite.csv` / `test_dataset_lite.csv`：按时间切分的训练集与测试/回测集。
+- `data/processed/future_dataset_lite.csv`：未来收益尚未发生的未标注推理数据集。
 - `models/csi_broad_etf_model.joblib`：模型、特征列、目标、候选池和指标的 joblib 包。
 - `reports/latest_predictions.csv`：最新日期每只候选 ETF 的模型预测排序。
+- `reports/buy_signals_lite.csv`：按购买策略生成的当前买入/空仓信号。
+- `reports/model_parameter_tuning_lite.csv` / `strategy_parameter_tuning_lite.csv`：自动参数调优明细。
+- `reports/related_stocks_lite.csv`：每个宽基指数族对应的更多相关股票/指数成分股。
+- `reports/strategy_backtest_daily_lite.csv`：每日滚动购买策略回测结果。
+- `reports/strategy_backtest_trades_lite.csv`：逐笔买入信号、实际未来收益、扣费后收益和胜负。
 - `reports/training_metrics.json`：机器可读训练指标。
 - `reports/training_summary.md`：中文训练摘要报告。
-- `reports/charts/*.svg`：预测排序、指数族覆盖、验证指标和 holdout 累计曲线图。
+- `reports/charts/*.svg`：预测排序、指数族覆盖、验证指标、holdout 累计曲线、自动调参和相关股票暴露图。
 
 ## 常用参数
 
@@ -64,7 +72,59 @@ make quick
 - `--max-etfs-per-index 3`：每个宽基指数族按成交额保留前 N 只 ETF。
 - `--min-amount 10000000`：按当日成交额过滤低流动性产品。
 - `--model hgb|rf|ridge`：选择梯度提升、随机森林或岭回归。
+- `--auto-tune` / `--no-auto-tune`：启用或关闭自动参数调优；默认启用。
+- `--tune-l2-grid 0.3,1,3,10,30`：岭回归正则强度候选。
+- `--tune-top-k-grid 1,2,3,4,5`：购买策略 TopK 候选。
+- `--tune-min-pred-grid -0.005,0,0.005,0.01,0.02`：买入阈值候选。
+- `--strategy-top-k 3`：未自动调参时，每个决策日买入预测排序前 K 只。
+- `--strategy-min-pred 0`：未自动调参时，买入所需最低预测未来收益。
+- `--round-trip-cost-bps 10`：回测中每次完整买卖的成本/滑点，单位 bps。
+- `--related-stocks-per-index 30`：每个指数族拉取多少只相关股票/成分股。
 - `--force`：忽略缓存，重新拉取行情。
+
+
+
+## 自动参数调优
+
+轻量流水线默认开启自动调优：
+
+1. 在训练集内部再切出靠后的验证期。
+2. 网格搜索 Ridge `l2`，按方向准确率、IC、Top1 相对收益和 RMSE 的综合分数选择模型参数。
+3. 在验证期搜索购买策略的 `TopK` 和最低预测收益阈值。
+4. 用最佳参数在完整训练集上重训，再在测试/回测集上评估。
+
+调优明细会写入：
+
+- `reports/model_parameter_tuning_lite.csv`
+- `reports/strategy_parameter_tuning_lite.csv`
+- `reports/charts/model_l2_tuning_lite.svg`
+- `reports/charts/strategy_parameter_tuning_lite.svg`
+
+## 购买策略与回测
+
+轻量流水线默认使用一个可解释的 Top-K 购买策略：
+
+1. 每个决策日按模型预测未来收益排序。
+2. 买入预测值不低于 `--strategy-min-pred` 的前 `--strategy-top-k` 只 ETF。
+3. 等权配置，持有 `--horizon` 个交易日。
+4. 回测收益扣除 `--round-trip-cost-bps` 指定的完整买卖往返成本。
+5. 输出交易胜率、调仓胜率、跑赢基准概率、累计收益、最大回撤和类 Sharpe。
+
+注意：回测使用滚动前瞻收益标签，窗口会重叠，适合研究排序信号，不等同真实账户流水。
+
+
+## 相关股票/成分股扩展
+
+为了让 ETF 研究不仅停留在基金层面，流水线会按发现到的宽基指数族拉取更多相关股票/指数成分股：
+
+- 沪深300、中证500、中证1000、中证2000、中证800、中证A500、中证A50 等。
+- 有权重字段的指数按权重排序；无权重字段时按自由流通市值排序。
+- 输出股票代码、名称、行业、地区、权重、自由流通市值、PE、涨跌幅等字段。
+
+输出文件：
+
+- `reports/related_stocks_lite.csv`
+- `reports/charts/related_stock_top_exposure_lite.svg`
 
 ## 数据源
 

@@ -39,7 +39,18 @@ ETF_LIST_URL = "https://push2.eastmoney.com/api/qt/clist/get"
 KLINE_URL = "https://push2his.eastmoney.com/api/qt/stock/kline/get"
 FUND_CODE_SEARCH_URL = "https://fund.eastmoney.com/js/fundcode_search.js"
 TENCENT_KLINE_URL = "https://web.ifzq.gtimg.cn/appstock/app/fqkline/get"
+EASTMONEY_DATACENTER_URL = "https://datacenter-web.eastmoney.com/api/data/v1/get"
 LISTED_ETF_PREFIXES = ("159", "510", "512", "515", "516", "517", "520", "560", "561", "562", "563", "588", "589")
+INDEX_COMPONENT_TYPE_MAP = {
+    "CSI_300": ("1",),
+    "CSI_500": ("3",),
+    "CSI_1000": ("7",),
+    "CSI_2000": ("13",),
+    "CSI_800": ("1", "3"),  # 中证800 ~= 沪深300 + 中证500
+    "CSI_A500": ("6",),
+    "CSI_A50": ("8",),
+    "CSI_100": ("12",),
+}
 LIQUIDITY_HINTS = {
     "510300": 100, "510310": 96, "510330": 92, "159919": 90, "510350": 82,
     "510500": 100, "512500": 96, "159922": 88, "510510": 84, "510580": 80,
@@ -150,6 +161,30 @@ def to_float(value: Any, default: float | None = None) -> float | None:
 def read_csv_rows(path: Path) -> list[dict[str, str]]:
     with path.open("r", encoding="utf-8", newline="") as fh:
         return list(csv.DictReader(fh))
+
+
+def parse_float_grid(text: str) -> list[float]:
+    values: list[float] = []
+    for part in str(text or "").split(","):
+        part = part.strip()
+        if not part:
+            continue
+        value = float(part)
+        if value not in values:
+            values.append(value)
+    return values
+
+
+def parse_int_grid(text: str) -> list[int]:
+    values: list[int] = []
+    for part in str(text or "").split(","):
+        part = part.strip()
+        if not part:
+            continue
+        value = int(part)
+        if value not in values:
+            values.append(value)
+    return values
 
 
 def write_csv_rows(path: Path, rows: list[dict[str, Any]], fieldnames: list[str] | None = None) -> None:
@@ -361,6 +396,114 @@ def discover_universe(
                 selected.append(row)
     selected.sort(key=lambda r: (str(r.get("family_id")), int(r.get("selected_rank_in_family") or 0)))
     return selected
+
+
+def fetch_index_component_type(type_code: str, force: bool = False) -> list[dict[str, Any]]:
+    """Fetch current component stocks for one Eastmoney index-component TYPE."""
+
+    type_code = str(type_code)
+    cache = RAW_DIR / f"index_components_type_{type_code}_{today_yyyymmdd()}.csv"
+    if cache.exists() and not force:
+        rows = read_csv_rows(cache)
+        for row in rows:
+            for key in ("weight", "close_price", "change_rate", "free_cap", "pe", "eps", "roe"):
+                if key in row:
+                    row[key] = to_float(row.get(key))
+        return rows
+
+    payload = http_json(
+        EASTMONEY_DATACENTER_URL,
+        {
+            "reportName": "RPT_INDEX_TS_COMPONENT",
+            "columns": "ALL",
+            "filter": f'(TYPE="{type_code}")',
+            "pageNumber": 1,
+            "pageSize": 2500,
+            "sortColumns": "WEIGHT",
+            "sortTypes": "-1",
+            "source": "WEB",
+            "client": "WEB",
+        },
+        timeout=15,
+        attempts=3,
+    )
+    raw_rows = ((payload.get("result") or {}).get("data")) or []
+    rows: list[dict[str, Any]] = []
+    for raw in raw_rows:
+        row = {
+            "index_component_type": type_code,
+            "secucode": raw.get("SECUCODE"),
+            "stock_code": str(raw.get("SECURITY_CODE", "")).zfill(6),
+            "stock_name": raw.get("SECURITY_NAME_ABBR"),
+            "close_price": to_float(raw.get("CLOSE_PRICE")),
+            "change_rate": to_float(raw.get("CHANGE_RATE")),
+            "trade_date": raw.get("MAXTRADEDATE"),
+            "industry": raw.get("INDUSTRY"),
+            "region": raw.get("REGION"),
+            "weight": to_float(raw.get("WEIGHT")),
+            "eps": to_float(raw.get("EPS")),
+            "roe": to_float(raw.get("ROE")),
+            "free_cap": to_float(raw.get("FREE_CAP")),
+            "pe": to_float(raw.get("PE")),
+            "source": "eastmoney_datacenter:RPT_INDEX_TS_COMPONENT",
+        }
+        rows.append(row)
+    write_csv_rows(cache, rows)
+    return rows
+
+
+def fetch_related_stocks(universe: list[dict[str, Any]], per_family: int, force: bool = False) -> list[dict[str, Any]]:
+    """Fetch more related stocks for discovered broad-index ETF families."""
+
+    family_meta = {family.family_id: family for family in BROAD_INDEX_FAMILIES}
+    family_ids = sorted({str(row.get("family_id")) for row in universe if row.get("family_id")})
+    related: list[dict[str, Any]] = []
+    errors: dict[str, str] = {}
+    for family_id in family_ids:
+        type_codes = INDEX_COMPONENT_TYPE_MAP.get(family_id, ())
+        if not type_codes:
+            continue
+        stock_by_code: dict[str, dict[str, Any]] = {}
+        for type_code in type_codes:
+            try:
+                rows = fetch_index_component_type(type_code, force=force)
+            except Exception as exc:  # noqa: BLE001
+                errors[f"{family_id}:{type_code}"] = str(exc)
+                continue
+            for row in rows:
+                code = str(row.get("stock_code", "")).zfill(6)
+                current = stock_by_code.get(code)
+                if current is None:
+                    stock_by_code[code] = dict(row)
+                else:
+                    # Prefer rows carrying explicit index weight.
+                    if to_float(current.get("weight")) is None and to_float(row.get("weight")) is not None:
+                        stock_by_code[code] = dict(row)
+        rows = list(stock_by_code.values())
+        has_weight = any(to_float(row.get("weight")) is not None for row in rows)
+        rows.sort(
+            key=lambda row: (
+                to_float(row.get("weight"), -1.0) if has_weight else to_float(row.get("free_cap"), -1.0),
+                to_float(row.get("free_cap"), -1.0),
+            ),
+            reverse=True,
+        )
+        meta = family_meta.get(family_id)
+        for rank, row in enumerate(rows[: max(0, per_family)], 1):
+            item = dict(row)
+            item.update(
+                {
+                    "family_id": family_id,
+                    "display_name": meta.display_name if meta else family_id,
+                    "index_code": meta.index_code if meta else "",
+                    "rank_in_family": rank,
+                    "rank_basis": "weight" if has_weight else "free_cap",
+                }
+            )
+            related.append(item)
+    if errors:
+        (RAW_DIR / "related_stock_errors_lite.json").write_text(json.dumps(errors, ensure_ascii=False, indent=2), encoding="utf-8")
+    return related
 
 
 def market_id(code: str) -> int:
@@ -762,6 +905,360 @@ def latest_predictions(panel: list[dict[str, Any]], model: dict[str, Any], horiz
     return rows
 
 
+def predict_dataset(rows: list[dict[str, Any]], model: dict[str, Any]) -> list[dict[str, Any]]:
+    """Attach model predictions to arbitrary panel rows."""
+
+    out_rows: list[dict[str, Any]] = []
+    for row in rows:
+        out = dict(row)
+        out["prediction"] = predict_one(model, row)
+        out_rows.append(out)
+    return out_rows
+
+
+def split_datasets(panel: list[dict[str, Any]], train: list[dict[str, Any]], test: list[dict[str, Any]], model: dict[str, Any]) -> dict[str, list[dict[str, Any]]]:
+    """Split the panel into historical and future/inference datasets.
+
+    historical_dataset: rows with a known forward-return label.
+    future_dataset: rows whose future label is not yet available; these are
+    inference-only rows and get a model prediction.
+    """
+
+    historical = []
+    future = []
+    for row in panel:
+        item = dict(row)
+        if row.get("is_trainable") and to_float(row.get(model["target_col"])) is not None:
+            item["dataset_split"] = "historical"
+            historical.append(item)
+        else:
+            item["dataset_split"] = "future_unlabeled"
+            future.append(item)
+
+    train_rows = [dict(row, dataset_split="train") for row in train]
+    test_rows = [dict(row, dataset_split="test") for row in test]
+    future_predicted = predict_dataset(future, model)
+    return {
+        "historical": historical,
+        "train": train_rows,
+        "test": test_rows,
+        "future": future_predicted,
+    }
+
+
+def median(values: list[float]) -> float | None:
+    values = sorted(v for v in values if math.isfinite(v))
+    if not values:
+        return None
+    n = len(values)
+    mid = n // 2
+    if n % 2:
+        return values[mid]
+    return (values[mid - 1] + values[mid]) / 2.0
+
+
+def stdev_population(values: list[float]) -> float | None:
+    values = [v for v in values if math.isfinite(v)]
+    if len(values) < 2:
+        return None
+    m = sum(values) / len(values)
+    return math.sqrt(sum((v - m) ** 2 for v in values) / len(values))
+
+
+def max_drawdown_from_curve(values: list[float]) -> float | None:
+    if not values:
+        return None
+    peak = values[0]
+    max_dd = 0.0
+    for value in values:
+        peak = max(peak, value)
+        if peak > 0:
+            max_dd = min(max_dd, value / peak - 1.0)
+    return max_dd
+
+
+def build_buy_signals(preds: list[dict[str, Any]], horizon: int, top_k: int, min_pred: float) -> list[dict[str, Any]]:
+    """Create current research buy signals from latest predictions."""
+
+    pred_col = f"pred_fwd_ret_{horizon}"
+    eligible = [row for row in preds if to_float(row.get(pred_col)) is not None and float(row[pred_col]) >= min_pred]
+    selected = sorted(eligible, key=lambda r: int(r.get("pred_score_rank", 9999)))[: max(0, top_k)]
+    if not selected:
+        return [
+            {
+                "date": preds[0].get("date") if preds else "",
+                "action": "CASH",
+                "allocation_pct": 100.0,
+                "reason": f"无 ETF 同时满足 rank<= {top_k} 与 prediction >= {min_pred:.4f}",
+            }
+        ]
+    allocation = 100.0 / len(selected)
+    signals = []
+    for row in selected:
+        signals.append(
+            {
+                "date": row.get("date"),
+                "action": "BUY",
+                "allocation_pct": allocation,
+                "rank": row.get("pred_score_rank"),
+                "code": row.get("code"),
+                "name": row.get("name"),
+                "family_id": row.get("family_id"),
+                "close": row.get("close"),
+                "predicted_forward_return": row.get(pred_col),
+                "holding_horizon_days": horizon,
+                "reason": f"预测排序 Top{top_k} 且预测收益 >= {min_pred:.2%}",
+            }
+        )
+    return signals
+
+
+def backtest_purchase_strategy(
+    holdout: list[dict[str, Any]],
+    target_col: str,
+    *,
+    top_k: int,
+    min_pred: float,
+    round_trip_cost_bps: float,
+    horizon: int,
+) -> tuple[dict[str, Any], list[dict[str, Any]], list[dict[str, Any]]]:
+    """Backtest a simple equal-weight top-K purchase strategy on holdout rows.
+
+    Rule:
+    - On each decision date, rank ETFs by model prediction.
+    - Buy equal-weight top-K ETFs whose prediction is at least min_pred.
+    - Hold for the labelled forward horizon and subtract round-trip cost.
+
+    The return series is a daily rolling-decision evaluation; because forward
+    windows overlap, it is a research backtest signal, not broker-executable
+    accounting.
+    """
+
+    cost = float(round_trip_cost_bps) / 10000.0
+    grouped: dict[str, list[dict[str, Any]]] = defaultdict(list)
+    for row in holdout:
+        if to_float(row.get("prediction")) is None or to_float(row.get(target_col)) is None:
+            continue
+        grouped[str(row["date"])].append(row)
+
+    daily_rows: list[dict[str, Any]] = []
+    trade_rows: list[dict[str, Any]] = []
+    strategy_value = 1.0
+    benchmark_value = 1.0
+    strategy_curve = [strategy_value]
+    benchmark_curve = [benchmark_value]
+    all_trade_returns: list[float] = []
+    active_decision_returns: list[float] = []
+    all_decision_returns: list[float] = []
+    benchmark_returns: list[float] = []
+    outperform_flags: list[bool] = []
+
+    for date_s in sorted(grouped):
+        group = sorted(grouped[date_s], key=lambda r: float(r["prediction"]), reverse=True)
+        benchmark_ret = sum(float(r[target_col]) for r in group) / len(group)
+        selected = [row for row in group if float(row["prediction"]) >= min_pred][: max(0, top_k)]
+        selected_returns = [float(row[target_col]) - cost for row in selected]
+        strategy_ret = sum(selected_returns) / len(selected_returns) if selected_returns else 0.0
+        strategy_value *= 1.0 + strategy_ret
+        benchmark_value *= 1.0 + benchmark_ret
+        strategy_curve.append(strategy_value)
+        benchmark_curve.append(benchmark_value)
+        all_decision_returns.append(strategy_ret)
+        benchmark_returns.append(benchmark_ret)
+        outperform_flags.append(strategy_ret > benchmark_ret)
+        if selected_returns:
+            active_decision_returns.append(strategy_ret)
+            all_trade_returns.extend(selected_returns)
+
+        wins = sum(1 for value in selected_returns if value > 0)
+        daily_rows.append(
+            {
+                "date": date_s,
+                "strategy": f"top{top_k}_minpred_{min_pred:.4f}",
+                "selected_count": len(selected),
+                "selected_codes": ",".join(str(r.get("code", "")) for r in selected),
+                "selected_names": ",".join(str(r.get("name", "")) for r in selected),
+                "avg_prediction": mean([float(r["prediction"]) for r in selected]) if selected else None,
+                "strategy_return": strategy_ret,
+                "benchmark_equal_weight_return": benchmark_ret,
+                "excess_return": strategy_ret - benchmark_ret,
+                "trade_win_count": wins,
+                "trade_count": len(selected),
+                "trade_win_rate": wins / len(selected) if selected else None,
+                "strategy_cumulative_return": strategy_value - 1.0,
+                "benchmark_cumulative_return": benchmark_value - 1.0,
+            }
+        )
+        for rank, row in enumerate(selected, 1):
+            raw_ret = float(row[target_col])
+            net_ret = raw_ret - cost
+            trade_rows.append(
+                {
+                    "date": date_s,
+                    "action": "BUY",
+                    "rank": rank,
+                    "code": row.get("code"),
+                    "name": row.get("name"),
+                    "family_id": row.get("family_id"),
+                    "close": row.get("close"),
+                    "prediction": row.get("prediction"),
+                    "actual_forward_return": raw_ret,
+                    "round_trip_cost_bps": round_trip_cost_bps,
+                    "net_forward_return": net_ret,
+                    "win": net_ret > 0,
+                    "holding_horizon_days": horizon,
+                }
+            )
+
+    active_count = len(active_decision_returns)
+    decision_count = len(all_decision_returns)
+    trade_count = len(all_trade_returns)
+    trade_win_rate = sum(1 for value in all_trade_returns if value > 0) / trade_count if trade_count else None
+    decision_win_rate = sum(1 for value in active_decision_returns if value > 0) / active_count if active_count else None
+    benchmark_win_rate = sum(1 for value in benchmark_returns if value > 0) / len(benchmark_returns) if benchmark_returns else None
+    daily_std = stdev_population(active_decision_returns)
+    sharpe_like = None
+    if daily_std and daily_std > 0 and active_decision_returns:
+        sharpe_like = (sum(active_decision_returns) / len(active_decision_returns)) / daily_std * math.sqrt(252 / max(1, horizon))
+    metrics = {
+        "strategy_name": f"Top{top_k} equal-weight, min_pred={min_pred:.4f}, cost={round_trip_cost_bps:.1f}bps",
+        "strategy_rule": f"每个决策日按预测收益排序，买入预测值 >= {min_pred:.2%} 的前 {top_k} 只 ETF，等权持有 {horizon} 个交易日。",
+        "strategy_top_k": top_k,
+        "strategy_min_prediction": min_pred,
+        "round_trip_cost_bps": round_trip_cost_bps,
+        "decision_count": decision_count,
+        "active_decision_count": active_count,
+        "no_trade_count": decision_count - active_count,
+        "trade_count": trade_count,
+        "trade_win_rate": trade_win_rate,
+        "decision_win_rate": decision_win_rate,
+        "benchmark_win_rate": benchmark_win_rate,
+        "benchmark_outperform_rate": sum(1 for flag in outperform_flags if flag) / len(outperform_flags) if outperform_flags else None,
+        "avg_trade_return": sum(all_trade_returns) / trade_count if trade_count else None,
+        "median_trade_return": median(all_trade_returns),
+        "avg_active_decision_return": sum(active_decision_returns) / active_count if active_count else None,
+        "avg_all_decision_return": sum(all_decision_returns) / decision_count if decision_count else None,
+        "avg_benchmark_return": sum(benchmark_returns) / len(benchmark_returns) if benchmark_returns else None,
+        "strategy_cumulative_return": strategy_value - 1.0,
+        "benchmark_cumulative_return": benchmark_value - 1.0,
+        "excess_cumulative_return": (strategy_value - benchmark_value),
+        "strategy_max_drawdown": max_drawdown_from_curve(strategy_curve),
+        "benchmark_max_drawdown": max_drawdown_from_curve(benchmark_curve),
+        "sharpe_like": sharpe_like,
+        "backtest_note": "收益为每日滚动 horizon 前瞻收益评估，窗口存在重叠；用于研究排序信号，不等同真实账户流水。",
+    }
+    return metrics, daily_rows, trade_rows
+
+
+def model_tune_score(metrics: dict[str, Any]) -> float:
+    directional = to_float(metrics.get("directional_accuracy"), 0.0) or 0.0
+    ic = to_float(metrics.get("spearman_ic_by_date"), 0.0) or 0.0
+    top_vs_all = to_float(metrics.get("top_vs_all"), 0.0) or 0.0
+    rmse = to_float(metrics.get("rmse"), 0.0) or 0.0
+    return directional + 0.8 * ic + 4.0 * top_vs_all - 0.5 * rmse
+
+
+def strategy_tune_score(metrics: dict[str, Any]) -> float:
+    cumulative = to_float(metrics.get("strategy_cumulative_return"), 0.0) or 0.0
+    win_rate = to_float(metrics.get("trade_win_rate"), 0.0) or 0.0
+    outperform = to_float(metrics.get("benchmark_outperform_rate"), 0.0) or 0.0
+    drawdown = to_float(metrics.get("strategy_max_drawdown"), 0.0) or 0.0
+    sharpe_like = to_float(metrics.get("sharpe_like"), 0.0) or 0.0
+    # Drawdown is negative, so this penalizes deeper drawdowns.
+    return cumulative + 0.25 * win_rate + 0.25 * outperform + 0.05 * sharpe_like + 0.25 * drawdown
+
+
+def tune_model_and_strategy(
+    train_rows: list[dict[str, Any]],
+    feature_cols: list[str],
+    target_col: str,
+    *,
+    l2_grid: list[float],
+    top_k_grid: list[int],
+    min_pred_grid: list[float],
+    tune_days: int,
+    round_trip_cost_bps: float,
+    horizon: int,
+) -> tuple[float, int, float, dict[str, Any], list[dict[str, Any]], list[dict[str, Any]]]:
+    """Tune ridge L2 and purchase-strategy parameters on an inner validation split."""
+
+    inner_train, validation, validation_split_date = time_split(train_rows, target_col, max(20, int(tune_days)))
+    model_rows: list[dict[str, Any]] = []
+    best_l2 = l2_grid[0] if l2_grid else 3.0
+    best_model_score = -1e18
+    best_validation_preds: list[dict[str, Any]] = []
+    for l2 in l2_grid or [3.0]:
+        model = train_ridge(inner_train, feature_cols, target_col, l2=l2)
+        metrics, validation_preds = evaluate(validation, model, target_col)
+        score = model_tune_score(metrics)
+        row = {
+            "tune_type": "model_l2",
+            "l2": l2,
+            "validation_split_date": validation_split_date,
+            "score": score,
+            "directional_accuracy": metrics.get("directional_accuracy"),
+            "spearman_ic_by_date": metrics.get("spearman_ic_by_date"),
+            "top_vs_all": metrics.get("top_vs_all"),
+            "rmse": metrics.get("rmse"),
+            "rows": metrics.get("rows"),
+        }
+        model_rows.append(row)
+        if score > best_model_score:
+            best_model_score = score
+            best_l2 = l2
+            best_validation_preds = validation_preds
+
+    strategy_rows: list[dict[str, Any]] = []
+    best_top_k = top_k_grid[0] if top_k_grid else 3
+    best_min_pred = min_pred_grid[0] if min_pred_grid else 0.0
+    best_strategy_score = -1e18
+    for top_k in top_k_grid or [3]:
+        for min_pred in min_pred_grid or [0.0]:
+            strategy_metrics, _, _ = backtest_purchase_strategy(
+                best_validation_preds,
+                target_col,
+                top_k=top_k,
+                min_pred=min_pred,
+                round_trip_cost_bps=round_trip_cost_bps,
+                horizon=horizon,
+            )
+            score = strategy_tune_score(strategy_metrics)
+            row = {
+                "tune_type": "strategy",
+                "top_k": top_k,
+                "min_pred": min_pred,
+                "score": score,
+                "trade_win_rate": strategy_metrics.get("trade_win_rate"),
+                "decision_win_rate": strategy_metrics.get("decision_win_rate"),
+                "benchmark_outperform_rate": strategy_metrics.get("benchmark_outperform_rate"),
+                "strategy_cumulative_return": strategy_metrics.get("strategy_cumulative_return"),
+                "strategy_max_drawdown": strategy_metrics.get("strategy_max_drawdown"),
+                "sharpe_like": strategy_metrics.get("sharpe_like"),
+                "trade_count": strategy_metrics.get("trade_count"),
+                "active_decision_count": strategy_metrics.get("active_decision_count"),
+            }
+            strategy_rows.append(row)
+            if score > best_strategy_score:
+                best_strategy_score = score
+                best_top_k = top_k
+                best_min_pred = min_pred
+
+    best = {
+        "auto_tune": True,
+        "validation_split_date": validation_split_date,
+        "inner_train_rows": len(inner_train),
+        "validation_rows": len(validation),
+        "best_l2": best_l2,
+        "best_l2_score": best_model_score,
+        "best_strategy_top_k": best_top_k,
+        "best_strategy_min_pred": best_min_pred,
+        "best_strategy_score": best_strategy_score,
+        "model_objective": "directional_accuracy + 0.8*IC + 4*top_vs_all - 0.5*RMSE",
+        "strategy_objective": "cum_return + 0.25*win_rate + 0.25*outperform + 0.05*sharpe + 0.25*max_drawdown",
+    }
+    return best_l2, best_top_k, best_min_pred, best, model_rows, strategy_rows
+
+
 def human_amount(value: Any) -> str:
     v = to_float(value)
     if v is None:
@@ -815,6 +1312,23 @@ def _holdout_cumulative_series(holdout: list[dict[str, Any]], target_col: str) -
     return {"Top1策略": top_points, "全池平均": all_points, "Bottom1": bottom_points}
 
 
+def _backtest_cumulative_series(backtest_rows: list[dict[str, Any]]) -> dict[str, list[tuple[str, float]]]:
+    strategy = []
+    benchmark = []
+    excess = []
+    for row in backtest_rows:
+        date_s = str(row.get("date", ""))
+        strategy_value = to_float(row.get("strategy_cumulative_return"))
+        benchmark_value = to_float(row.get("benchmark_cumulative_return"))
+        if strategy_value is not None:
+            strategy.append((date_s, strategy_value))
+        if benchmark_value is not None:
+            benchmark.append((date_s, benchmark_value))
+        if strategy_value is not None and benchmark_value is not None:
+            excess.append((date_s, strategy_value - benchmark_value))
+    return {"购买策略": strategy, "全池等权基准": benchmark, "累计超额": excess}
+
+
 def generate_charts(
     universe: list[dict[str, Any]],
     metrics: dict[str, Any],
@@ -822,6 +1336,11 @@ def generate_charts(
     holdout: list[dict[str, Any]],
     target_col: str,
     horizon: int,
+    backtest_metrics: dict[str, Any] | None = None,
+    backtest_rows: list[dict[str, Any]] | None = None,
+    tuning_model_rows: list[dict[str, Any]] | None = None,
+    tuning_strategy_rows: list[dict[str, Any]] | None = None,
+    related_stocks: list[dict[str, Any]] | None = None,
 ) -> dict[str, str]:
     charts_dir = REPORTS_DIR / "charts"
     charts_dir.mkdir(parents=True, exist_ok=True)
@@ -852,11 +1371,13 @@ def generate_charts(
 
     metric_rows = [
         ("方向准确率", metrics.get("directional_accuracy")),
+        ("交易胜率", (backtest_metrics or {}).get("trade_win_rate")),
+        ("调仓胜率", (backtest_metrics or {}).get("decision_win_rate")),
+        ("跑赢基准率", (backtest_metrics or {}).get("benchmark_outperform_rate")),
+        ("策略累计", (backtest_metrics or {}).get("strategy_cumulative_return")),
         ("Top1均值", metrics.get("top1_mean_fwd_ret")),
         ("Top1-全池", metrics.get("top_vs_all")),
         ("Top-Bottom", metrics.get("top_bottom_spread")),
-        ("平均真实收益", metrics.get("mean_target")),
-        ("平均预测收益", metrics.get("mean_prediction")),
     ]
     metric_path = write_horizontal_bar_chart(
         charts_dir / "holdout_metric_snapshot_lite.svg",
@@ -874,12 +1395,64 @@ def generate_charts(
         series=_holdout_cumulative_series(holdout, target_col),
         value_kind="pct",
     )
-    return {
+    strategy_path = write_line_chart(
+        charts_dir / "strategy_backtest_cumulative_lite.svg",
+        title="购买策略回测累计曲线",
+        subtitle="TopK 等权买入策略 vs 全池等权基准；曲线为滚动决策累计收益。",
+        series=_backtest_cumulative_series(backtest_rows or []),
+        value_kind="pct",
+    )
+    chart_paths = {
         "latest_prediction_rank": str(prediction_path),
         "candidate_family_counts": str(family_path),
         "holdout_metric_snapshot": str(metric_path),
         "holdout_cumulative": str(cumulative_path),
+        "strategy_backtest_cumulative": str(strategy_path),
     }
+    if tuning_model_rows:
+        tune_path = write_column_chart(
+            charts_dir / "model_l2_tuning_lite.svg",
+            title="自动调参：Ridge L2 验证分数",
+            subtitle="越高越好；用于选择最终岭回归正则强度。",
+            rows=[(f"L2={row.get('l2')}", float(row.get("score", 0.0))) for row in tuning_model_rows],
+            value_kind="number",
+            width=1120,
+        )
+        chart_paths["model_l2_tuning"] = str(tune_path)
+    if tuning_strategy_rows:
+        top_rows = sorted(tuning_strategy_rows, key=lambda r: float(r.get("score") or -1e18), reverse=True)[:12]
+        strategy_tune_path = write_horizontal_bar_chart(
+            charts_dir / "strategy_parameter_tuning_lite.svg",
+            title="自动调参：购买策略参数 Top 组合",
+            subtitle="按验证期综合目标排序，标签为 TopK / 最低预测收益。",
+            rows=[(f"K={r.get('top_k')} min={float(r.get('min_pred') or 0.0):.2%}", float(r.get("score") or 0.0)) for r in top_rows],
+            value_kind="number",
+        )
+        chart_paths["strategy_parameter_tuning"] = str(strategy_tune_path)
+    if related_stocks:
+        top_related = sorted(
+            related_stocks,
+            key=lambda r: (
+                to_float(r.get("weight"), -1.0) if r.get("rank_basis") == "weight" else to_float(r.get("free_cap"), -1.0),
+                to_float(r.get("free_cap"), -1.0),
+            ),
+            reverse=True,
+        )[:18]
+        related_path = write_horizontal_bar_chart(
+            charts_dir / "related_stock_top_exposure_lite.svg",
+            title="相关股票：宽基指数高权重/高市值成分",
+            subtitle="有权重的指数按权重排序；无权重数据的指数按自由流通市值排序。",
+            rows=[
+                (
+                    f"{row.get('family_id')} {row.get('stock_code')} {row.get('stock_name')}",
+                    float(to_float(row.get("weight"), None) or (to_float(row.get("free_cap"), 0.0) or 0.0) / 10000.0),
+                )
+                for row in top_related
+            ],
+            value_kind="number",
+        )
+        chart_paths["related_stock_top_exposure"] = str(related_path)
+    return chart_paths
 
 
 def write_summary(
@@ -889,6 +1462,13 @@ def write_summary(
     feature_cols: list[str],
     horizon: int,
     chart_paths: dict[str, str] | None = None,
+    backtest_metrics: dict[str, Any] | None = None,
+    buy_signals: list[dict[str, Any]] | None = None,
+    dataset_paths: dict[str, str] | None = None,
+    tuning_best: dict[str, Any] | None = None,
+    tuning_model_rows: list[dict[str, Any]] | None = None,
+    tuning_strategy_rows: list[dict[str, Any]] | None = None,
+    related_stocks: list[dict[str, Any]] | None = None,
 ) -> None:
     fam_counts: dict[str, int] = defaultdict(int)
     for row in universe:
@@ -935,7 +1515,144 @@ def write_summary(
     lines.extend(
         [
             "",
-            "## 3. 图表结果",
+            "## 3. 自动参数调优",
+            "",
+        ]
+    )
+    if tuning_best:
+        lines.append("- 调优方式：在训练集内部再切出靠后的验证期，先调 Ridge L2，再调购买策略 TopK / 最低预测收益阈值。")
+        lines.append(f"- 模型目标：{tuning_best.get('model_objective')}")
+        lines.append(f"- 策略目标：{tuning_best.get('strategy_objective')}")
+        lines.append(f"- 最佳 L2：{tuning_best.get('best_l2')}；最佳策略：Top{tuning_best.get('best_strategy_top_k')}，最低预测收益 {fmt_pct(tuning_best.get('best_strategy_min_pred'))}。")
+        lines.append("")
+        lines.append("### L2 调优结果")
+        lines.append("")
+        lines.append("|L2|验证分数|方向准确率|IC|Top1-全池|RMSE|")
+        lines.append("|---:|---:|---:|---:|---:|---:|")
+        for row in (tuning_model_rows or [])[:20]:
+            lines.append(
+                f"|{row.get('l2')}|{to_float(row.get('score'), 0.0):.6f}|{fmt_pct(row.get('directional_accuracy'))}|"
+                f"{to_float(row.get('spearman_ic_by_date'), 0.0):.4f}|{fmt_pct(row.get('top_vs_all'))}|{to_float(row.get('rmse'), 0.0):.6f}|"
+            )
+        lines.append("")
+        lines.append("### 策略参数 Top 结果")
+        lines.append("")
+        lines.append("|TopK|最低预测|调优分数|交易胜率|跑赢基准率|累计收益|最大回撤|")
+        lines.append("|---:|---:|---:|---:|---:|---:|---:|")
+        for row in sorted(tuning_strategy_rows or [], key=lambda r: float(r.get("score") or -1e18), reverse=True)[:12]:
+            lines.append(
+                f"|{row.get('top_k')}|{fmt_pct(row.get('min_pred'))}|{to_float(row.get('score'), 0.0):.6f}|"
+                f"{fmt_pct(row.get('trade_win_rate'))}|{fmt_pct(row.get('benchmark_outperform_rate'))}|"
+                f"{fmt_pct(row.get('strategy_cumulative_return'))}|{fmt_pct(row.get('strategy_max_drawdown'))}|"
+            )
+    else:
+        lines.append("- 本次未启用自动调参，使用命令行传入的 L2 与策略参数。")
+    lines.extend(
+        [
+            "",
+            "## 4. 相关股票/成分股扩展",
+            "",
+        ]
+    )
+    if related_stocks:
+        family_counts: dict[str, int] = defaultdict(int)
+        for row in related_stocks:
+            family_counts[str(row.get("family_id"))] += 1
+        lines.append(f"- 已拉取相关股票/指数成分股：{len(related_stocks)} 条。")
+        lines.append("- 覆盖：" + ", ".join(f"{k}({v})" for k, v in sorted(family_counts.items())))
+        lines.append("- 数据源：东方财富指数成分股数据；有权重字段时按权重排序，否则按自由流通市值排序。")
+        lines.append("")
+        lines.append("|指数族|排名|股票代码|股票名称|行业|权重|自由流通市值|涨跌幅|PE|")
+        lines.append("|---|---:|---|---|---|---:|---:|---:|---:|")
+        for row in related_stocks[:30]:
+            lines.append(
+                f"|{row.get('family_id', '')}|{row.get('rank_in_family', '')}|{row.get('stock_code', '')}|{row.get('stock_name', '')}|"
+                f"{row.get('industry', '')}|{fmt_pct((to_float(row.get('weight')) or 0.0) / 100 if to_float(row.get('weight')) is not None else None)}|"
+                f"{to_float(row.get('free_cap'), 0.0):.2f}|{fmt_pct((to_float(row.get('change_rate')) or 0.0) / 100 if to_float(row.get('change_rate')) is not None else None)}|"
+                f"{to_float(row.get('pe'), 0.0):.2f}|"
+            )
+    else:
+        lines.append("- 本次未拉取相关股票。")
+    lines.extend(
+        [
+            "",
+            "## 5. 历史/未来数据集拆分",
+            "",
+            f"- 历史有标签数据：{metrics.get('historical_rows')} 行，可用于训练、验证和回测。",
+            f"- 训练集：{metrics.get('train_rows')} 行；测试/回测集：{metrics.get('test_rows')} 行。",
+            f"- 未来未标注数据：{metrics.get('future_rows')} 行，目标收益尚未发生，只用于推理和生成买入信号。",
+            "",
+            "|数据集|用途|文件|",
+            "|---|---|---|",
+        ]
+    )
+    if dataset_paths:
+        dataset_labels = {
+            "historical": ("历史有标签全集", "训练/验证/回测的监督学习样本"),
+            "train": ("历史训练集", "拟合模型"),
+            "test": ("历史测试/回测集", "时间切分验证与策略回测"),
+            "future": ("未来未标注集", "未来收益未知，仅做推理"),
+        }
+        for key, (label, purpose) in dataset_labels.items():
+            path_text = dataset_paths.get(key)
+            if path_text:
+                lines.append(f"|{label}|{purpose}|`{path_text}`|")
+    lines.extend(
+        [
+            "",
+            "## 6. 购买策略与回测",
+            "",
+        ]
+    )
+    if backtest_metrics:
+        lines.append(f"- 策略规则：{backtest_metrics.get('strategy_rule')}")
+        lines.append(f"- 成本假设：单次完整买卖往返成本 {backtest_metrics.get('round_trip_cost_bps')} bps。")
+        lines.append("- 说明：回测使用测试期的前瞻收益标签；由于每日滚动 horizon 收益存在重叠，结果用于研究排序信号。")
+        lines.append("")
+        lines.append("### 当前买入信号")
+        lines.append("")
+        lines.append("|动作|日期|代码|名称|指数族|仓位|预测未来收益|理由|")
+        lines.append("|---|---|---|---|---|---:|---:|---|")
+        for row in (buy_signals or [])[:12]:
+            lines.append(
+                f"|{row.get('action', '')}|{row.get('date', '')}|{row.get('code', '')}|{row.get('name', '')}|"
+                f"{row.get('family_id', '')}|{to_float(row.get('allocation_pct'), 0.0):.1f}%|"
+                f"{fmt_pct(row.get('predicted_forward_return'))}|{row.get('reason', '')}|"
+            )
+        lines.append("")
+        lines.append("### 回测指标")
+        lines.append("")
+        lines.append("|指标|值|")
+        lines.append("|---|---:|")
+        for key in [
+            "decision_count",
+            "active_decision_count",
+            "trade_count",
+            "trade_win_rate",
+            "decision_win_rate",
+            "benchmark_outperform_rate",
+            "avg_trade_return",
+            "median_trade_return",
+            "strategy_cumulative_return",
+            "benchmark_cumulative_return",
+            "excess_cumulative_return",
+            "strategy_max_drawdown",
+            "sharpe_like",
+        ]:
+            value = backtest_metrics.get(key)
+            if isinstance(value, float) and any(token in key for token in ["rate", "return", "drawdown"]):
+                text = fmt_pct(value)
+            elif isinstance(value, float):
+                text = f"{value:.6f}"
+            else:
+                text = str(value)
+            lines.append(f"|{key}|{text}|")
+    else:
+        lines.append("- 本次未生成策略回测。")
+    lines.extend(
+        [
+            "",
+            "## 7. 图表结果",
             "",
         ]
     )
@@ -945,6 +1662,10 @@ def write_summary(
             ("候选指数族覆盖图", chart_paths.get("candidate_family_counts")),
             ("验证指标快照图", chart_paths.get("holdout_metric_snapshot")),
             ("Holdout累计曲线", chart_paths.get("holdout_cumulative")),
+            ("购买策略回测累计曲线", chart_paths.get("strategy_backtest_cumulative")),
+            ("模型参数调优图", chart_paths.get("model_l2_tuning")),
+            ("策略参数调优图", chart_paths.get("strategy_parameter_tuning")),
+            ("相关股票暴露图", chart_paths.get("related_stock_top_exposure")),
         ]
         for title, path_text in chart_items:
             if path_text:
@@ -957,7 +1678,7 @@ def write_summary(
         lines.append("")
     lines.extend(
         [
-            "## 4. 最新预测排序",
+            "## 8. 最新预测排序",
             "",
             "|排名|日期|代码|名称|指数族|收盘价|预测未来收益|近5日|近20日|20日波动|20日回撤|",
             "|---:|---|---|---|---|---:|---:|---:|---:|---:|---:|",
@@ -987,6 +1708,16 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--force", action="store_true")
     p.add_argument("--adjust", default="qfq", choices=["qfq", "hfq", "none", "raw"])
     p.add_argument("--l2", type=float, default=3.0)
+    p.add_argument("--auto-tune", dest="auto_tune", action="store_true", default=True, help="Automatically tune model and strategy parameters on an inner validation split.")
+    p.add_argument("--no-auto-tune", dest="auto_tune", action="store_false", help="Disable automatic parameter tuning.")
+    p.add_argument("--tune-days", type=int, default=90, help="Validation-window length used for automatic tuning.")
+    p.add_argument("--tune-l2-grid", default="0.3,1,3,10,30", help="Comma-separated Ridge L2 grid.")
+    p.add_argument("--tune-top-k-grid", default="1,2,3,4,5", help="Comma-separated TopK grid for purchase-strategy tuning.")
+    p.add_argument("--tune-min-pred-grid", default="-0.005,0,0.005,0.01,0.02", help="Comma-separated minimum prediction grid for strategy tuning.")
+    p.add_argument("--strategy-top-k", type=int, default=3, help="Purchase-strategy top K ETFs to buy on each decision date.")
+    p.add_argument("--strategy-min-pred", type=float, default=0.0, help="Minimum predicted forward return required for a BUY signal.")
+    p.add_argument("--round-trip-cost-bps", type=float, default=10.0, help="Round-trip trading cost/slippage in basis points.")
+    p.add_argument("--related-stocks-per-index", type=int, default=30, help="Fetch top N related/component stocks per broad-index family.")
     p.add_argument("--model-out", default=str(MODELS_DIR / "csi_broad_etf_model_lite.pkl"))
     return p
 
@@ -996,6 +1727,10 @@ def main(argv: list[str] | None = None) -> None:
     args = build_parser().parse_args(argv)
     universe = discover_universe(args.max_etfs_per_index, args.min_amount, args.include_enhanced, args.include_style, args.force)
     write_csv_rows(REPORTS_DIR / "latest_candidates_lite.csv", universe)
+    related_stocks: list[dict[str, Any]] = []
+    if args.related_stocks_per_index > 0:
+        related_stocks = fetch_related_stocks(universe, args.related_stocks_per_index, force=args.force)
+        write_csv_rows(REPORTS_DIR / "related_stocks_lite.csv", related_stocks)
     histories: dict[str, list[dict[str, Any]]] = {}
     errors: dict[str, str] = {}
     for idx, row in enumerate(universe, 1):
@@ -1014,11 +1749,43 @@ def main(argv: list[str] | None = None) -> None:
     panel, feature_cols, target_col = build_panel(histories, universe, args.horizon)
     write_csv_rows(PROCESSED_DIR / "training_panel_lite.csv", panel)
     train, test, split_date = time_split(panel, target_col, args.test_days)
-    model = train_ridge(train, feature_cols, target_col, l2=args.l2)
+    effective_l2 = args.l2
+    effective_strategy_top_k = args.strategy_top_k
+    effective_strategy_min_pred = args.strategy_min_pred
+    tuning_best: dict[str, Any] | None = None
+    tuning_model_rows: list[dict[str, Any]] = []
+    tuning_strategy_rows: list[dict[str, Any]] = []
+    if args.auto_tune:
+        effective_l2, effective_strategy_top_k, effective_strategy_min_pred, tuning_best, tuning_model_rows, tuning_strategy_rows = tune_model_and_strategy(
+            train,
+            feature_cols,
+            target_col,
+            l2_grid=parse_float_grid(args.tune_l2_grid),
+            top_k_grid=parse_int_grid(args.tune_top_k_grid),
+            min_pred_grid=parse_float_grid(args.tune_min_pred_grid),
+            tune_days=args.tune_days,
+            round_trip_cost_bps=args.round_trip_cost_bps,
+            horizon=args.horizon,
+        )
+        write_csv_rows(REPORTS_DIR / "model_parameter_tuning_lite.csv", tuning_model_rows)
+        write_csv_rows(REPORTS_DIR / "strategy_parameter_tuning_lite.csv", tuning_strategy_rows)
+    model = train_ridge(train, feature_cols, target_col, l2=effective_l2)
     metrics, holdout = evaluate(test, model, target_col)
+    datasets = split_datasets(panel, train, test, model)
+    dataset_paths = {
+        "historical": str(PROCESSED_DIR / "historical_dataset_lite.csv"),
+        "train": str(PROCESSED_DIR / "train_dataset_lite.csv"),
+        "test": str(PROCESSED_DIR / "test_dataset_lite.csv"),
+        "future": str(PROCESSED_DIR / "future_dataset_lite.csv"),
+    }
+    write_csv_rows(Path(dataset_paths["historical"]), datasets["historical"])
+    write_csv_rows(Path(dataset_paths["train"]), datasets["train"])
+    write_csv_rows(Path(dataset_paths["test"]), datasets["test"])
+    write_csv_rows(Path(dataset_paths["future"]), datasets["future"])
     metrics.update(
         {
             "model_type": "stdlib_ridge",
+            "model_l2": effective_l2,
             "target_col": target_col,
             "feature_count": len(feature_cols),
             "train_rows": len(train),
@@ -1032,21 +1799,81 @@ def main(argv: list[str] | None = None) -> None:
             "history_count": len(histories),
             "panel_rows": len(panel),
             "trainable_rows": sum(1 for r in panel if r.get("is_trainable")),
+            "historical_rows": len(datasets["historical"]),
+            "future_rows": len(datasets["future"]),
             "feature_cols": feature_cols,
             "latest_candidates_path": str(REPORTS_DIR / "latest_candidates_lite.csv"),
             "latest_predictions_path": str(REPORTS_DIR / "latest_predictions_lite.csv"),
             "training_panel_path": str(PROCESSED_DIR / "training_panel_lite.csv"),
+            "dataset_paths": dataset_paths,
             "model_path": args.model_out,
+            "auto_tune": bool(args.auto_tune),
+            "tuning_best": tuning_best,
+            "model_tuning_path": str(REPORTS_DIR / "model_parameter_tuning_lite.csv") if tuning_model_rows else "",
+            "strategy_tuning_path": str(REPORTS_DIR / "strategy_parameter_tuning_lite.csv") if tuning_strategy_rows else "",
+            "related_stocks_path": str(REPORTS_DIR / "related_stocks_lite.csv") if related_stocks else "",
+            "related_stock_count": len(related_stocks),
         }
     )
     preds = latest_predictions(panel, model, args.horizon)
     write_csv_rows(REPORTS_DIR / "latest_predictions_lite.csv", preds)
     write_csv_rows(REPORTS_DIR / "holdout_predictions_lite.csv", holdout)
-    chart_paths = generate_charts(universe, metrics, preds, holdout, target_col, args.horizon)
+    buy_signals = build_buy_signals(preds, args.horizon, effective_strategy_top_k, effective_strategy_min_pred)
+    write_csv_rows(REPORTS_DIR / "buy_signals_lite.csv", buy_signals)
+    backtest_metrics, backtest_daily, backtest_trades = backtest_purchase_strategy(
+        holdout,
+        target_col,
+        top_k=effective_strategy_top_k,
+        min_pred=effective_strategy_min_pred,
+        round_trip_cost_bps=args.round_trip_cost_bps,
+        horizon=args.horizon,
+    )
+    write_csv_rows(REPORTS_DIR / "strategy_backtest_daily_lite.csv", backtest_daily)
+    write_csv_rows(REPORTS_DIR / "strategy_backtest_trades_lite.csv", backtest_trades)
+    metrics["buy_signals_path"] = str(REPORTS_DIR / "buy_signals_lite.csv")
+    metrics["backtest_daily_path"] = str(REPORTS_DIR / "strategy_backtest_daily_lite.csv")
+    metrics["backtest_trades_path"] = str(REPORTS_DIR / "strategy_backtest_trades_lite.csv")
+    metrics["strategy_backtest"] = backtest_metrics
+    chart_paths = generate_charts(
+        universe,
+        metrics,
+        preds,
+        holdout,
+        target_col,
+        args.horizon,
+        backtest_metrics=backtest_metrics,
+        backtest_rows=backtest_daily,
+        tuning_model_rows=tuning_model_rows,
+        tuning_strategy_rows=tuning_strategy_rows,
+        related_stocks=related_stocks,
+    )
     metrics["chart_paths"] = chart_paths
     (REPORTS_DIR / "training_metrics_lite.json").write_text(json.dumps(metrics, ensure_ascii=False, indent=2, default=str), encoding="utf-8")
-    write_summary(universe, metrics, preds, feature_cols, args.horizon, chart_paths)
-    artifact = {"model": model, "metrics": metrics, "universe": universe, "created_at": dt.datetime.now().isoformat(timespec="seconds")}
+    write_summary(
+        universe,
+        metrics,
+        preds,
+        feature_cols,
+        args.horizon,
+        chart_paths,
+        backtest_metrics,
+        buy_signals,
+        dataset_paths,
+        tuning_best,
+        tuning_model_rows,
+        tuning_strategy_rows,
+        related_stocks,
+    )
+    artifact = {
+        "model": model,
+        "metrics": metrics,
+        "universe": universe,
+        "related_stocks": related_stocks,
+        "buy_signals": buy_signals,
+        "backtest_metrics": backtest_metrics,
+        "tuning_best": tuning_best,
+        "created_at": dt.datetime.now().isoformat(timespec="seconds"),
+    }
     model_path = Path(args.model_out)
     model_path.parent.mkdir(parents=True, exist_ok=True)
     with model_path.open("wb") as fh:
@@ -1055,6 +1882,12 @@ def main(argv: list[str] | None = None) -> None:
     print(f"\n轻量模型已保存: {model_path}")
     print(f"候选池: {REPORTS_DIR / 'latest_candidates_lite.csv'}")
     print(f"最新预测: {REPORTS_DIR / 'latest_predictions_lite.csv'}")
+    print(f"买入信号: {REPORTS_DIR / 'buy_signals_lite.csv'}")
+    print(f"策略回测: {REPORTS_DIR / 'strategy_backtest_daily_lite.csv'}")
+    if related_stocks:
+        print(f"相关股票: {REPORTS_DIR / 'related_stocks_lite.csv'}")
+    if tuning_best:
+        print(f"自动调参: L2={effective_l2}, TopK={effective_strategy_top_k}, min_pred={effective_strategy_min_pred:.4f}")
     print(f"报告: {REPORTS_DIR / 'training_summary_lite.md'}")
     print(f"图表目录: {REPORTS_DIR / 'charts'}")
 
