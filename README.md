@@ -54,6 +54,10 @@ make quick
 - `reports/buy_signals_lite.csv`：按购买策略生成的当前买入/空仓信号。
 - `reports/model_parameter_tuning_lite.csv` / `strategy_parameter_tuning_lite.csv`：自动参数调优明细。
 - `reports/related_stocks_lite.csv`：每个宽基指数族对应的更多相关股票/指数成分股。
+- `reports/long_history_coverage_lite.csv`：长起点采集后每只 ETF 的实际历史覆盖、全期收益和最大回撤。
+- `reports/multi_scale_etf_metrics_lite.csv`：ETF × 持有周期的平均收益、胜率、波动、类 Sharpe、最佳/最差收益。
+- `reports/multi_scale_family_metrics_lite.csv`：指数族/全池 × 持有周期的跨时间尺度聚合统计。
+- `reports/multi_scale_period_metrics_lite.csv`：年份 × 指数族 × 持有周期的阶段统计。
 - `reports/strategy_backtest_daily_lite.csv`：每日滚动购买策略回测结果。
 - `reports/strategy_backtest_trades_lite.csv`：逐笔买入信号、实际未来收益、扣费后收益和胜负。
 - `reports/training_metrics.json`：机器可读训练指标。
@@ -63,7 +67,7 @@ make quick
 ## 常用参数
 
 ```bash
-.venv/bin/python -m hp_ml.train --help
+.venv/bin/python -m hp_ml.lite_train --help
 ```
 
 - `--start 20180101`：历史数据开始日期。
@@ -71,7 +75,7 @@ make quick
 - `--horizon 5`：预测未来 N 个交易日收益。
 - `--max-etfs-per-index 3`：每个宽基指数族按成交额保留前 N 只 ETF。
 - `--min-amount 10000000`：按当日成交额过滤低流动性产品。
-- `--model hgb|rf|ridge`：选择梯度提升、随机森林或岭回归。
+- `--model hgb|rf|ridge`：完整版 `hp_ml.train` 可选择梯度提升、随机森林或岭回归；轻量版固定为岭回归。
 - `--auto-tune` / `--no-auto-tune`：启用或关闭自动参数调优；默认启用。
 - `--tune-l2-grid 0.3,1,3,10,30`：岭回归正则强度候选。
 - `--tune-top-k-grid 1,2,3,4,5`：购买策略 TopK 候选。
@@ -80,7 +84,34 @@ make quick
 - `--strategy-min-pred 0`：未自动调参时，买入所需最低预测未来收益。
 - `--round-trip-cost-bps 10`：回测中每次完整买卖的成本/滑点，单位 bps。
 - `--related-stocks-per-index 30`：每个指数族拉取多少只相关股票/成分股。
+- `--scale-horizons 5,20,60,120,250`：长历史跨时间尺度分析使用的持有周期。
 - `--force`：忽略缓存，重新拉取行情。
+
+
+### 长历史和跨时间尺度分析
+
+要采集更多、更久的中证宽基 ETF 数据并输出跨时间尺度分析，可以把起点提前到早期 ETF 上市前，并提高每个指数族保留数量：
+
+```bash
+.venv/bin/python -m hp_ml.lite_train \
+  --start 20050101 \
+  --max-etfs-per-index 5 \
+  --horizon 5 \
+  --test-days 504 \
+  --scale-horizons 5,20,60,120,250 \
+  --related-stocks-per-index 30
+```
+
+流水线会按实际上市日期保留可用历史，输出：
+
+- `reports/long_history_coverage_lite.csv`
+- `reports/multi_scale_etf_metrics_lite.csv`
+- `reports/multi_scale_family_metrics_lite.csv`
+- `reports/multi_scale_period_metrics_lite.csv`
+- `reports/charts/multi_scale_horizon_return_lite.svg`
+- `reports/charts/multi_scale_win_rate_lite.svg`
+- `reports/charts/long_history_coverage_lite.svg`
+- `reports/charts/multi_scale_period_return_lite.svg`
 
 
 

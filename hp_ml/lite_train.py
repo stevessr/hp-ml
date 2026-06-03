@@ -46,7 +46,7 @@ INDEX_COMPONENT_TYPE_MAP = {
     "CSI_500": ("3",),
     "CSI_1000": ("7",),
     "CSI_2000": ("13",),
-    "CSI_800": ("1", "3"),  # 中证800 ~= 沪深300 + 中证500
+    "CSI_800": ("1", "3"),  # 中证 800 ~= 沪深 300 + 中证 500
     "CSI_A500": ("6",),
     "CSI_A50": ("8",),
     "CSI_100": ("12",),
@@ -521,6 +521,43 @@ def yyyymmdd_to_iso(value: str) -> str:
     return f"{value[:4]}-{value[4:6]}-{value[6:8]}"
 
 
+def iso_to_yyyymmdd(value: str | dt.date) -> str:
+    if isinstance(value, dt.date):
+        return value.strftime("%Y%m%d")
+    value = str(value)
+    if "-" not in value:
+        return value
+    return value.replace("-", "")[:8]
+
+
+def _date_from_any(value: str | dt.date) -> dt.date:
+    if isinstance(value, dt.date):
+        return value
+    return dt.date.fromisoformat(yyyymmdd_to_iso(str(value))[:10])
+
+
+def _add_years(value: dt.date, years: int) -> dt.date:
+    try:
+        return value.replace(year=value.year + years)
+    except ValueError:
+        # 2 月 29 日跨到平年时回退到 2 月 28 日。
+        return value.replace(year=value.year + years, day=28)
+
+
+def _calendar_chunks(start: str, end: str, years: int = 4) -> list[tuple[str, str]]:
+    """Split a long date range into chunks accepted by fallback K-line APIs."""
+
+    start_date = _date_from_any(start)
+    end_date = _date_from_any(end)
+    chunks: list[tuple[str, str]] = []
+    cursor = start_date
+    while cursor <= end_date:
+        chunk_end = min(_add_years(cursor, years) - dt.timedelta(days=1), end_date)
+        chunks.append((cursor.isoformat(), chunk_end.isoformat()))
+        cursor = chunk_end + dt.timedelta(days=1)
+    return chunks
+
+
 def fetch_history_tencent(code: str, start: str, end: str, adjust: str = "qfq") -> list[dict[str, Any]]:
     """Fetch ETF daily K-lines from Tencent as a fallback.
 
@@ -531,44 +568,47 @@ def fetch_history_tencent(code: str, start: str, end: str, adjust: str = "qfq") 
     code = str(code).zfill(6)
     symbol = market_prefix(code) + code
     fq = "qfq" if adjust.lower() == "qfq" else ""
-    # Tencent rejects very large counts (e.g. 3000) for some ETF symbols; 2000
-    # trading days is enough for the default 2018+ daily research window.
-    param = f"{symbol},day,{yyyymmdd_to_iso(start)},{yyyymmdd_to_iso(end)},2000,{fq}".rstrip(",")
-    payload = http_json(TENCENT_KLINE_URL, {"param": param}, timeout=10, attempts=3)
-    node = (payload.get("data") or {}).get(symbol) or {}
-    lines = node.get("qfqday") or node.get("hfqday") or node.get("day") or []
-    if not lines:
+    # Tencent rejects very large counts (e.g. 3000) for some ETF symbols.  For
+    # long-history research we query four-calendar-year chunks and de-duplicate
+    # the result, which keeps every request comfortably below 2000 trading days.
+    raw_by_date: dict[str, dict[str, Any]] = {}
+    for chunk_start, chunk_end in _calendar_chunks(start, end, years=4):
+        param = f"{symbol},day,{chunk_start},{chunk_end},2000,{fq}".rstrip(",")
+        payload = http_json(TENCENT_KLINE_URL, {"param": param}, timeout=10, attempts=3)
+        node = (payload.get("data") or {}).get(symbol) or {}
+        lines = node.get("qfqday") or node.get("hfqday") or node.get("day") or []
+        for item in lines:
+            if len(item) < 6:
+                continue
+            date_s, open_s, close_s, high_s, low_s, volume_s = item[:6]
+            raw_by_date[str(date_s)[:10]] = {
+                "code": code,
+                "date": str(date_s)[:10],
+                "open": to_float(open_s),
+                "close": to_float(close_s),
+                "high": to_float(high_s),
+                "low": to_float(low_s),
+                "volume": to_float(volume_s),
+                "amount": None,
+                "turnover_rate": None,
+            }
+        time.sleep(0.03)
+    if not raw_by_date:
         raise RuntimeError(f"No Tencent K-line rows for {code}")
     rows: list[dict[str, Any]] = []
     prev_close: float | None = None
-    for item in lines:
-        if len(item) < 6:
-            continue
-        date_s, open_s, close_s, high_s, low_s, volume_s = item[:6]
-        open_v = to_float(open_s)
-        close_v = to_float(close_s)
-        high_v = to_float(high_s)
-        low_v = to_float(low_s)
-        volume_v = to_float(volume_s)
+    for item in sorted(raw_by_date.values(), key=lambda r: str(r["date"])):
+        close_v = to_float(item.get("close"))
+        high_v = to_float(item.get("high"))
+        low_v = to_float(item.get("low"))
         price_change = close_v - prev_close if close_v is not None and prev_close is not None else None
         pct_chg = price_change / prev_close * 100 if price_change is not None and prev_close not in (None, 0) else None
         amplitude = (high_v - low_v) / prev_close * 100 if high_v is not None and low_v is not None and prev_close not in (None, 0) else None
-        rows.append(
-            {
-                "code": code,
-                "date": date_s,
-                "open": open_v,
-                "close": close_v,
-                "high": high_v,
-                "low": low_v,
-                "volume": volume_v,
-                "amount": None,
-                "amplitude": amplitude,
-                "pct_chg": pct_chg,
-                "price_change": price_change,
-                "turnover_rate": None,
-            }
-        )
+        row = dict(item)
+        row["amplitude"] = amplitude
+        row["pct_chg"] = pct_chg
+        row["price_change"] = price_change
+        rows.append(row)
         if close_v is not None:
             prev_close = close_v
     if not rows:
@@ -598,6 +638,7 @@ def fetch_history(code: str, start: str, end: str, adjust: str = "qfq", force: b
                 "fqt": adjust_key,
                 "beg": start,
                 "end": end,
+                "lmt": 1000000,
             },
             timeout=8,
             attempts=3,
@@ -977,6 +1018,158 @@ def max_drawdown_from_curve(values: list[float]) -> float | None:
     return max_dd
 
 
+def _valid_price_history(hist: list[dict[str, Any]]) -> tuple[list[str], list[float]]:
+    rows = sorted(hist, key=lambda r: str(r.get("date", "")))
+    dates: list[str] = []
+    closes: list[float] = []
+    for row in rows:
+        close = to_float(row.get("close"))
+        if close is None or close <= 0:
+            continue
+        dates.append(str(row.get("date", ""))[:10])
+        closes.append(close)
+    return dates, closes
+
+
+def _summarize_returns(values: list[float], horizon: int) -> dict[str, Any]:
+    vals = [v for v in values if math.isfinite(v)]
+    observations = len(vals)
+    avg_value = sum(vals) / observations if observations else None
+    vol_value = stdev_population(vals) if observations >= 2 else None
+    return {
+        "horizon_days": horizon,
+        "observations": observations,
+        "win_rate": sum(1 for value in vals if value > 0) / observations if observations else None,
+        "avg_forward_return": avg_value,
+        "median_forward_return": median(vals),
+        "volatility": vol_value,
+        "sharpe_like": (avg_value / vol_value * math.sqrt(252 / max(1, horizon))) if avg_value is not None and vol_value not in (None, 0) else None,
+        "best_forward_return": max(vals) if vals else None,
+        "worst_forward_return": min(vals) if vals else None,
+        "positive_avg_return": mean([value for value in vals if value > 0]),
+        "negative_avg_return": mean([value for value in vals if value <= 0]),
+    }
+
+
+def build_multi_scale_analysis(
+    histories: dict[str, list[dict[str, Any]]],
+    universe: list[dict[str, Any]],
+    horizons: list[int],
+) -> dict[str, list[dict[str, Any]]]:
+    """Summarize long-history ETF behavior across holding horizons.
+
+    For each ETF and horizon we compute all overlapping forward returns, then
+    aggregate them by ETF, index family and calendar year.  These descriptive
+    statistics are deliberately independent from the ML train/test split so the
+    report can show the longer historical regime coverage.
+    """
+
+    horizons = sorted({int(h) for h in horizons if int(h) > 0})
+    meta_by_code = {str(row.get("code", "")).zfill(6): row for row in universe}
+    coverage_rows: list[dict[str, Any]] = []
+    etf_rows: list[dict[str, Any]] = []
+    family_groups: dict[tuple[str, int], list[float]] = defaultdict(list)
+    family_etfs: dict[tuple[str, int], set[str]] = defaultdict(set)
+    period_groups: dict[tuple[str, str, int], list[float]] = defaultdict(list)
+    period_dates: dict[tuple[str, str, int], list[str]] = defaultdict(list)
+
+    for code, hist in sorted(histories.items()):
+        code = str(code).zfill(6)
+        meta = meta_by_code.get(code, {"code": code, "name": "", "family_id": ""})
+        dates, closes = _valid_price_history(hist)
+        if not dates:
+            continue
+        start_date = _date_from_any(dates[0])
+        end_date = _date_from_any(dates[-1])
+        history_years = (end_date - start_date).days / 365.25 if end_date >= start_date else 0.0
+        full_return = closes[-1] / closes[0] - 1.0 if closes[0] else None
+        coverage_rows.append(
+            {
+                "code": code,
+                "name": meta.get("name", ""),
+                "family_id": meta.get("family_id", ""),
+                "start_date": dates[0],
+                "end_date": dates[-1],
+                "rows": len(closes),
+                "history_years": history_years,
+                "full_period_return": full_return,
+                "price_max_drawdown": max_drawdown_from_curve(closes),
+                "latest_close": closes[-1],
+            }
+        )
+        for horizon in horizons:
+            forward_values: list[float] = []
+            for i in range(0, len(closes) - horizon):
+                start_close = closes[i]
+                end_close = closes[i + horizon]
+                if start_close <= 0 or not math.isfinite(start_close) or not math.isfinite(end_close):
+                    continue
+                ret = end_close / start_close - 1.0
+                if not math.isfinite(ret):
+                    continue
+                date_s = dates[i]
+                year = date_s[:4]
+                family_id = str(meta.get("family_id", ""))
+                forward_values.append(ret)
+                for aggregate_family in (family_id, "ALL"):
+                    family_groups[(aggregate_family, horizon)].append(ret)
+                    family_etfs[(aggregate_family, horizon)].add(code)
+                    period_groups[(year, aggregate_family, horizon)].append(ret)
+                    period_dates[(year, aggregate_family, horizon)].append(date_s)
+            summary = _summarize_returns(forward_values, horizon)
+            trailing_return = closes[-1] / closes[-1 - horizon] - 1.0 if len(closes) > horizon and closes[-1 - horizon] else None
+            etf_rows.append(
+                {
+                    "code": code,
+                    "name": meta.get("name", ""),
+                    "family_id": meta.get("family_id", ""),
+                    "start_date": dates[0],
+                    "end_date": dates[-1],
+                    "history_rows": len(closes),
+                    "history_years": history_years,
+                    "trailing_horizon_return": trailing_return,
+                    "price_max_drawdown": max_drawdown_from_curve(closes),
+                    **summary,
+                }
+            )
+
+    family_rows: list[dict[str, Any]] = []
+    for (family_id, horizon), values in sorted(family_groups.items(), key=lambda item: (item[0][0] != "ALL", item[0][0], item[0][1])):
+        summary = _summarize_returns(values, horizon)
+        family_rows.append(
+            {
+                "family_id": family_id,
+                "horizon_days": horizon,
+                "etf_count": len(family_etfs[(family_id, horizon)]),
+                **summary,
+            }
+        )
+
+    period_rows: list[dict[str, Any]] = []
+    for (year, family_id, horizon), values in sorted(period_groups.items()):
+        summary = _summarize_returns(values, horizon)
+        dates_for_period = period_dates[(year, family_id, horizon)]
+        period_rows.append(
+            {
+                "period": year,
+                "family_id": family_id,
+                "horizon_days": horizon,
+                "period_start_date": min(dates_for_period) if dates_for_period else "",
+                "period_end_date": max(dates_for_period) if dates_for_period else "",
+                **summary,
+            }
+        )
+
+    coverage_rows.sort(key=lambda r: (float(r.get("history_years") or 0.0), int(r.get("rows") or 0)), reverse=True)
+    etf_rows.sort(key=lambda r: (str(r.get("family_id")), int(r.get("horizon_days") or 0), str(r.get("code"))))
+    return {
+        "coverage": coverage_rows,
+        "etf_metrics": etf_rows,
+        "family_metrics": family_rows,
+        "period_metrics": period_rows,
+    }
+
+
 def build_buy_signals(preds: list[dict[str, Any]], horizon: int, top_k: int, min_pred: float) -> list[dict[str, Any]]:
     """Create current research buy signals from latest predictions."""
 
@@ -1309,7 +1502,7 @@ def _holdout_cumulative_series(holdout: list[dict[str, Any]], target_col: str) -
         top_points.append((date_s, top_value - 1.0))
         all_points.append((date_s, all_value - 1.0))
         bottom_points.append((date_s, bottom_value - 1.0))
-    return {"Top1策略": top_points, "全池平均": all_points, "Bottom1": bottom_points}
+    return {"Top1 策略": top_points, "全池平均": all_points, "Bottom1": bottom_points}
 
 
 def _backtest_cumulative_series(backtest_rows: list[dict[str, Any]]) -> dict[str, list[tuple[str, float]]]:
@@ -1329,6 +1522,21 @@ def _backtest_cumulative_series(backtest_rows: list[dict[str, Any]]) -> dict[str
     return {"购买策略": strategy, "全池等权基准": benchmark, "累计超额": excess}
 
 
+def _multi_scale_period_series(period_rows: list[dict[str, Any]]) -> dict[str, list[tuple[str, float]]]:
+    series: dict[str, list[tuple[str, float]]] = defaultdict(list)
+    for row in period_rows:
+        if str(row.get("family_id")) != "ALL":
+            continue
+        value = to_float(row.get("avg_forward_return"))
+        if value is None:
+            continue
+        horizon = int(to_float(row.get("horizon_days"), 0) or 0)
+        if horizon <= 0:
+            continue
+        series[f"{horizon}日"].append((str(row.get("period")), value))
+    return {name: sorted(points) for name, points in sorted(series.items(), key=lambda item: int(item[0].replace("日", "")))}
+
+
 def generate_charts(
     universe: list[dict[str, Any]],
     metrics: dict[str, Any],
@@ -1341,6 +1549,9 @@ def generate_charts(
     tuning_model_rows: list[dict[str, Any]] | None = None,
     tuning_strategy_rows: list[dict[str, Any]] | None = None,
     related_stocks: list[dict[str, Any]] | None = None,
+    multi_scale_family_rows: list[dict[str, Any]] | None = None,
+    multi_scale_period_rows: list[dict[str, Any]] | None = None,
+    history_coverage_rows: list[dict[str, Any]] | None = None,
 ) -> dict[str, str]:
     charts_dir = REPORTS_DIR / "charts"
     charts_dir.mkdir(parents=True, exist_ok=True)
@@ -1375,7 +1586,7 @@ def generate_charts(
         ("调仓胜率", (backtest_metrics or {}).get("decision_win_rate")),
         ("跑赢基准率", (backtest_metrics or {}).get("benchmark_outperform_rate")),
         ("策略累计", (backtest_metrics or {}).get("strategy_cumulative_return")),
-        ("Top1均值", metrics.get("top1_mean_fwd_ret")),
+        ("Top1 均值", metrics.get("top1_mean_fwd_ret")),
         ("Top1-全池", metrics.get("top_vs_all")),
         ("Top-Bottom", metrics.get("top_bottom_spread")),
     ]
@@ -1452,6 +1663,56 @@ def generate_charts(
             value_kind="number",
         )
         chart_paths["related_stock_top_exposure"] = str(related_path)
+    if multi_scale_family_rows:
+        all_family_rows = [
+            row for row in multi_scale_family_rows
+            if str(row.get("family_id")) == "ALL" and to_float(row.get("avg_forward_return")) is not None
+        ]
+        all_family_rows.sort(key=lambda r: int(to_float(r.get("horizon_days"), 0) or 0))
+        if all_family_rows:
+            return_path = write_column_chart(
+                charts_dir / "multi_scale_horizon_return_lite.svg",
+                title="跨时间尺度：全池平均前瞻收益",
+                subtitle="按不同持有交易日 horizon 聚合全部候选 ETF 的历史前瞻收益。",
+                rows=[(f"{int(row.get('horizon_days'))}日", float(row.get("avg_forward_return") or 0.0)) for row in all_family_rows],
+                value_kind="pct",
+                width=1040,
+            )
+            win_path = write_column_chart(
+                charts_dir / "multi_scale_win_rate_lite.svg",
+                title="跨时间尺度：全池历史胜率",
+                subtitle="胜率=对应 horizon 前瞻收益大于 0 的样本占比。",
+                rows=[(f"{int(row.get('horizon_days'))}日", float(row.get("win_rate") or 0.0)) for row in all_family_rows],
+                value_kind="pct",
+                width=1040,
+            )
+            chart_paths["multi_scale_horizon_return"] = str(return_path)
+            chart_paths["multi_scale_win_rate"] = str(win_path)
+    if history_coverage_rows:
+        top_coverage = sorted(history_coverage_rows, key=lambda r: float(r.get("history_years") or 0.0), reverse=True)[:24]
+        coverage_path = write_horizontal_bar_chart(
+            charts_dir / "long_history_coverage_lite.svg",
+            title="长期历史数据覆盖年限",
+            subtitle="从本次长起点抓取后，各 ETF 可用日线历史的覆盖年数（受上市日期限制）。",
+            rows=[
+                (
+                    f"{row.get('code')} {row.get('name')}",
+                    float(row.get("history_years") or 0.0),
+                )
+                for row in top_coverage
+            ],
+            value_kind="number",
+        )
+        chart_paths["long_history_coverage"] = str(coverage_path)
+    if multi_scale_period_rows:
+        period_path = write_line_chart(
+            charts_dir / "multi_scale_period_return_lite.svg",
+            title="跨年份/跨周期平均前瞻收益",
+            subtitle="按日历年聚合全池 ETF 前瞻收益，展示不同 horizon 在市场阶段中的变化。",
+            series=_multi_scale_period_series(multi_scale_period_rows),
+            value_kind="pct",
+        )
+        chart_paths["multi_scale_period_return"] = str(period_path)
     return chart_paths
 
 
@@ -1469,6 +1730,8 @@ def write_summary(
     tuning_model_rows: list[dict[str, Any]] | None = None,
     tuning_strategy_rows: list[dict[str, Any]] | None = None,
     related_stocks: list[dict[str, Any]] | None = None,
+    multi_scale_family_rows: list[dict[str, Any]] | None = None,
+    history_coverage_rows: list[dict[str, Any]] | None = None,
 ) -> None:
     fam_counts: dict[str, int] = defaultdict(int)
     for row in universe:
@@ -1484,7 +1747,7 @@ def write_summary(
         "- 覆盖指数族：" + ", ".join(f"{k}({v})" for k, v in sorted(fam_counts.items())),
         "- 发现方式：扫描东方财富 ETF 行情/基金代码列表，并用中证/沪深宽基名称模式聚焦纯宽基产品。",
         "",
-        "|代码|名称|指数族|最新价|成交额|族内排名|",
+        "|代码 | 名称 | 指数族 | 最新价 | 成交额 | 族内排名|",
         "|---|---|---|---:|---:|---:|",
     ]
     for row in sorted(universe, key=lambda r: float(r.get("amount") or 0.0), reverse=True)[:12]:
@@ -1501,7 +1764,7 @@ def write_summary(
             f"- 模型：标准化特征 + 岭回归（纯 Python 线性方程求解）。",
             f"- 特征数量：{len(feature_cols)}",
             "",
-            "|指标|值|",
+            "|指标 | 值|",
             "|---|---:|",
         ]
     )
@@ -1515,7 +1778,63 @@ def write_summary(
     lines.extend(
         [
             "",
-            "## 3. 自动参数调优",
+            "## 3. 长历史与跨时间尺度分析",
+            "",
+        ]
+    )
+    all_scale_rows = [
+        row for row in (multi_scale_family_rows or [])
+        if str(row.get("family_id")) == "ALL" and to_float(row.get("avg_forward_return")) is not None
+    ]
+    all_scale_rows.sort(key=lambda r: int(to_float(r.get("horizon_days"), 0) or 0))
+    if all_scale_rows:
+        lines.append(
+            f"- 本次长历史请求区间：{metrics.get('requested_start')} 至 {metrics.get('requested_end')}；"
+            f"实际最早 ETF 日线：{metrics.get('long_history_start')}，最新：{metrics.get('long_history_end')}。"
+        )
+        lines.append(f"- 可用历史覆盖：最长 {to_float(metrics.get('long_history_max_years'), 0.0):.2f} 年；跨周期 horizon：{', '.join(str(h) for h in metrics.get('scale_horizons', []))} 个交易日。")
+        lines.append("- 统计口径：对每个 ETF 的所有重叠前瞻收益做描述统计；用于观察不同持有周期的历史胜率、波动和阶段变化。")
+        lines.append("")
+        lines.append("|持有周期|ETF 数 | 样本数 | 平均前瞻收益 | 中位数 | 胜率 | 波动 | 类 Sharpe|最佳 | 最差|")
+        lines.append("|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|")
+        for row in all_scale_rows:
+            lines.append(
+                f"|{row.get('horizon_days')}日|{row.get('etf_count')}|{row.get('observations')}|"
+                f"{fmt_pct(row.get('avg_forward_return'))}|{fmt_pct(row.get('median_forward_return'))}|"
+                f"{fmt_pct(row.get('win_rate'))}|{fmt_pct(row.get('volatility'))}|"
+                f"{to_float(row.get('sharpe_like'), 0.0):.4f}|{fmt_pct(row.get('best_forward_return'))}|{fmt_pct(row.get('worst_forward_return'))}|"
+            )
+        lines.append("")
+        lines.append("### 历史覆盖最长的 ETF")
+        lines.append("")
+        lines.append("|代码 | 名称 | 指数族 | 起始 | 截止 | 日线数 | 年限 | 全期收益 | 最大回撤|")
+        lines.append("|---|---|---|---|---|---:|---:|---:|---:|")
+        for row in (history_coverage_rows or [])[:12]:
+            lines.append(
+                f"|{row.get('code')}|{row.get('name')}|{row.get('family_id')}|{row.get('start_date')}|{row.get('end_date')}|"
+                f"{row.get('rows')}|{to_float(row.get('history_years'), 0.0):.2f}|{fmt_pct(row.get('full_period_return'))}|{fmt_pct(row.get('price_max_drawdown'))}|"
+            )
+        lines.append("")
+        lines.append("### 多尺度输出文件")
+        lines.append("")
+        lines.append("|文件 | 说明|")
+        lines.append("|---|---|")
+        output_labels = {
+            "history_coverage_path": "每只 ETF 的历史覆盖、全期收益和价格最大回撤",
+            "multi_scale_etf_metrics_path": "ETF × horizon 的收益/胜率/波动/回撤统计",
+            "multi_scale_family_metrics_path": "指数族/全池 × horizon 聚合统计",
+            "multi_scale_period_metrics_path": "年份 × 指数族 × horizon 的阶段统计",
+        }
+        for key, label in output_labels.items():
+            path_text = metrics.get(key)
+            if path_text:
+                lines.append(f"|`{path_text}`|{label}|")
+    else:
+        lines.append("- 本次未生成跨时间尺度统计。")
+    lines.extend(
+        [
+            "",
+            "## 4. 自动参数调优",
             "",
         ]
     )
@@ -1527,7 +1846,7 @@ def write_summary(
         lines.append("")
         lines.append("### L2 调优结果")
         lines.append("")
-        lines.append("|L2|验证分数|方向准确率|IC|Top1-全池|RMSE|")
+        lines.append("|L2|验证分数 | 方向准确率|IC|Top1-全池|RMSE|")
         lines.append("|---:|---:|---:|---:|---:|---:|")
         for row in (tuning_model_rows or [])[:20]:
             lines.append(
@@ -1537,7 +1856,7 @@ def write_summary(
         lines.append("")
         lines.append("### 策略参数 Top 结果")
         lines.append("")
-        lines.append("|TopK|最低预测|调优分数|交易胜率|跑赢基准率|累计收益|最大回撤|")
+        lines.append("|TopK|最低预测 | 调优分数 | 交易胜率 | 跑赢基准率 | 累计收益 | 最大回撤|")
         lines.append("|---:|---:|---:|---:|---:|---:|---:|")
         for row in sorted(tuning_strategy_rows or [], key=lambda r: float(r.get("score") or -1e18), reverse=True)[:12]:
             lines.append(
@@ -1550,7 +1869,7 @@ def write_summary(
     lines.extend(
         [
             "",
-            "## 4. 相关股票/成分股扩展",
+            "## 5. 相关股票/成分股扩展",
             "",
         ]
     )
@@ -1562,7 +1881,7 @@ def write_summary(
         lines.append("- 覆盖：" + ", ".join(f"{k}({v})" for k, v in sorted(family_counts.items())))
         lines.append("- 数据源：东方财富指数成分股数据；有权重字段时按权重排序，否则按自由流通市值排序。")
         lines.append("")
-        lines.append("|指数族|排名|股票代码|股票名称|行业|权重|自由流通市值|涨跌幅|PE|")
+        lines.append("|指数族 | 排名 | 股票代码 | 股票名称 | 行业 | 权重 | 自由流通市值 | 涨跌幅|PE|")
         lines.append("|---|---:|---|---|---|---:|---:|---:|---:|")
         for row in related_stocks[:30]:
             lines.append(
@@ -1576,13 +1895,13 @@ def write_summary(
     lines.extend(
         [
             "",
-            "## 5. 历史/未来数据集拆分",
+            "## 6. 历史/未来数据集拆分",
             "",
             f"- 历史有标签数据：{metrics.get('historical_rows')} 行，可用于训练、验证和回测。",
             f"- 训练集：{metrics.get('train_rows')} 行；测试/回测集：{metrics.get('test_rows')} 行。",
             f"- 未来未标注数据：{metrics.get('future_rows')} 行，目标收益尚未发生，只用于推理和生成买入信号。",
             "",
-            "|数据集|用途|文件|",
+            "|数据集 | 用途 | 文件|",
             "|---|---|---|",
         ]
     )
@@ -1600,7 +1919,7 @@ def write_summary(
     lines.extend(
         [
             "",
-            "## 6. 购买策略与回测",
+            "## 7. 购买策略与回测",
             "",
         ]
     )
@@ -1611,7 +1930,7 @@ def write_summary(
         lines.append("")
         lines.append("### 当前买入信号")
         lines.append("")
-        lines.append("|动作|日期|代码|名称|指数族|仓位|预测未来收益|理由|")
+        lines.append("|动作 | 日期 | 代码 | 名称 | 指数族 | 仓位 | 预测未来收益 | 理由|")
         lines.append("|---|---|---|---|---|---:|---:|---|")
         for row in (buy_signals or [])[:12]:
             lines.append(
@@ -1622,7 +1941,7 @@ def write_summary(
         lines.append("")
         lines.append("### 回测指标")
         lines.append("")
-        lines.append("|指标|值|")
+        lines.append("|指标 | 值|")
         lines.append("|---|---:|")
         for key in [
             "decision_count",
@@ -1652,7 +1971,7 @@ def write_summary(
     lines.extend(
         [
             "",
-            "## 7. 图表结果",
+            "## 8. 图表结果",
             "",
         ]
     )
@@ -1661,11 +1980,15 @@ def write_summary(
             ("最新预测排序图", chart_paths.get("latest_prediction_rank")),
             ("候选指数族覆盖图", chart_paths.get("candidate_family_counts")),
             ("验证指标快照图", chart_paths.get("holdout_metric_snapshot")),
-            ("Holdout累计曲线", chart_paths.get("holdout_cumulative")),
+            ("Holdout 累计曲线", chart_paths.get("holdout_cumulative")),
             ("购买策略回测累计曲线", chart_paths.get("strategy_backtest_cumulative")),
             ("模型参数调优图", chart_paths.get("model_l2_tuning")),
             ("策略参数调优图", chart_paths.get("strategy_parameter_tuning")),
             ("相关股票暴露图", chart_paths.get("related_stock_top_exposure")),
+            ("跨周期平均收益图", chart_paths.get("multi_scale_horizon_return")),
+            ("跨周期胜率图", chart_paths.get("multi_scale_win_rate")),
+            ("长期历史覆盖图", chart_paths.get("long_history_coverage")),
+            ("跨年份周期收益图", chart_paths.get("multi_scale_period_return")),
         ]
         for title, path_text in chart_items:
             if path_text:
@@ -1678,9 +2001,9 @@ def write_summary(
         lines.append("")
     lines.extend(
         [
-            "## 8. 最新预测排序",
+            "## 9. 最新预测排序",
             "",
-            "|排名|日期|代码|名称|指数族|收盘价|预测未来收益|近5日|近20日|20日波动|20日回撤|",
+            "|排名 | 日期 | 代码 | 名称 | 指数族 | 收盘价 | 预测未来收益 | 近 5 日 | 近 20 日|20 日波动|20 日回撤|",
             "|---:|---|---|---|---|---:|---:|---:|---:|---:|---:|",
         ]
     )
@@ -1718,6 +2041,7 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--strategy-min-pred", type=float, default=0.0, help="Minimum predicted forward return required for a BUY signal.")
     p.add_argument("--round-trip-cost-bps", type=float, default=10.0, help="Round-trip trading cost/slippage in basis points.")
     p.add_argument("--related-stocks-per-index", type=int, default=30, help="Fetch top N related/component stocks per broad-index family.")
+    p.add_argument("--scale-horizons", default="5,20,60,120,250", help="Comma-separated holding horizons for long-history multi-scale analysis.")
     p.add_argument("--model-out", default=str(MODELS_DIR / "csi_broad_etf_model_lite.pkl"))
     return p
 
@@ -1725,6 +2049,10 @@ def build_parser() -> argparse.ArgumentParser:
 def main(argv: list[str] | None = None) -> None:
     ensure_dirs()
     args = build_parser().parse_args(argv)
+    scale_horizons = [h for h in parse_int_grid(args.scale_horizons) if h > 0]
+    if args.horizon not in scale_horizons:
+        scale_horizons.append(args.horizon)
+    scale_horizons = sorted(set(scale_horizons)) or [args.horizon]
     universe = discover_universe(args.max_etfs_per_index, args.min_amount, args.include_enhanced, args.include_style, args.force)
     write_csv_rows(REPORTS_DIR / "latest_candidates_lite.csv", universe)
     related_stocks: list[dict[str, Any]] = []
@@ -1746,6 +2074,17 @@ def main(argv: list[str] | None = None) -> None:
         (RAW_DIR / "history_errors_lite.json").write_text(json.dumps(errors, ensure_ascii=False, indent=2), encoding="utf-8")
     if not histories:
         raise RuntimeError("No histories fetched; cannot train")
+    multi_scale = build_multi_scale_analysis(histories, universe, scale_horizons)
+    multi_scale_paths = {
+        "history_coverage_path": str(REPORTS_DIR / "long_history_coverage_lite.csv"),
+        "multi_scale_etf_metrics_path": str(REPORTS_DIR / "multi_scale_etf_metrics_lite.csv"),
+        "multi_scale_family_metrics_path": str(REPORTS_DIR / "multi_scale_family_metrics_lite.csv"),
+        "multi_scale_period_metrics_path": str(REPORTS_DIR / "multi_scale_period_metrics_lite.csv"),
+    }
+    write_csv_rows(Path(multi_scale_paths["history_coverage_path"]), multi_scale["coverage"])
+    write_csv_rows(Path(multi_scale_paths["multi_scale_etf_metrics_path"]), multi_scale["etf_metrics"])
+    write_csv_rows(Path(multi_scale_paths["multi_scale_family_metrics_path"]), multi_scale["family_metrics"])
+    write_csv_rows(Path(multi_scale_paths["multi_scale_period_metrics_path"]), multi_scale["period_metrics"])
     panel, feature_cols, target_col = build_panel(histories, universe, args.horizon)
     write_csv_rows(PROCESSED_DIR / "training_panel_lite.csv", panel)
     train, test, split_date = time_split(panel, target_col, args.test_days)
@@ -1813,6 +2152,18 @@ def main(argv: list[str] | None = None) -> None:
             "strategy_tuning_path": str(REPORTS_DIR / "strategy_parameter_tuning_lite.csv") if tuning_strategy_rows else "",
             "related_stocks_path": str(REPORTS_DIR / "related_stocks_lite.csv") if related_stocks else "",
             "related_stock_count": len(related_stocks),
+            "requested_start": args.start,
+            "requested_end": args.end,
+            "scale_horizons": scale_horizons,
+            "long_history_start": min((str(row.get("start_date")) for row in multi_scale["coverage"]), default=""),
+            "long_history_end": max((str(row.get("end_date")) for row in multi_scale["coverage"]), default=""),
+            "long_history_max_years": max((to_float(row.get("history_years"), 0.0) or 0.0 for row in multi_scale["coverage"]), default=0.0),
+            "long_history_min_years": min((to_float(row.get("history_years"), 0.0) or 0.0 for row in multi_scale["coverage"]), default=0.0),
+            "long_history_coverage_count": len(multi_scale["coverage"]),
+            "multi_scale_etf_metric_rows": len(multi_scale["etf_metrics"]),
+            "multi_scale_family_metric_rows": len(multi_scale["family_metrics"]),
+            "multi_scale_period_metric_rows": len(multi_scale["period_metrics"]),
+            **multi_scale_paths,
         }
     )
     preds = latest_predictions(panel, model, args.horizon)
@@ -1846,6 +2197,9 @@ def main(argv: list[str] | None = None) -> None:
         tuning_model_rows=tuning_model_rows,
         tuning_strategy_rows=tuning_strategy_rows,
         related_stocks=related_stocks,
+        multi_scale_family_rows=multi_scale["family_metrics"],
+        multi_scale_period_rows=multi_scale["period_metrics"],
+        history_coverage_rows=multi_scale["coverage"],
     )
     metrics["chart_paths"] = chart_paths
     (REPORTS_DIR / "training_metrics_lite.json").write_text(json.dumps(metrics, ensure_ascii=False, indent=2, default=str), encoding="utf-8")
@@ -1863,6 +2217,8 @@ def main(argv: list[str] | None = None) -> None:
         tuning_model_rows,
         tuning_strategy_rows,
         related_stocks,
+        multi_scale["family_metrics"],
+        multi_scale["coverage"],
     )
     artifact = {
         "model": model,
@@ -1871,6 +2227,9 @@ def main(argv: list[str] | None = None) -> None:
         "related_stocks": related_stocks,
         "buy_signals": buy_signals,
         "backtest_metrics": backtest_metrics,
+        "multi_scale_paths": multi_scale_paths,
+        "history_coverage": multi_scale["coverage"],
+        "multi_scale_family_metrics": multi_scale["family_metrics"],
         "tuning_best": tuning_best,
         "created_at": dt.datetime.now().isoformat(timespec="seconds"),
     }
@@ -1879,17 +2238,19 @@ def main(argv: list[str] | None = None) -> None:
     with model_path.open("wb") as fh:
         pickle.dump(artifact, fh)
     print(json.dumps(metrics, ensure_ascii=False, indent=2, default=str))
-    print(f"\n轻量模型已保存: {model_path}")
-    print(f"候选池: {REPORTS_DIR / 'latest_candidates_lite.csv'}")
-    print(f"最新预测: {REPORTS_DIR / 'latest_predictions_lite.csv'}")
-    print(f"买入信号: {REPORTS_DIR / 'buy_signals_lite.csv'}")
-    print(f"策略回测: {REPORTS_DIR / 'strategy_backtest_daily_lite.csv'}")
+    print(f"\n轻量模型已保存：{model_path}")
+    print(f"候选池：{REPORTS_DIR / 'latest_candidates_lite.csv'}")
+    print(f"最新预测：{REPORTS_DIR / 'latest_predictions_lite.csv'}")
+    print(f"买入信号：{REPORTS_DIR / 'buy_signals_lite.csv'}")
+    print(f"策略回测：{REPORTS_DIR / 'strategy_backtest_daily_lite.csv'}")
+    print(f"长历史覆盖：{REPORTS_DIR / 'long_history_coverage_lite.csv'}")
+    print(f"跨时间尺度：{REPORTS_DIR / 'multi_scale_family_metrics_lite.csv'}")
     if related_stocks:
-        print(f"相关股票: {REPORTS_DIR / 'related_stocks_lite.csv'}")
+        print(f"相关股票：{REPORTS_DIR / 'related_stocks_lite.csv'}")
     if tuning_best:
-        print(f"自动调参: L2={effective_l2}, TopK={effective_strategy_top_k}, min_pred={effective_strategy_min_pred:.4f}")
-    print(f"报告: {REPORTS_DIR / 'training_summary_lite.md'}")
-    print(f"图表目录: {REPORTS_DIR / 'charts'}")
+        print(f"自动调参：L2={effective_l2}, TopK={effective_strategy_top_k}, min_pred={effective_strategy_min_pred:.4f}")
+    print(f"报告：{REPORTS_DIR / 'training_summary_lite.md'}")
+    print(f"图表目录：{REPORTS_DIR / 'charts'}")
 
 
 if __name__ == "__main__":

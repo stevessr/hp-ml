@@ -1,7 +1,7 @@
 PY ?= .venv/bin/python
 PIP ?= .venv/bin/pip
 
-.PHONY: setup discover train train-lite quick quick-lite clean
+.PHONY: setup discover train train-lite long-lite quick quick-lite clean
 
 setup:
 	$(PY) -m pip install -U pip wheel setuptools
@@ -15,6 +15,9 @@ train:
 
 train-lite:
 	$(PY) -m hp_ml.lite_train --start 20180101 --max-etfs-per-index 3 --horizon 5 --test-days 252
+
+long-lite:
+	$(PY) -m hp_ml.lite_train --start 20050101 --max-etfs-per-index 5 --horizon 5 --test-days 504 --scale-horizons 5,20,60,120,250 --related-stocks-per-index 30
 
 quick:
 	$(PY) -m hp_ml.train --start 20230101 --max-etfs-per-index 2 --horizon 5 --test-days 120
