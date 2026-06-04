@@ -60,6 +60,21 @@ def today_yyyymmdd() -> str:
     return dt.date.today().strftime("%Y%m%d")
 
 
+def latest_cache_path(pattern: str, *, exclude: Path | None = None) -> Path | None:
+    """Return the newest cache matching ``pattern`` under ``RAW_DIR``.
+
+    This keeps discovery usable when a live catalogue endpoint is temporarily
+    unavailable but a recent snapshot already exists locally.
+    """
+
+    candidates = sorted(RAW_DIR.glob(pattern), reverse=True)
+    for path in candidates:
+        if exclude is not None and path == exclude:
+            continue
+        return path
+    return None
+
+
 def make_session() -> requests.Session:
     session = requests.Session()
     retry = Retry(
@@ -113,24 +128,48 @@ def fetch_etf_spot(force: bool = False, cache_path: Path | None = None) -> pd.Da
     if cache_path.exists() and not force:
         return pd.read_csv(cache_path, dtype={"code": str})
 
-    session = make_session()
-    params = {
-        "pn": 1,
-        "pz": 10000,
-        "po": 1,
-        "np": 1,
-        "fltt": 2,
-        "invt": 2,
-        "fid": "f6",  # sort by amount to make top liquidity visible
-        # Eastmoney ETF boards. This fs expression is also used by common public
-        # ETF quote examples and currently returns all listed ETFs.
-        "fs": "b:MK0021,b:MK0022,b:MK0023,b:MK0024",
-        "fields": ",".join(SPOT_FIELDS.keys()),
-    }
-    payload = _get_json(session, EASTMONEY_ETF_LIST_URL, params=params)
-    rows = (payload.get("data") or {}).get("diff") or []
-    if not rows:
-        raise RuntimeError("Eastmoney ETF spot endpoint returned no rows")
+    try:
+        session = make_session()
+        page_size = 100
+        params = {
+            "pn": 1,
+            "pz": page_size,
+            "po": 1,
+            "np": 1,
+            "fltt": 2,
+            "invt": 2,
+            "fid": "f6",  # sort by amount to make top liquidity visible
+            # Eastmoney ETF boards. This fs expression is also used by common
+            # public ETF quote examples and currently returns listed ETFs.
+            "fs": "b:MK0021,b:MK0022,b:MK0023,b:MK0024",
+            "fields": ",".join(SPOT_FIELDS.keys()),
+        }
+        rows: list[dict[str, Any]] = []
+        total: int | None = None
+        page = 1
+        while True:
+            params["pn"] = page
+            payload = _get_json(session, EASTMONEY_ETF_LIST_URL, params=params)
+            data = payload.get("data") or {}
+            page_rows = data.get("diff") or []
+            if total is None:
+                raw_total = data.get("total")
+                total = int(raw_total) if raw_total is not None else None
+            if not page_rows:
+                break
+            rows.extend(page_rows)
+            if total is not None and len(rows) >= total:
+                break
+            if len(page_rows) < page_size:
+                break
+            page += 1
+        if not rows:
+            raise RuntimeError("Eastmoney ETF spot endpoint returned no rows")
+    except Exception:
+        latest = None if force else latest_cache_path("etf_spot_*.csv", exclude=cache_path)
+        if latest is not None:
+            return pd.read_csv(latest, dtype={"code": str})
+        raise
 
     df = pd.DataFrame(rows).rename(columns=SPOT_FIELDS)
     keep_cols = list(SPOT_FIELDS.values())
@@ -155,10 +194,16 @@ def fetch_fundcode_search(force: bool = False, cache_path: Path | None = None) -
     if cache_path.exists() and not force:
         return pd.read_csv(cache_path, dtype={"code": str})
 
-    session = make_session()
-    response = session.get(EASTMONEY_FUND_CODE_SEARCH_URL, timeout=30)
-    response.raise_for_status()
-    text = response.content.decode("utf-8-sig", "ignore")
+    try:
+        session = make_session()
+        response = session.get(EASTMONEY_FUND_CODE_SEARCH_URL, timeout=30)
+        response.raise_for_status()
+        text = response.content.decode("utf-8-sig", "ignore")
+    except Exception:
+        latest = None if force else latest_cache_path("fundcode_search_*.csv", exclude=cache_path)
+        if latest is not None:
+            return pd.read_csv(latest, dtype={"code": str})
+        raise
     left = text.find("[[")
     right = text.rfind("]]")
     if left < 0 or right < left:

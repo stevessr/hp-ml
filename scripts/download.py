@@ -10,6 +10,9 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
+from hp_ml.data_sources import fetch_etf_history  # noqa: E402
+from hp_ml.universe import discover_broad_etfs  # noqa: E402
+
 DEFAULT_START_DATE = "20050101"
 DEFAULT_END_DATE = "20260603"
 DEFAULT_ADJUST = "qfq"

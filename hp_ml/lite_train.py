@@ -49,7 +49,7 @@ INDEX_COMPONENT_TYPE_MAP = {
     "CSI_800": ("1", "3"),  # 中证 800 ~= 沪深 300 + 中证 500
     "CSI_A500": ("6",),
     "CSI_A50": ("8",),
-    "CSI_100": ("12",),
+    "CSI_A100": ("12",),
 }
 LIQUIDITY_HINTS = {
     "510300": 100, "510310": 96, "510330": 92, "159919": 90, "510350": 82,
@@ -334,11 +334,27 @@ def discover_universe(
     try:
         spot = fetch_spot(force=force)
     except Exception:
-        try:
-            spot = fetch_fundcode_search(force=force)
-            source_name = "eastmoney_fundcode_search"
-        except Exception:
-            spot = []
+        spot = []
+    try:
+        catalog = fetch_fundcode_search(force=force)
+    except Exception:
+        catalog = []
+    if spot and catalog:
+        by_code: dict[str, dict[str, Any]] = {}
+        for item in catalog:
+            code = str(item.get("code", "")).zfill(6)
+            by_code[code] = dict(item)
+        for item in spot:
+            code = str(item.get("code", "")).zfill(6)
+            enriched = dict(by_code.get(code, {}))
+            enriched.update(item)
+            enriched["source"] = item.get("source") or "eastmoney_spot"
+            by_code[code] = enriched
+        spot = list(by_code.values())
+        source_name = "eastmoney_catalog"
+    elif catalog:
+        spot = catalog
+        source_name = "eastmoney_fundcode_search"
     family_meta = {family.family_id: family for family in BROAD_INDEX_FAMILIES}
     rows: list[dict[str, Any]] = []
     for item in spot:

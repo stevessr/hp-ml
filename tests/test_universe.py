@@ -6,17 +6,24 @@ def test_classifies_core_broad_names():
     assert classify_name("中证 500ETF 南方")[0] == "CSI_500"
     assert classify_name("中证 1000ETF 华夏")[0] == "CSI_1000"
     assert classify_name("中证 A500ETF 易方达")[0] == "CSI_A500"
+    assert classify_name("A50ETF 广发")[0] == "CSI_A50"
+    assert classify_name("A100ETF 华夏")[0] == "CSI_A100"
+    assert classify_name("中证 2000ETF 南方")[0] == "CSI_2000"
 
 
 def test_avoids_non_csi_generic_names():
     assert classify_name("国证 2000ETF 平安")[0] is None
     assert classify_name("深证 100ETF 富国")[0] is None
+    assert classify_name("民企 300ETF 前海开源")[0] is None
+    assert classify_name("沪港深 500ETF 富国")[0] is None
+    assert classify_name("南方中证全指农牧渔ETF")[0] is None
 
 
 def test_excludes_style_or_theme_by_default():
     assert "红利" in (excluded("中证 A500 红利低波 ETF", include_enhanced=False, include_style=False) or "")
     assert "科创" in (excluded("科创 50ETF", include_enhanced=False, include_style=False) or "")
     assert "现金流" in (excluded("自由现金流 800ETF", include_enhanced=False, include_style=False) or "")
+    assert "富时" in (excluded("富时 A50ETF", include_enhanced=False, include_style=False) or "")
 
 
 def test_excludes_enhanced_by_default():

@@ -33,7 +33,7 @@ class BroadIndexFamily:
 
 
 # Keep longer/more specific patterns before shorter ones to avoid e.g. A500
-# being classified as CSI_500.
+# being classified as CSI_500, or 中证2000 being classified as CSI_200.
 BROAD_INDEX_FAMILIES: tuple[BroadIndexFamily, ...] = (
     BroadIndexFamily(
         "CSI_A500",
@@ -50,18 +50,18 @@ BROAD_INDEX_FAMILIES: tuple[BroadIndexFamily, ...] = (
         "中证 A 系列大盘龙头宽基。",
     ),
     BroadIndexFamily(
+        "CSI_A100",
+        "中证A100",
+        "000903",
+        (r"中证\s*A?\s*100(?!0)", r"(?<![A-Z0-9])A\s*100\s*ETF", r"(?<![A-Z0-9])A100(?!0)"),
+        "中证 100 更名后的 A 系列核心龙头宽基。",
+    ),
+    BroadIndexFamily(
         "CSI_300",
         "沪深300",
         "000300",
-        (r"沪深\s*300", r"(?<![A-Z0-9])HS\s*300", r"(?<![A-Z0-9])300\s*ETF"),
+        (r"沪深\s*300", r"(?<![A-Z0-9])HS\s*300"),
         "沪深两市大盘核心资产宽基。",
-    ),
-    BroadIndexFamily(
-        "CSI_1000",
-        "中证1000",
-        "000852",
-        (r"中证\s*1000", r"(?<![A-Z0-9])1000\s*ETF"),
-        "剔除沪深300/中证500后的中小盘宽基。",
     ),
     BroadIndexFamily(
         "CSI_2000",
@@ -71,25 +71,60 @@ BROAD_INDEX_FAMILIES: tuple[BroadIndexFamily, ...] = (
         "更偏小微盘的宽基指数。",
     ),
     BroadIndexFamily(
+        "CSI_1000",
+        "中证1000",
+        "000852",
+        (r"中证\s*1000",),
+        "剔除沪深300/中证500后的中小盘宽基。",
+    ),
+    BroadIndexFamily(
         "CSI_800",
         "中证800",
         "000906",
-        (r"中证\s*800", r"(?<![A-Z0-9])800\s*ETF"),
+        (r"中证\s*800",),
         "沪深300与中证500合成的大中盘宽基。",
+    ),
+    BroadIndexFamily(
+        "CSI_700",
+        "中证700",
+        "000907",
+        (r"中证\s*700",),
+        "中证200与中证500合成的中小盘宽基。",
     ),
     BroadIndexFamily(
         "CSI_500",
         "中证500",
         "000905",
-        (r"中证\s*500", r"(?<![A-Z0-9])500\s*ETF"),
+        (r"中证\s*500",),
         "剔除沪深300后的中盘宽基。",
     ),
     BroadIndexFamily(
-        "CSI_100",
-        "中证100",
-        "000903",
-        (r"中证\s*100(?!0)",),
-        "大盘蓝筹宽基。",
+        "CSI_200",
+        "中证200",
+        "000904",
+        (r"中证\s*200(?!0)",),
+        "沪深300样本中排名101至300名的中盘宽基。",
+    ),
+    BroadIndexFamily(
+        "CSI_ALL_SHARE",
+        "中证全指",
+        "000985",
+        (r"中证\s*全指(?=\s*ETF|交易型|指数\s*ETF|$)",),
+        "覆盖沪深北市场符合条件股票和存托凭证的全市场宽基。",
+    ),
+    BroadIndexFamily(
+        "CSI_FREE_FLOAT",
+        "中证流通",
+        "000902",
+        (r"中证\s*流通",),
+        "覆盖沪深北市场符合条件 A 股和存托凭证的可流通宽基。",
+    ),
+    BroadIndexFamily(
+        "CSI_A_SHARE",
+        "中证A股",
+        "930903",
+        (r"中证\s*A\s*股",),
+        "覆盖沪深北市场符合条件 A 股的全市场宽基。",
     ),
 )
 
@@ -143,9 +178,13 @@ STYLE_OR_THEME_TERMS = (
     "科创",
     "创业板",
     "双创",
+    "沪港深",
     "港股",
     "香港",
     "海外",
+    "富时",
+    "MSCI",
+    "中国A50",
     "纳斯达克",
     "标普",
     "日经",
@@ -161,7 +200,7 @@ STYLE_OR_THEME_TERMS = (
     "货币",
 )
 
-ENHANCED_TERMS = ("增强", "指数增强", "增强策略")
+ENHANCED_TERMS = ("增强", "指数增强", "增强策略", "指增")
 
 # Fallback seeds are used only when the live ETF discovery endpoint is
 # unavailable.  They are deliberately small and liquid representatives; normal
@@ -175,4 +214,9 @@ FALLBACK_BROAD_ETF_SEEDS: tuple[dict[str, str], ...] = (
     {"code": "159845", "name": "中证1000ETF华夏", "family_id": "CSI_1000"},
     {"code": "563360", "name": "中证A500ETF华泰柏瑞", "family_id": "CSI_A500"},
     {"code": "159352", "name": "中证A500ETF", "family_id": "CSI_A500"},
+    {"code": "159136", "name": "中证A50ETF广发", "family_id": "CSI_A50"},
+    {"code": "159601", "name": "中证A50ETF华夏", "family_id": "CSI_A50"},
+    {"code": "159627", "name": "中证A100ETF华夏", "family_id": "CSI_A100"},
+    {"code": "159800", "name": "中证800ETF鹏华", "family_id": "CSI_800"},
+    {"code": "159531", "name": "中证2000ETF南方", "family_id": "CSI_2000"},
 )

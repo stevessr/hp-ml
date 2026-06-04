@@ -95,6 +95,50 @@ def fallback_universe() -> pd.DataFrame:
     return df
 
 
+def fetch_discovery_catalog(force: bool = False, allow_fallback: bool = True) -> pd.DataFrame:
+    """Return the broadest available ETF catalogue for universe discovery.
+
+    The live quote endpoint provides liquidity fields but may only expose the
+    most active page in some environments.  The fund-code search catalogue has
+    no live liquidity data, so it is used as an augmenter rather than only as a
+    hard fallback.  Duplicate codes keep the quote row when available.
+    """
+
+    frames: list[pd.DataFrame] = []
+    errors: list[str] = []
+
+    try:
+        spot = fetch_etf_spot(force=force).copy()
+        spot["source"] = spot.get("source", "eastmoney_spot")
+        frames.append(spot)
+    except Exception as exc:  # noqa: BLE001 - discovery can continue from catalogue cache
+        errors.append(f"eastmoney_spot: {exc}")
+
+    try:
+        catalog = fetch_fundcode_search(force=force).copy()
+        catalog["source"] = catalog.get("source", "eastmoney_fundcode_search")
+        frames.append(catalog)
+    except Exception as exc:  # noqa: BLE001 - quote endpoint may still be enough
+        errors.append(f"eastmoney_fundcode_search: {exc}")
+
+    if not frames:
+        if allow_fallback:
+            return fallback_universe()
+        raise RuntimeError("No ETF discovery catalogue available: " + "; ".join(errors))
+
+    df = pd.concat(frames, ignore_index=True, sort=False)
+    df["code"] = df["code"].astype(str).str.zfill(6)
+    for col in ("amount", "volume"):
+        if col not in df.columns:
+            df[col] = 0.0
+        df[col] = pd.to_numeric(df[col], errors="coerce").fillna(0.0)
+    df["_has_liquidity"] = (df["amount"] > 0) | (df["volume"] > 0)
+    df["_source_rank"] = np.where(df["source"].eq("eastmoney_spot"), 0, 1)
+    df = df.sort_values(["code", "_has_liquidity", "_source_rank"], ascending=[True, False, True])
+    df = df.drop_duplicates("code", keep="first").drop(columns=["_has_liquidity", "_source_rank"])
+    return df.reset_index(drop=True)
+
+
 def discover_broad_etfs(
     *,
     max_per_family: int | None = 3,
@@ -110,17 +154,7 @@ def discover_broad_etfs(
     family, filters non-pure products, then ranks by current turnover amount.
     """
 
-    try:
-        spot = fetch_etf_spot(force=force)
-        source = "eastmoney_spot"
-    except Exception:
-        try:
-            spot = fetch_fundcode_search(force=force)
-            source = "eastmoney_fundcode_search"
-        except Exception:
-            if not allow_fallback:
-                raise
-            return fallback_universe()
+    spot = fetch_discovery_catalog(force=force, allow_fallback=allow_fallback)
 
     rows = []
     for _, item in spot.iterrows():
@@ -140,7 +174,7 @@ def discover_broad_etfs(
                 "family_id": family_id,
                 "display_name": display_name,
                 "matched_pattern": pattern,
-                "source": source,
+                "source": item.get("source") or "eastmoney_catalog",
             }
         )
         rows.append(row)
