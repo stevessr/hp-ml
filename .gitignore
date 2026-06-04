@@ -6,7 +6,6 @@ __pycache__/
 .DS_Store
 data/raw/history/*.tmp
 models/*.tmp
-data
 reports
 docs
 
