@@ -23,6 +23,7 @@ dependencies = [
 [project.scripts]
 hp-ml-train = "hp_ml.train:main"
 hp-ml-discover = "hp_ml.discover:main"
+hp-ml-auto-tune = "hp_ml.auto_tune_baseline:main"
 
 [tool.setuptools]
 packages = ["hp_ml"]

@@ -18,6 +18,9 @@ make train
 
 # 更快的短历史 smoke run
 make quick
+
+# 滚动模型自动调优，搜索到策略累计收益超过等权 baseline 后输出报告
+make auto-beat-baseline
 ```
 
 也可以直接运行：
@@ -53,6 +56,8 @@ make quick
 - `reports/latest_predictions.csv`：最新日期每只候选 ETF 的模型预测排序。
 - `reports/buy_signals_lite.csv`：按购买策略生成的当前买入/空仓信号。
 - `reports/model_parameter_tuning_lite.csv` / `strategy_parameter_tuning_lite.csv`：自动参数调优明细。
+- `reports/ml_auto_tune_until_baseline.csv`：自动调优后跑赢等权 baseline 的逐日策略/基准曲线。
+- `reports/ml_auto_tune_trials.csv` / `ml_auto_tune_summary.json`：每组模型/策略参数的搜索结果与最佳配置摘要。
 - `reports/related_stocks_lite.csv`：每个宽基指数族对应的更多相关股票/指数成分股。
 - `reports/long_history_coverage_lite.csv`：长起点采集后每只 ETF 的实际历史覆盖、全期收益和最大回撤。
 - `reports/multi_scale_etf_metrics_lite.csv`：ETF × 持有周期的平均收益、胜率、波动、类 Sharpe、最佳/最差收益。
@@ -130,6 +135,21 @@ make quick
 - `reports/strategy_parameter_tuning_lite.csv`
 - `reports/charts/model_l2_tuning_lite.svg`
 - `reports/charts/strategy_parameter_tuning_lite.svg`
+
+### 自动调优直到超越 baseline
+
+如果目标是让模型直接根据历史数据搜索参数，直到策略累计收益超过等权 ETF baseline，可以运行：
+
+```bash
+.venv/bin/python -m hp_ml.auto_tune_baseline \
+  --data-dir data/topic2_broad_base \
+  --sentiment-path data/alternative_data/google_trends_sentiment.csv \
+  --start 2024-11-01 \
+  --end 2026-06-03 \
+  --max-model-configs 1
+```
+
+该命令会滚动训练 HGB 方向分类器，自动搜索 TopK、概率阈值、舆情熔断、趋势过滤和 EMA 调仓参数；当最佳配置的累计收益超过等权 baseline 时，写出逐日曲线、trial 明细和 JSON 摘要。
 
 ## 购买策略与回测
 
