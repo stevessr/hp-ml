@@ -1,7 +1,7 @@
 PY ?= .venv/bin/python
 PIP ?= .venv/bin/pip
 
-.PHONY: setup discover train train-lite auto-beat-baseline long-lite quick quick-lite clean
+.PHONY: setup discover train train-lite auto-beat-baseline long-lite export-tdx quick quick-lite clean
 
 setup:
 	$(PY) -m pip install -U pip wheel setuptools
@@ -21,6 +21,9 @@ auto-beat-baseline:
 
 long-lite:
 	$(PY) -m hp_ml.lite_train --start 20050101 --max-etfs-per-index 5 --horizon 5 --test-days 504 --scale-horizons 5,20,60,120,250 --related-stocks-per-index 30
+
+export-tdx:
+	$(PY) -m hp_ml.export_tdx --model models/csi_broad_etf_model_lite.pkl --out reports/tdx_formulas --all-families
 
 quick:
 	$(PY) -m hp_ml.train --start 20230101 --max-etfs-per-index 2 --horizon 5 --test-days 120

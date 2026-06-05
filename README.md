@@ -21,6 +21,9 @@ make quick
 
 # 滚动模型自动调优，搜索到策略累计收益超过等权 baseline 后输出报告
 make auto-beat-baseline
+
+# 将轻量 Ridge 模型导出为通达信公式文本
+make export-tdx
 ```
 
 也可以直接运行：
@@ -69,6 +72,7 @@ make auto-beat-baseline
 - `reports/training_metrics.json`：机器可读训练指标。
 - `reports/training_summary.md`：中文训练摘要报告。
 - `reports/charts/*.svg`：预测排序、指数族覆盖、验证指标、holdout 累计曲线、自动调参和相关股票暴露图。
+- `reports/tdx_formulas/*.tdx`：按指数族导出的通达信公式文本，可复制到通达信公式编辑器。
 
 ## 常用参数
 
@@ -207,3 +211,37 @@ make train-lite
 ```
 
 备用流水线同样会自动发现 ETF、拉取历史 K 线、生成特征、训练岭回归模型，并输出 `reports/*_lite.*`、`reports/charts/*_lite.svg` 和 `models/csi_broad_etf_model_lite.pkl`。
+
+## 导出通达信公式
+
+通达信公式语言适合表达线性指标，所以当前导出命令支持：
+
+- `hp_ml.lite_train` 保存的纯 Python Ridge 模型：`models/csi_broad_etf_model_lite.pkl`
+- `hp_ml.train --model ridge` 保存的 sklearn Ridge 模型
+
+非线性的 HGB / 随机森林模型不会被静默近似导出；如需通达信公式，请先训练 Ridge 模型。
+
+批量为模型里的每个 `family_*` 指数族导出一份公式：
+
+```bash
+.venv/bin/python -m hp_ml.export_tdx \
+  --model models/csi_broad_etf_model_lite.pkl \
+  --out reports/tdx_formulas \
+  --all-families
+```
+
+只导出某个指数族：
+
+```bash
+.venv/bin/python -m hp_ml.export_tdx \
+  --model models/csi_broad_etf_model_lite.pkl \
+  --family-id CSI_300 \
+  --out reports/hp_ml_csi300.tdx
+```
+
+生成的公式包含两个输出：
+
+- `HPMLSCORE`：模型预测的未来 `--horizon` 日收益分数。
+- `HPMLBUY`：`HPMLSCORE > --signal-threshold` 时为 1，否则为 0。
+
+如果旧版通达信导入中文注释乱码，可以加 `--encoding gbk` 重新导出。ETF 换手率在公式中用 `VOL/CAPITAL*100` 近似，`days_since_start` 用 `BARSCOUNT(CLOSE)-1` 近似，导出文件中也会保留这些说明。
