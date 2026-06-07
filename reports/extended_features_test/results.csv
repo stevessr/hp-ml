@@ -1,0 +1,2 @@
+model,num_features,accuracy,ic,rmse
+Multi-Scale LSTM (67 features),60,0.6897435897435897,0.4132505375909051,0.02815295781219498
