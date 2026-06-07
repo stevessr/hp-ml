@@ -1,7 +1,7 @@
 PY ?= .venv/bin/python
 PIP ?= .venv/bin/pip
 
-.PHONY: setup discover train train-lite train-multi auto-beat-baseline long-lite stock-deep-dive export-tdx quick quick-lite clean
+.PHONY: setup discover train train-lite train-multi train-advanced auto-evolve auto-beat-baseline long-lite stock-deep-dive export-tdx quick quick-lite clean
 
 setup:
 	$(PY) -m pip install -U pip wheel setuptools
@@ -18,6 +18,12 @@ train-lite:
 
 train-multi:
 	$(PY) -m hp_ml.multi_model_train --start 20200101 --models ridge hgb enhanced_rf --horizon 5 --top-k 3
+
+train-advanced:
+	$(PY) -m hp_ml.advanced_train --start 20200101 --base-models ridge hgb rf --enable-auto-tuning --enable-ensemble --enable-feature-learning
+
+auto-evolve:
+	$(PY) scripts/auto_evolve.py --goal "提升夏普比率至1.5以上" --max-iterations 5
 
 test-multi:
 	$(PY) scripts/test_multi_model.py

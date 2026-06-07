@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="472" viewBox="0 0 1120 472" role="img">
+<style>
+  text { font-family: 'Noto Sans CJK SC','Microsoft YaHei','PingFang SC','WenQuanYi Micro Hei',Arial,sans-serif; fill: #0f172a; }
+  .title { font-size: 24px; font-weight: 800; }
+  .subtitle { font-size: 13px; fill: #64748b; }
+  .label { font-size: 12px; fill: #0f172a; }
+  .muted { font-size: 11px; fill: #64748b; }
+  .axis { stroke: #e2e8f0; stroke-width: 1; }
+</style>
+<rect width="100%" height="100%" fill="#f8fafc"/>
+<rect x="14" y="14" width="1092" height="444" rx="18" fill="#ffffff"/>
+<text x="42" y="52" class="title">002281 光迅科技 十大流通股东占比</text>
+<text x="42" y="76" class="subtitle">东方财富股东分析口径；按排名展示最新报告期前十大股东占比。</text>
+<line x1="320.3" y1="80" x2="320.3" y2="446" stroke="#64748b" stroke-width="1.2" stroke-dasharray="4 4"/>
+<line x1="270.0" y1="82" x2="270.0" y2="444" class="axis"/>
+<text x="270.0" y="466" text-anchor="middle" class="muted">-2.99%</text>
+<line x1="320.3" y1="82" x2="320.3" y2="444" class="axis"/>
+<text x="320.3" y="466" text-anchor="middle" class="muted">0.00%</text>
+<line x1="1000.0" y1="82" x2="1000.0" y2="444" class="axis"/>
+<text x="1000.0" y="466" text-anchor="middle" class="muted">40.36%</text>
+<text x="42" y="116" class="label">1 烽火科技集团有限公司</text>
+<rect x="320.3" y="101" width="629.3" height="18" rx="5" fill="#7c3aed" opacity="0.88"/>
+<text x="956.7" y="116" text-anchor="start" class="label">37.37%</text>
+<text x="42" y="150" class="label">2 国新投资有限公司</text>
+<rect x="320.3" y="135" width="62.9" height="18" rx="5" fill="#7c3aed" opacity="0.88"/>
+<text x="390.2" y="150" text-anchor="start" class="label">3.74%</text>
+<text x="42" y="184" class="label">3 中国信息通信科技集团有限公司</text>
+<rect x="320.3" y="169" width="36.6" height="18" rx="5" fill="#7c3aed" opacity="0.88"/>
+<text x="364.0" y="184" text-anchor="start" class="label">2.17%</text>
+<text x="42" y="218" class="label">4 香港中央结算有限公司</text>
+<rect x="320.3" y="203" width="32.1" height="18" rx="5" fill="#7c3aed" opacity="0.88"/>
+<text x="359.4" y="218" text-anchor="start" class="label">1.91%</text>
+<text x="42" y="252" class="label">5 卜浩文</text>
+<rect x="320.3" y="237" width="9.6" height="18" rx="5" fill="#7c3aed" opacity="0.88"/>
+<text x="336.9" y="252" text-anchor="start" class="label">0.57%</text>
+<text x="42" y="286" class="label">6 中国工商银行股份有限公司-易方达中证人工智能主题交易型开放式指数</text>
+<rect x="320.3" y="271" width="9.3" height="18" rx="5" fill="#7c3aed" opacity="0.88"/>
+<text x="336.6" y="286" text-anchor="start" class="label">0.55%</text>
+<text x="42" y="320" class="label">7 中国工商银行股份有限公司-国泰中证全指通信设备交易型开放式指数证</text>
+<rect x="320.3" y="305" width="7.7" height="18" rx="5" fill="#7c3aed" opacity="0.88"/>
+<text x="335.1" y="320" text-anchor="start" class="label">0.46%</text>
+<text x="42" y="354" class="label">8 中国农业银行股份有限公司-中证500交易型开放式指数证券投资基金</text>
+<rect x="320.3" y="339" width="7.6" height="18" rx="5" fill="#7c3aed" opacity="0.88"/>
+<text x="335.0" y="354" text-anchor="start" class="label">0.45%</text>
+<text x="42" y="388" class="label">9 全国社保基金五零二组合</text>
+<rect x="320.3" y="373" width="6.9" height="18" rx="5" fill="#7c3aed" opacity="0.88"/>
+<text x="334.3" y="388" text-anchor="start" class="label">0.41%</text>
+<text x="42" y="422" class="label">10 上海浦东发展银行股份有限公司-永赢数字经济智选混合型发起式证券</text>
+<rect x="320.3" y="407" width="5.4" height="18" rx="5" fill="#7c3aed" opacity="0.88"/>
+<text x="332.8" y="422" text-anchor="start" class="label">0.32%</text>
+</svg>

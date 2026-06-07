@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="472" viewBox="0 0 1120 472" role="img">
+<style>
+  text { font-family: 'Noto Sans CJK SC','Microsoft YaHei','PingFang SC','WenQuanYi Micro Hei',Arial,sans-serif; fill: #0f172a; }
+  .title { font-size: 24px; font-weight: 800; }
+  .subtitle { font-size: 13px; fill: #64748b; }
+  .label { font-size: 12px; fill: #0f172a; }
+  .muted { font-size: 11px; fill: #64748b; }
+  .axis { stroke: #e2e8f0; stroke-width: 1; }
+</style>
+<rect width="100%" height="100%" fill="#f8fafc"/>
+<rect x="14" y="14" width="1092" height="444" rx="18" fill="#ffffff"/>
+<text x="42" y="52" class="title">688525 佰维存储 十大流通股东占比</text>
+<text x="42" y="76" class="subtitle">东方财富股东分析口径；按排名展示最新报告期前十大股东占比。</text>
+<line x1="320.3" y1="80" x2="320.3" y2="446" stroke="#64748b" stroke-width="1.2" stroke-dasharray="4 4"/>
+<line x1="270.0" y1="82" x2="270.0" y2="444" class="axis"/>
+<text x="270.0" y="466" text-anchor="middle" class="muted">-1.42%</text>
+<line x1="320.3" y1="82" x2="320.3" y2="444" class="axis"/>
+<text x="320.3" y="466" text-anchor="middle" class="muted">0.00%</text>
+<line x1="1000.0" y1="82" x2="1000.0" y2="444" class="axis"/>
+<text x="1000.0" y="466" text-anchor="middle" class="muted">19.19%</text>
+<text x="42" y="116" class="label">1 孙成思</text>
+<rect x="320.3" y="101" width="629.3" height="18" rx="5" fill="#7c3aed" opacity="0.88"/>
+<text x="956.7" y="116" text-anchor="start" class="label">17.77%</text>
+<text x="42" y="150" class="label">2 华芯投资管理有限责任公司-国家集成电路产业投资基金二期股份有限公</text>
+<rect x="320.3" y="135" width="193.6" height="18" rx="5" fill="#7c3aed" opacity="0.88"/>
+<text x="520.9" y="150" text-anchor="start" class="label">5.47%</text>
+<text x="42" y="184" class="label">3 招商银行股份有限公司-华夏上证科创板50成份交易型开放式指数证券</text>
+<rect x="320.3" y="169" width="85.0" height="18" rx="5" fill="#7c3aed" opacity="0.88"/>
+<text x="412.3" y="184" text-anchor="start" class="label">2.40%</text>
+<text x="42" y="218" class="label">4 佰泰(深圳)企业管理咨询合伙企业(有限合伙)</text>
+<rect x="320.3" y="203" width="60.2" height="18" rx="5" fill="#7c3aed" opacity="0.88"/>
+<text x="387.5" y="218" text-anchor="start" class="label">1.70%</text>
+<text x="42" y="252" class="label">5 香港中央结算有限公司</text>
+<rect x="320.3" y="237" width="54.0" height="18" rx="5" fill="#7c3aed" opacity="0.88"/>
+<text x="381.4" y="252" text-anchor="start" class="label">1.53%</text>
+<text x="42" y="286" class="label">6 中信银行股份有限公司-永赢先锋半导体智选混合型发起式证券投资基金</text>
+<rect x="320.3" y="271" width="52.7" height="18" rx="5" fill="#7c3aed" opacity="0.88"/>
+<text x="380.0" y="286" text-anchor="start" class="label">1.49%</text>
+<text x="42" y="320" class="label">7 中信证券股份有限公司-嘉实上证科创板芯片交易型开放式指数证券投资</text>
+<rect x="320.3" y="305" width="51.6" height="18" rx="5" fill="#7c3aed" opacity="0.88"/>
+<text x="378.9" y="320" text-anchor="start" class="label">1.46%</text>
+<text x="42" y="354" class="label">8 中国工商银行股份有限公司-易方达上证科创板50成份交易型开放式指</text>
+<rect x="320.3" y="339" width="46.3" height="18" rx="5" fill="#7c3aed" opacity="0.88"/>
+<text x="373.7" y="354" text-anchor="start" class="label">1.31%</text>
+<text x="42" y="388" class="label">9 徐健峰</text>
+<rect x="320.3" y="373" width="45.5" height="18" rx="5" fill="#7c3aed" opacity="0.88"/>
+<text x="372.8" y="388" text-anchor="start" class="label">1.28%</text>
+<text x="42" y="422" class="label">10 深圳方泰来企业管理合伙企业(有限合伙)</text>
+<rect x="320.3" y="407" width="39.1" height="18" rx="5" fill="#7c3aed" opacity="0.88"/>
+<text x="366.5" y="422" text-anchor="start" class="label">1.10%</text>
+</svg>

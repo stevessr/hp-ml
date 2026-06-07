@@ -452,8 +452,11 @@ def fetch_stock_spot_by_codes(codes: list[str], *, force: bool = False) -> pd.Da
     if cache_path.exists() and not force:
         cached = pd.read_csv(cache_path, dtype={"stock_code": str})
         cached["stock_code"] = cached["stock_code"].astype(str).str.zfill(6)
-        if code_set.issubset(set(cached["stock_code"])):
-            return cached[cached["stock_code"].isin(code_set)].copy()
+        cached_subset = cached[cached["stock_code"].isin(code_set)].copy()
+        has_requested_codes = code_set.issubset(set(cached_subset["stock_code"]))
+        has_quote_amount = "quote_amount" in cached_subset.columns and cached_subset["quote_amount"].notna().any()
+        if has_requested_codes and has_quote_amount:
+            return cached_subset
 
     session = requests.Session()
     session.headers.update(

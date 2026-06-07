@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="302" viewBox="0 0 1120 302" role="img">
+<style>
+  text { font-family: 'Noto Sans CJK SC','Microsoft YaHei','PingFang SC','WenQuanYi Micro Hei',Arial,sans-serif; fill: #0f172a; }
+  .title { font-size: 24px; font-weight: 800; }
+  .subtitle { font-size: 13px; fill: #64748b; }
+  .label { font-size: 12px; fill: #0f172a; }
+  .muted { font-size: 11px; fill: #64748b; }
+  .axis { stroke: #e2e8f0; stroke-width: 1; }
+</style>
+<rect width="100%" height="100%" fill="#f8fafc"/>
+<rect x="14" y="14" width="1092" height="274" rx="18" fill="#ffffff"/>
+<text x="42" y="52" class="title">看涨股票前十大流通股东占比</text>
+<text x="42" y="76" class="subtitle">前十大流通股东合计持股占流通股比例。</text>
+<line x1="320.3" y1="80" x2="320.3" y2="276" stroke="#64748b" stroke-width="1.2" stroke-dasharray="4 4"/>
+<line x1="270.0" y1="82" x2="270.0" y2="274" class="axis"/>
+<text x="270.0" y="296" text-anchor="middle" class="muted">-3.84%</text>
+<line x1="320.3" y1="82" x2="320.3" y2="274" class="axis"/>
+<text x="320.3" y="296" text-anchor="middle" class="muted">0.00%</text>
+<line x1="1000.0" y1="82" x2="1000.0" y2="274" class="axis"/>
+<text x="1000.0" y="296" text-anchor="middle" class="muted">51.78%</text>
+<text x="42" y="116" class="label">002281 光迅科技</text>
+<rect x="320.3" y="101" width="629.3" height="18" rx="5" fill="#7c3aed" opacity="0.88"/>
+<text x="956.7" y="116" text-anchor="start" class="label">47.95%</text>
+<text x="42" y="150" class="label">002008 大族激光</text>
+<rect x="320.3" y="135" width="494.3" height="18" rx="5" fill="#7c3aed" opacity="0.88"/>
+<text x="821.7" y="150" text-anchor="start" class="label">37.66%</text>
+<text x="42" y="184" class="label">600487 亨通光电</text>
+<rect x="320.3" y="169" width="481.5" height="18" rx="5" fill="#7c3aed" opacity="0.88"/>
+<text x="808.9" y="184" text-anchor="start" class="label">36.69%</text>
+<text x="42" y="218" class="label">688525 佰维存储</text>
+<rect x="320.3" y="203" width="465.9" height="18" rx="5" fill="#7c3aed" opacity="0.88"/>
+<text x="793.2" y="218" text-anchor="start" class="label">35.50%</text>
+<text x="42" y="252" class="label">300604 长川科技</text>
+<rect x="320.3" y="237" width="311.1" height="18" rx="5" fill="#7c3aed" opacity="0.88"/>
+<text x="638.4" y="252" text-anchor="start" class="label">23.70%</text>
+</svg>

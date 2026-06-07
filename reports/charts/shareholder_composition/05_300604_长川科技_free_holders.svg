@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="472" viewBox="0 0 1120 472" role="img">
+<style>
+  text { font-family: 'Noto Sans CJK SC','Microsoft YaHei','PingFang SC','WenQuanYi Micro Hei',Arial,sans-serif; fill: #0f172a; }
+  .title { font-size: 24px; font-weight: 800; }
+  .subtitle { font-size: 13px; fill: #64748b; }
+  .label { font-size: 12px; fill: #0f172a; }
+  .muted { font-size: 11px; fill: #64748b; }
+  .axis { stroke: #e2e8f0; stroke-width: 1; }
+</style>
+<rect width="100%" height="100%" fill="#f8fafc"/>
+<rect x="14" y="14" width="1092" height="444" rx="18" fill="#ffffff"/>
+<text x="42" y="52" class="title">300604 长川科技 十大流通股东占比</text>
+<text x="42" y="76" class="subtitle">东方财富股东分析口径；按排名展示最新报告期前十大股东占比。</text>
+<line x1="320.3" y1="80" x2="320.3" y2="446" stroke="#64748b" stroke-width="1.2" stroke-dasharray="4 4"/>
+<line x1="270.0" y1="82" x2="270.0" y2="444" class="axis"/>
+<text x="270.0" y="466" text-anchor="middle" class="muted">-0.58%</text>
+<line x1="320.3" y1="82" x2="320.3" y2="444" class="axis"/>
+<text x="320.3" y="466" text-anchor="middle" class="muted">0.00%</text>
+<line x1="1000.0" y1="82" x2="1000.0" y2="444" class="axis"/>
+<text x="1000.0" y="466" text-anchor="middle" class="muted">7.81%</text>
+<text x="42" y="116" class="label">1 赵轶</text>
+<rect x="320.3" y="101" width="629.3" height="18" rx="5" fill="#7c3aed" opacity="0.88"/>
+<text x="956.7" y="116" text-anchor="start" class="label">7.23%</text>
+<text x="42" y="150" class="label">2 香港中央结算有限公司</text>
+<rect x="320.3" y="135" width="391.3" height="18" rx="5" fill="#7c3aed" opacity="0.88"/>
+<text x="718.6" y="150" text-anchor="start" class="label">4.50%</text>
+<text x="42" y="184" class="label">3 杭州长川投资管理合伙企业(有限合伙)</text>
+<rect x="320.3" y="169" width="255.5" height="18" rx="5" fill="#7c3aed" opacity="0.88"/>
+<text x="582.9" y="184" text-anchor="start" class="label">2.94%</text>
+<text x="42" y="218" class="label">4 广发证券股份有限公司-国泰中证半导体材料设备主题交易型开放式指数</text>
+<rect x="320.3" y="203" width="179.9" height="18" rx="5" fill="#7c3aed" opacity="0.88"/>
+<text x="507.3" y="218" text-anchor="start" class="label">2.07%</text>
+<text x="42" y="252" class="label">5 国家集成电路产业投资基金股份有限公司</text>
+<rect x="320.3" y="237" width="153.9" height="18" rx="5" fill="#7c3aed" opacity="0.88"/>
+<text x="481.2" y="252" text-anchor="start" class="label">1.77%</text>
+<text x="42" y="286" class="label">6 钟锋浩</text>
+<rect x="320.3" y="271" width="128.1" height="18" rx="5" fill="#7c3aed" opacity="0.88"/>
+<text x="455.4" y="286" text-anchor="start" class="label">1.47%</text>
+<text x="42" y="320" class="label">7 韩笑</text>
+<rect x="320.3" y="305" width="88.9" height="18" rx="5" fill="#7c3aed" opacity="0.88"/>
+<text x="416.3" y="320" text-anchor="start" class="label">1.02%</text>
+<text x="42" y="354" class="label">8 交通银行股份有限公司-易方达竞争优势企业混合型证券投资基金</text>
+<rect x="320.3" y="339" width="82.2" height="18" rx="5" fill="#7c3aed" opacity="0.88"/>
+<text x="409.6" y="354" text-anchor="start" class="label">0.94%</text>
+<text x="42" y="388" class="label">9 中国工商银行股份有限公司-易方达创业板交易型开放式指数证券投资基</text>
+<rect x="320.3" y="373" width="79.0" height="18" rx="5" fill="#7c3aed" opacity="0.88"/>
+<text x="406.3" y="388" text-anchor="start" class="label">0.91%</text>
+<text x="42" y="422" class="label">10 孙峰</text>
+<rect x="320.3" y="407" width="74.7" height="18" rx="5" fill="#7c3aed" opacity="0.88"/>
+<text x="402.1" y="422" text-anchor="start" class="label">0.86%</text>
+</svg>
