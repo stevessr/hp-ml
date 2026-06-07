@@ -43,16 +43,40 @@ def main() -> int:
     print("="*80 + "\n")
 
     # 检查必需的数据
-    data_dir = REPORTS / "lite_etf_history"
-    sentiment_path = REPORTS / "composite_sentiment_lite.csv"
+    data_dir = ROOT / "data" / "topic2_broad_base"  # 使用topic2目录，包含正确格式的daily.csv文件
+    sentiment_path = ROOT / "data" / "alternative_data" / "google_trends_sentiment.csv"
 
     if not data_dir.exists():
         print(f"❌ 数据目录不存在: {data_dir}")
-        return 1
+        print(f"   尝试查找其他位置...")
+        # 尝试其他可能的位置
+        alt_dirs = [
+            REPORTS / "lite_etf_history",
+            ROOT / "data" / "topic2_broad_base",
+        ]
+        for alt_dir in alt_dirs:
+            if alt_dir.exists():
+                data_dir = alt_dir
+                print(f"✅ 找到数据目录: {data_dir}")
+                break
+        else:
+            return 1
 
     if not sentiment_path.exists():
         print(f"❌ 情绪数据不存在: {sentiment_path}")
-        return 1
+        print(f"   尝试查找其他位置...")
+        # 尝试其他可能的位置
+        alt_sentiment = [
+            REPORTS / "composite_sentiment_lite.csv",
+            ROOT / "data" / "processed" / "sentiment.csv",
+        ]
+        for alt_sent in alt_sentiment:
+            if alt_sent.exists():
+                sentiment_path = alt_sent
+                print(f"✅ 找到情绪数据: {sentiment_path}")
+                break
+        else:
+            return 1
 
     print(f"✅ 数据目录: {data_dir}")
     print(f"✅ 情绪数据: {sentiment_path}\n")
