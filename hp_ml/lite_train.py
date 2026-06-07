@@ -111,6 +111,84 @@ BASE_FEATURES = [
     "days_since_start",
 ]
 
+ADVANCED_FEATURES = [
+    # Momentum
+    "rsi_6",
+    "rsi_14",
+    "rsi_21",
+    "macd_line",
+    "macd_signal",
+    "macd_hist",
+    "momentum_2",
+    "momentum_5",
+    "momentum_10",
+    "momentum_20",
+    "momentum_60",
+    "price_to_high_20",
+    "price_to_high_60",
+    "price_to_low_20",
+    "price_to_low_60",
+    # Volatility
+    "bb_width_20",
+    "bb_percent_b_20",
+    "atr_14",
+    "atr_pct_14",
+    "realized_vol_10",
+    "realized_vol_20",
+    "realized_vol_60",
+    "range_ratio_10",
+    "range_ratio_20",
+    # Volume / price action
+    "volume_chg_1",
+    "volume_chg_3",
+    "volume_chg_10",
+    "volume_sma_ratio_5",
+    "volume_sma_ratio_20",
+    "obv",
+    "obv_slope_5",
+    "obv_slope_20",
+    "price_volume_corr_10",
+    "price_volume_corr_20",
+    "volume_price_divergence_10",
+    # Time series / autoregressive
+    "close_lag_1",
+    "close_lag_2",
+    "close_lag_3",
+    "ret_lag_1",
+    "ret_lag_2",
+    "ret_lag_3",
+    "ret_mean_5",
+    "ret_std_5",
+    "ret_skew_5",
+    "ret_kurt_5",
+    "ret_mean_10",
+    "ret_std_10",
+    "ret_skew_10",
+    "ret_kurt_10",
+    "ret_mean_20",
+    "ret_std_20",
+    "ret_skew_20",
+    "ret_kurt_20",
+    "ema_gap_5_20",
+    "ema_gap_12_26",
+    "ema_gap_20_60",
+    "trend_strength_20",
+    # Relative / cross-sectional
+    "rel_strength_family_5",
+    "rel_strength_family_20",
+    "rel_strength_family_60",
+    "rank_ret_20",
+    "rank_vol_20",
+    "rank_amount_20",
+    "rank_turnover_20",
+    "rank_momentum_20",
+    "rank_rsi_14",
+    "rank_macd_hist",
+]
+
+ALL_FEATURES = BASE_FEATURES + ADVANCED_FEATURES
+
+
 
 def today_yyyymmdd() -> str:
     return dt.date.today().strftime("%Y%m%d")
@@ -706,7 +784,78 @@ def rolling(values: list[float | None], i: int, n: int) -> list[float]:
     return [v for v in values[left : i + 1] if v is not None and math.isfinite(v)]
 
 
-def make_features_for_history(hist: list[dict[str, Any]], meta: dict[str, Any], horizon: int, family_ids: list[str]) -> list[dict[str, Any]]:
+def safe_mean(values: list[float | None], default: float | None = None) -> float | None:
+    vals = [v for v in values if v is not None and math.isfinite(v)]
+    return mean(vals) if vals else default
+
+
+def safe_std(values: list[float | None], default: float | None = None) -> float | None:
+    vals = [v for v in values if v is not None and math.isfinite(v)]
+    return std(vals) if vals else default
+
+
+def safe_corr(xs: list[float | None], ys: list[float | None]) -> float | None:
+    pairs = [
+        (x, y)
+        for x, y in zip(xs, ys)
+        if x is not None and y is not None and math.isfinite(x) and math.isfinite(y)
+    ]
+    if len(pairs) < 3:
+        return None
+    x_vals = [x for x, _ in pairs]
+    y_vals = [y for _, y in pairs]
+    x_mean = sum(x_vals) / len(x_vals)
+    y_mean = sum(y_vals) / len(y_vals)
+    cov = sum((x - x_mean) * (y - y_mean) for x, y in pairs)
+    x_var = sum((x - x_mean) ** 2 for x in x_vals)
+    y_var = sum((y - y_mean) ** 2 for y in y_vals)
+    if x_var <= 1e-12 or y_var <= 1e-12:
+        return None
+    return cov / math.sqrt(x_var * y_var)
+
+
+def skewness(values: list[float | None]) -> float | None:
+    vals = [v for v in values if v is not None and math.isfinite(v)]
+    n = len(vals)
+    if n < 3:
+        return None
+    m = sum(vals) / n
+    s = math.sqrt(sum((v - m) ** 2 for v in vals) / (n - 1)) if n > 1 else 0.0
+    if s <= 1e-12:
+        return None
+    return sum(((v - m) / s) ** 3 for v in vals) / n
+
+
+def kurtosis(values: list[float | None]) -> float | None:
+    vals = [v for v in values if v is not None and math.isfinite(v)]
+    n = len(vals)
+    if n < 4:
+        return None
+    m = sum(vals) / n
+    s = math.sqrt(sum((v - m) ** 2 for v in vals) / (n - 1)) if n > 1 else 0.0
+    if s <= 1e-12:
+        return None
+    return sum(((v - m) / s) ** 4 for v in vals) / n - 3.0
+
+
+def ema(values: list[float | None], i: int, span: int) -> float | None:
+    alpha = 2.0 / (span + 1.0)
+    left = max(0, i - max(8 * span, span) + 1)
+    vals = [v for v in values[left : i + 1] if v is not None and math.isfinite(v)]
+    if not vals:
+        return None
+    out = vals[0]
+    for v in vals[1:]:
+        out = alpha * v + (1.0 - alpha) * out
+    return out
+
+
+def compute_advanced_features(
+    hist: list[dict[str, Any]],
+    meta: dict[str, Any],
+    family_ids: list[str],
+    peer_rows: dict[str, dict[str, float]] | None = None,
+) -> list[dict[str, Any]]:
     hist = sorted(hist, key=lambda r: str(r["date"]))
     closes = [to_float(r.get("close")) for r in hist]
     highs = [to_float(r.get("high")) for r in hist]
@@ -714,18 +863,35 @@ def make_features_for_history(hist: list[dict[str, Any]], meta: dict[str, Any], 
     volumes = [to_float(r.get("volume")) for r in hist]
     amounts = [to_float(r.get("amount")) for r in hist]
     rets1 = [pct(closes, i, 1) for i in range(len(hist))]
-    start_date = dt.date.fromisoformat(str(hist[0]["date"])[:10])
     rows: list[dict[str, Any]] = []
     for i, raw in enumerate(hist):
         close = closes[i]
-        date_obj = dt.date.fromisoformat(str(raw["date"])[:10])
+        high = highs[i]
+        low = lows[i]
+        volume = volumes[i]
+        amount = amounts[i]
         row: dict[str, Any] = {
-            "date": str(date_obj),
+            "date": str(raw["date"]),
             "code": str(meta.get("code", raw.get("code"))).zfill(6),
             "name": meta.get("name", ""),
             "family_id": meta.get("family_id", ""),
             "close": close,
+            "turnover_rate": to_float(raw.get("turnover_rate")),
+            "amplitude": to_float(raw.get("amplitude")),
+            "intraday_range": (high - low) / close if high is not None and low is not None and close not in (None, 0) else None,
+            "amount_log": math.log1p(max(amount or 0.0, 0.0)),
+            "amount_z20": None,
+            "volume_chg_5": pct(volumes, i, 5),
+            "liquidity_shock_20": None,
+            "month_sin": math.sin(2 * math.pi * dt.date.fromisoformat(str(raw["date"])[:10]).month / 12.0),
+            "month_cos": math.cos(2 * math.pi * dt.date.fromisoformat(str(raw["date"])[:10]).month / 12.0),
+            "days_since_start": i,
         }
+        if amount is not None:
+            amount20 = safe_mean(rolling(amounts, i, 20))
+            amount_std20 = safe_std(rolling(amounts, i, 20))
+            row["amount_z20"] = (amount - amount20) / amount_std20 if amount20 is not None and amount_std20 not in (None, 0) else None
+            row["liquidity_shock_20"] = amount / amount20 - 1 if amount20 not in (None, 0) else None
         for n in (1, 3, 5, 10, 20, 60):
             row[f"ret_{n}"] = pct(closes, i, n)
         for n in (5, 20, 60):
@@ -739,25 +905,140 @@ def make_features_for_history(hist: list[dict[str, Any]], meta: dict[str, Any], 
             vals = rolling(closes, i, n)
             mx = max(vals) if vals else None
             row[f"drawdown_{n}"] = close / mx - 1 if close is not None and mx not in (None, 0) else None
-        amount = amounts[i]
-        amount20 = mean(rolling(amounts, i, 20))
-        amount_std20 = std(rolling(amounts, i, 20))
-        row["amount_log"] = math.log1p(max(amount or 0.0, 0.0))
-        row["amount_z20"] = (amount - amount20) / amount_std20 if amount is not None and amount20 is not None and amount_std20 not in (None, 0) else None
-        row["turnover_rate"] = to_float(raw.get("turnover_rate"))
-        row["amplitude"] = to_float(raw.get("amplitude"))
-        row["intraday_range"] = (highs[i] - lows[i]) / close if highs[i] is not None and lows[i] is not None and close not in (None, 0) else None
-        row["volume_chg_5"] = pct(volumes, i, 5)
-        row["liquidity_shock_20"] = amount / amount20 - 1 if amount is not None and amount20 not in (None, 0) else None
-        month = date_obj.month
-        row["month_sin"] = math.sin(2 * math.pi * month / 12.0)
-        row["month_cos"] = math.cos(2 * math.pi * month / 12.0)
-        row["days_since_start"] = (date_obj - start_date).days
-        for fam in family_ids:
-            row[f"family_{fam}"] = 1.0 if fam == meta.get("family_id") else 0.0
-        target = pct(closes, i + horizon, horizon) if i + horizon < len(closes) else None
-        row[f"fwd_ret_{horizon}"] = target
-        row["is_trainable"] = target is not None
+
+        # Momentum
+        for n in (6, 14, 21):
+            gains: list[float | None] = []
+            losses: list[float | None] = []
+            for j in range(max(0, i - n + 1), i + 1):
+                prev = closes[j - 1] if j > 0 else None
+                cur = closes[j]
+                if prev is None or cur is None:
+                    continue
+                diff = cur - prev
+                gains.append(max(diff, 0.0))
+                losses.append(max(-diff, 0.0))
+            avg_gain = safe_mean(gains)
+            avg_loss = safe_mean(losses)
+            if avg_gain is None or avg_loss is None:
+                row[f"rsi_{n}"] = None
+            elif avg_loss <= 1e-12:
+                row[f"rsi_{n}"] = 100.0
+            else:
+                rs = avg_gain / avg_loss
+                row[f"rsi_{n}"] = 100.0 - 100.0 / (1.0 + rs)
+        ema12 = ema(closes, i, 12)
+        ema26 = ema(closes, i, 26)
+        macd_line = ema12 - ema26 if ema12 is not None and ema26 is not None else None
+        signal_series = [None] * len(hist)
+        for j in range(i + 1):
+            e12 = ema(closes, j, 12)
+            e26 = ema(closes, j, 26)
+            signal_series[j] = e12 - e26 if e12 is not None and e26 is not None else None
+        macd_signal = ema(signal_series, i, 9)
+        row["macd_line"] = macd_line
+        row["macd_signal"] = macd_signal
+        row["macd_hist"] = macd_line - macd_signal if macd_line is not None and macd_signal is not None else None
+        for n in (2, 5, 10, 20, 60):
+            row[f"momentum_{n}"] = pct(closes, i, n)
+        for n in (20, 60):
+            vals = rolling(closes, i, n)
+            mx = max(vals) if vals else None
+            mn = min(vals) if vals else None
+            row[f"price_to_high_{n}"] = close / mx - 1 if close is not None and mx not in (None, 0) else None
+            row[f"price_to_low_{n}"] = close / mn - 1 if close is not None and mn not in (None, 0) else None
+
+        # Volatility
+        if ma20 is None or ma20 <= 1e-12:
+            row["bb_width_20"] = None
+            row["bb_percent_b_20"] = None
+        else:
+            std20 = std(rolling(closes, i, 20))
+            if std20 is None:
+                row["bb_width_20"] = None
+                row["bb_percent_b_20"] = None
+            else:
+                upper = ma20 + 2.0 * std20
+                lower = ma20 - 2.0 * std20
+                row["bb_width_20"] = (upper - lower) / ma20
+                row["bb_percent_b_20"] = (close - lower) / (upper - lower) if close is not None and upper > lower else None
+        tr_values: list[float | None] = []
+        for j in range(max(0, i - 13), i + 1):
+            hi = highs[j]
+            lo = lows[j]
+            prev_close = closes[j - 1] if j > 0 else None
+            if hi is None or lo is None:
+                tr_values.append(None)
+                continue
+            tr = hi - lo
+            if prev_close is not None:
+                tr = max(tr, abs(hi - prev_close), abs(lo - prev_close))
+            tr_values.append(tr)
+        atr14 = safe_mean(tr_values)
+        row["atr_14"] = atr14
+        row["atr_pct_14"] = atr14 / close if atr14 is not None and close not in (None, 0) else None
+        for n in (10, 20, 60):
+            row[f"realized_vol_{n}"] = safe_std(rets1[max(0, i - n + 1) : i + 1])
+        for n in (10, 20):
+            vals = rolling(closes, i, n)
+            row[f"range_ratio_{n}"] = (max(vals) - min(vals)) / (safe_mean(vals) or 1.0) if len(vals) >= 2 else None
+
+        # Volume / price action
+        row["volume_chg_1"] = pct(volumes, i, 1)
+        row["volume_chg_3"] = pct(volumes, i, 3)
+        row["volume_chg_10"] = pct(volumes, i, 10)
+        for n in (5, 20):
+            vol_ma = safe_mean(rolling(volumes, i, n))
+            row[f"volume_sma_ratio_{n}"] = volume / vol_ma - 1 if volume is not None and vol_ma not in (None, 0) else None
+        obv_series: list[float] = []
+        cur_obv = 0.0
+        for j in range(0, i + 1):
+            if j == 0 or closes[j] is None or closes[j - 1] is None or volumes[j] is None:
+                obv_series.append(cur_obv)
+                continue
+            if closes[j] > closes[j - 1]:
+                cur_obv += volumes[j] or 0.0
+            elif closes[j] < closes[j - 1]:
+                cur_obv -= volumes[j] or 0.0
+            obv_series.append(cur_obv)
+        row["obv"] = obv_series[-1] if obv_series else None
+        row["obv_slope_5"] = pct(obv_series, len(obv_series) - 1, 5)
+        row["obv_slope_20"] = pct(obv_series, len(obv_series) - 1, 20)
+        row["price_volume_corr_10"] = safe_corr(rets1[max(0, i - 9) : i + 1], volumes[max(0, i - 9) : i + 1])
+        row["price_volume_corr_20"] = safe_corr(rets1[max(0, i - 19) : i + 1], volumes[max(0, i - 19) : i + 1])
+        row["volume_price_divergence_10"] = (
+            rets1[i] - row["price_volume_corr_10"] if rets1[i] is not None and row["price_volume_corr_10"] is not None else None
+        )
+
+        # Time series / autoregressive
+        for lag in (1, 2, 3):
+            row[f"close_lag_{lag}"] = closes[i - lag] if i - lag >= 0 else None
+            row[f"ret_lag_{lag}"] = rets1[i - lag] if i - lag >= 0 else None
+        for n in (5, 10, 20):
+            window = rets1[max(0, i - n + 1) : i + 1]
+            row[f"ret_mean_{n}"] = safe_mean(window)
+            row[f"ret_std_{n}"] = safe_std(window)
+            row[f"ret_skew_{n}"] = skewness(window)
+            row[f"ret_kurt_{n}"] = kurtosis(window)
+        ema5 = ema(closes, i, 5)
+        row["ema_gap_5_20"] = ema5 - ma20 if ema5 is not None and ma20 is not None else None
+        row["ema_gap_12_26"] = macd_line
+        ema20 = ema(closes, i, 20)
+        ema60 = ema(closes, i, 60)
+        row["ema_gap_20_60"] = ema20 - ema60 if ema20 is not None and ema60 is not None else None
+        row["trend_strength_20"] = row["ema_gap_5_20"] / close if row["ema_gap_5_20"] is not None and close not in (None, 0) else None
+
+        # Relative / ranking
+        if peer_rows:
+            peer = peer_rows.get(str(raw.get("date"))) or {}
+            for key in ("ret_20", "vol_20", "amount_z20", "turnover_rate", "momentum_20", "rsi_14", "macd_hist"):
+                row[f"rank_{key}"] = peer.get(key)
+        else:
+            for key in ("ret_20", "vol_20", "amount_z20", "turnover_rate", "momentum_20", "rsi_14", "macd_hist"):
+                row[f"rank_{key}"] = None
+        for n in (5, 20, 60):
+            row[f"rel_strength_family_{n}"] = None
+
         rows.append(row)
     return rows
 
@@ -765,7 +1046,7 @@ def make_features_for_history(hist: list[dict[str, Any]], meta: dict[str, Any], 
 def build_panel(histories: dict[str, list[dict[str, Any]]], universe: list[dict[str, Any]], horizon: int) -> tuple[list[dict[str, Any]], list[str], str]:
     meta_by_code = {str(row["code"]).zfill(6): row for row in universe}
     family_ids = sorted({str(row["family_id"]) for row in universe})
-    feature_cols = BASE_FEATURES + [f"family_{fam}" for fam in family_ids]
+    feature_cols = ALL_FEATURES + [f"family_{fam}" for fam in family_ids]
     panel: list[dict[str, Any]] = []
     for code, hist in histories.items():
         meta = meta_by_code.get(str(code).zfill(6), {"code": code})

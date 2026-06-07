@@ -16,7 +16,7 @@
 
 ### 📊 可视化图表
 
-所有图表位于 `charts/` 目录：
+#### 策略回测图表 (charts/)
 
 1. **[累计收益率曲线](charts/cumulative_returns.png)** - 策略 vs 基准表现对比
 2. **[回撤曲线](charts/drawdown.png)** - 风险暴露分析
@@ -24,6 +24,19 @@
 4. **[月度收益热力图](charts/monthly_returns_heatmap.png)** - 季节性表现
 5. **[胜率统计](charts/win_rate_pie.png)** - 胜率分析
 6. **[滚动指标](charts/rolling_metrics.png)** - 动态表现追踪
+
+#### 模型内部分析图表 (charts/model_analysis/) ⭐ 新增
+
+7. **[特征重要性](charts/model_analysis/feature_importance.png)** - 识别关键预测因子
+8. **[预测概率分布](charts/model_analysis/prediction_distribution.png)** - 模型置信度分析
+9. **[混淆矩阵](charts/model_analysis/confusion_matrix.png)** - 分类准确性评估
+10. **[ROC和PR曲线](charts/model_analysis/roc_pr_curves.png)** - 综合性能指标
+11. **[特征相关性](charts/model_analysis/feature_correlation.png)** - 多重共线性检查
+12. **[预测vs实际收益](charts/model_analysis/prediction_vs_return.png)** - 预测可靠性验证
+13. **[时间序列准确率](charts/model_analysis/time_series_accuracy.png)** - 性能稳定性监控
+14. **[模型校准曲线](charts/model_analysis/calibration_curve.png)** - 概率校准评估
+
+📖 **[模型分析完整报告](charts/model_analysis/README.md)** - 包含所有图表的详细解读
 
 ### 📁 数据文件
 
@@ -75,8 +88,11 @@
 ### 使用示例
 
 ```bash
-# 生成可视化报告
+# 生成策略回测报告
 python scripts/generate_backtest_report.py
+
+# 生成模型内部分析（新增）
+python scripts/visualize_model_internals.py
 
 # 运行自动调优
 python scripts/simple_auto_tune_loop.py --max-model-configs 3

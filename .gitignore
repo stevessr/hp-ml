@@ -13,3 +13,4 @@ Chinese Stock Market 1990-2024.csv
 ref
 reports/auto_mining_loop_log.json
 reports/charts/example_*.svg
+*.backup
