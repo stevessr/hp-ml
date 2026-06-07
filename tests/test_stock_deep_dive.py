@@ -2,9 +2,11 @@ import pandas as pd
 
 from hp_ml.stock_deep_dive import (
     aggregate_holder_rows,
+    build_individual_holder_changes,
     compute_bullish_score,
     mechanism_tags,
     select_etf_signals,
+    summarize_holder_history,
     write_company_shareholder_reports,
 )
 
@@ -146,3 +148,79 @@ def test_writes_per_company_shareholder_composition_report(tmp_path):
     assert "饼图" in text
     assert "十大流通股东" in text
     assert "控股集团" in text
+
+
+def test_summarizes_history_and_individual_holder_changes():
+    history = pd.DataFrame(
+        [
+            {
+                "stock_code": "300059",
+                "stock_name": "东方财富",
+                "holder_kind": "free",
+                "report_date": "2025-12-31",
+                "rank": 1,
+                "holder_name": "张三",
+                "holder_type": "个人",
+                "is_individual": True,
+                "is_institution": False,
+                "is_fund_like": False,
+                "free_hold_ratio_pct": 3.0,
+                "hold_num": 100,
+            },
+            {
+                "stock_code": "300059",
+                "stock_name": "东方财富",
+                "holder_kind": "free",
+                "report_date": "2025-12-31",
+                "rank": 2,
+                "holder_name": "某基金",
+                "holder_type": "基金",
+                "is_individual": False,
+                "is_institution": True,
+                "is_fund_like": True,
+                "free_hold_ratio_pct": 4.0,
+                "hold_num": 200,
+            },
+            {
+                "stock_code": "300059",
+                "stock_name": "东方财富",
+                "holder_kind": "free",
+                "report_date": "2026-03-31",
+                "rank": 1,
+                "holder_name": "张三",
+                "holder_type": "个人",
+                "is_individual": True,
+                "is_institution": False,
+                "is_fund_like": False,
+                "free_hold_ratio_pct": 5.0,
+                "hold_num": 180,
+            },
+            {
+                "stock_code": "300059",
+                "stock_name": "东方财富",
+                "holder_kind": "free",
+                "report_date": "2026-03-31",
+                "rank": 2,
+                "holder_name": "李四",
+                "holder_type": "个人",
+                "is_individual": True,
+                "is_institution": False,
+                "is_fund_like": False,
+                "free_hold_ratio_pct": 1.0,
+                "hold_num": 50,
+            },
+        ]
+    )
+
+    summary = summarize_holder_history(history)
+    latest = summary[summary["report_date"].eq("2026-03-31")].iloc[0]
+    assert latest["individual_holder_count"] == 2
+    assert latest["individual_holder_ratio_sum_pct"] == 6.0
+    assert "张三" in latest["individual_holder_names"]
+
+    changes = build_individual_holder_changes(history)
+    zhang = changes[changes["holder_name"].eq("张三")].iloc[0]
+    lisi = changes[changes["holder_name"].eq("李四")].iloc[0]
+    assert zhang["status"] == "增持"
+    assert zhang["ratio_delta_pct"] == 2.0
+    assert lisi["status"] == "新进"

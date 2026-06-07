@@ -15,6 +15,7 @@ from .data_sources import fetch_many_histories, today_yyyymmdd
 from .features import build_feature_panel
 from .model import evaluate_predictions, make_model
 from .models_extended import make_extended_model
+from .prediction_report import generate_prediction_report
 from .reporting import make_training_summary, write_json
 from .universe import discover_broad_etfs
 from .visualization import create_all_visualizations, generate_markdown_report
@@ -253,9 +254,30 @@ def main(argv: list[str] | None = None) -> None:
         REPORTS_DIR / "multi_model_report.md"
     )
 
+    # 9. 生成预测报告（预测 vs 实际对比）
+    print("\n生成预测详细报告...")
+    prediction_reports_dir = REPORTS_DIR / "prediction_reports"
+
+    for model_type, predictions in all_predictions.items():
+        print(f"  生成 {model_type} 预测报告...")
+        try:
+            report_files = generate_prediction_report(
+                predictions_df=predictions,
+                prediction_col="prediction",
+                actual_col=target_col,
+                model_name=model_type,
+                output_dir=prediction_reports_dir,
+                date_col="date" if "date" in predictions.columns else None,
+                code_col="code" if "code" in predictions.columns else None,
+            )
+            print(f"    ✓ 报告已生成: {report_files.get('report', 'N/A')}")
+        except Exception as e:
+            print(f"    ✗ 报告生成失败: {e}")
+
     print(f"\n训练完成！最佳模型: {summary['best_model']}")
     print(f"报告保存至: {REPORTS_DIR}")
     print(f"图表保存至: {charts_dir}")
+    print(f"预测报告保存至: {prediction_reports_dir}")
 
 
 if __name__ == "__main__":

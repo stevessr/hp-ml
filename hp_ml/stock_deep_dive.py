@@ -22,7 +22,7 @@ from typing import Any
 import pandas as pd
 import requests
 
-from .charts import write_column_chart, write_horizontal_bar_chart, write_pie_chart
+from .charts import write_column_chart, write_horizontal_bar_chart, write_line_chart, write_pie_chart
 from .config import RAW_DIR, REPORTS_DIR
 from .data_sources import (
     EASTMONEY_KLINE_URL,
@@ -856,6 +856,52 @@ def fetch_holder_rows(
     return rows
 
 
+def fetch_holder_history_rows(
+    code: str,
+    *,
+    holder_kind: str,
+    periods: int = 8,
+    force: bool = False,
+) -> list[dict[str, Any]]:
+    """Fetch multiple report periods of top-holder rows for one stock."""
+
+    code = _normalize_code(code)
+    if holder_kind not in {"free", "total"}:
+        raise ValueError("holder_kind must be 'free' or 'total'")
+    periods = max(1, int(periods))
+    report = "RPT_F10_EH_FREEHOLDERS" if holder_kind == "free" else "RPT_DMSK_HOLDERS"
+    rank_col = "HOLDER_RANK" if holder_kind == "free" else "RANK"
+    cache = RAW_DIR / f"shareholder_history_{holder_kind}_{code}_{periods}.csv"
+    if cache.exists() and not force:
+        return pd.read_csv(cache).to_dict("records")
+    filters = [f'(SECURITY_CODE="{code}")']
+    if holder_kind == "free":
+        filters.append('(LISTING_STATE<>"10")')
+    else:
+        filters.extend(['(LISTING_STATE<>"10")', '(LISTING_STATE<>"9")'])
+    payload = datacenter_get(
+        {
+            "reportName": report,
+            "columns": "ALL",
+            "source": "WEB",
+            "client": "WEB",
+            "pageNumber": 1,
+            "pageSize": max(120, periods * 35),
+            "sortColumns": f"END_DATE,{rank_col}",
+            "sortTypes": "-1,1",
+            "filter": "".join(filters),
+        }
+    )
+    rows = ((payload.get("result") or {}).get("data")) or []
+    if rows:
+        # Keep only the newest N unique report periods and their top-10 rows.
+        dates = sorted({_date_only(row.get("END_DATE")) for row in rows if _date_only(row.get("END_DATE"))}, reverse=True)
+        keep_dates = set(dates[:periods])
+        rows = [row for row in rows if _date_only(row.get("END_DATE")) in keep_dates]
+        pd.DataFrame(rows).to_csv(cache, index=False)
+    return rows
+
+
 def _holder_type(row: dict[str, Any], kind: str) -> str:
     return str(
         row.get("HOLDER_NEWTYPE")
@@ -880,6 +926,20 @@ def is_institution_holder(row: dict[str, Any], kind: str) -> bool:
 def is_fund_like_holder(row: dict[str, Any]) -> bool:
     text = " ".join(str(row.get(key) or "") for key in ("HOLDER_NAME", "HOLDER_NEW", "HOLDER_NEWTYPE", "HOLDER_TYPE"))
     return any(term in text for term in ("基金", "ETF", "联接", "社保", "QFII"))
+
+
+def is_individual_holder(row: dict[str, Any], kind: str) -> bool:
+    holder_type = _holder_type(row, kind)
+    holder_name = str(row.get("HOLDER_NAME") or row.get("HOLDER_NEW") or "")
+    if "个人" in holder_type or "自然人" in holder_type:
+        return True
+    # Eastmoney occasionally leaves the type empty for natural-person names.  Do
+    # not infer aggressively for organisations; only use a conservative
+    # not-institution fallback for short Chinese names.
+    if holder_type.strip():
+        return False
+    institutional_terms = ("公司", "集团", "基金", "银行", "保险", "证券", "信托", "社保", "QFII", "合伙", "资管", "资产")
+    return bool(holder_name) and len(holder_name) <= 4 and not any(term in holder_name for term in institutional_terms)
 
 
 def _limit_latest_holder_rows(rows: list[dict[str, Any]], rank_col: str) -> list[dict[str, Any]]:
@@ -967,6 +1027,188 @@ def holder_detail_records(code: str, stock_name: str, holder_kind: str, rows: li
             }
         )
     return details
+
+
+def holder_history_records(
+    code: str,
+    stock_name: str,
+    holder_kind: str,
+    rows: list[dict[str, Any]],
+    *,
+    periods: int,
+) -> list[dict[str, Any]]:
+    """Normalize historical top-holder rows across multiple report periods."""
+
+    rank_col = "HOLDER_RANK" if holder_kind == "free" else "RANK"
+    records: list[dict[str, Any]] = []
+    dates = sorted({_date_only(row.get("END_DATE")) for row in rows if _date_only(row.get("END_DATE"))}, reverse=True)[: max(1, periods)]
+    for period_index, report_date in enumerate(dates, 1):
+        period_rows = [row for row in rows if _date_only(row.get("END_DATE")) == report_date]
+        period_rows = sorted(period_rows, key=lambda row: to_float(row.get(rank_col), 9999.0) or 9999.0)[:10]
+        for row in period_rows:
+            records.append(
+                {
+                    "stock_code": code,
+                    "stock_name": stock_name,
+                    "holder_kind": holder_kind,
+                    "report_date": report_date,
+                    "period_index_desc": period_index,
+                    "rank": to_float(row.get(rank_col)),
+                    "holder_name": row.get("HOLDER_NAME") or row.get("HOLDER_NEW") or "",
+                    "holder_type": _holder_type(row, holder_kind),
+                    "shares_type": row.get("SHARES_TYPE") or "",
+                    "is_individual": is_individual_holder(row, holder_kind),
+                    "is_institution": is_institution_holder(row, holder_kind),
+                    "is_fund_like": is_fund_like_holder(row),
+                    "hold_num": to_float(row.get("HOLD_NUM")),
+                    "hold_ratio_pct": to_float(row.get("HOLD_RATIO")),
+                    "free_hold_ratio_pct": to_float(row.get("FREE_HOLDNUM_RATIO")),
+                    "hold_num_change": row.get("HOLD_NUM_CHANGE") or row.get("HOLD_CHANGE") or "",
+                    "hold_ratio_change_pct": to_float(row.get("HOLD_RATIO_CHANGE")),
+                    "direction": row.get("DIRECTION") or row.get("HOLDNUM_CHANGE_NAME") or row.get("HOLD_CHANGE") or "",
+                    "holder_market_cap": to_float(row.get("HOLDER_MARKET_CAP") or row.get("REFERENCE_MARKET_CAP")),
+                }
+            )
+    return records
+
+
+def _history_ratio_value(row: pd.Series | dict[str, Any], holder_kind: str) -> float | None:
+    get = row.get if isinstance(row, dict) else row.get
+    if holder_kind == "free":
+        ratio = to_float(get("free_hold_ratio_pct"))
+        if ratio is not None:
+            return ratio
+    return to_float(get("hold_ratio_pct"))
+
+
+def summarize_holder_history(history: pd.DataFrame) -> pd.DataFrame:
+    """Summarize top-holder concentration and individual-holder exposure by period."""
+
+    if history.empty:
+        return pd.DataFrame()
+    rows: list[dict[str, Any]] = []
+    for (code, stock_name, holder_kind, report_date), group in history.groupby(
+        ["stock_code", "stock_name", "holder_kind", "report_date"], sort=False
+    ):
+        ratios = [_history_ratio_value(row, str(holder_kind)) for _, row in group.iterrows()]
+        ratio_sum = sum(v for v in ratios if v is not None)
+        individual = group[group.get("is_individual", False).astype(bool)]
+        institution = group[group.get("is_institution", False).astype(bool)]
+        fund_like = group[group.get("is_fund_like", False).astype(bool)]
+        rows.append(
+            {
+                "stock_code": _normalize_code(code),
+                "stock_name": stock_name,
+                "holder_kind": holder_kind,
+                "report_date": report_date,
+                "top10_ratio_sum_pct": ratio_sum,
+                "individual_holder_count": int(len(individual)),
+                "individual_holder_ratio_sum_pct": sum(
+                    _history_ratio_value(row, str(holder_kind)) or 0.0 for _, row in individual.iterrows()
+                ),
+                "individual_holder_names": _safe_join(individual["holder_name"].tolist(), "、") if not individual.empty else "",
+                "institution_holder_ratio_sum_pct": sum(
+                    _history_ratio_value(row, str(holder_kind)) or 0.0 for _, row in institution.iterrows()
+                ),
+                "fund_like_holder_ratio_sum_pct": sum(
+                    _history_ratio_value(row, str(holder_kind)) or 0.0 for _, row in fund_like.iterrows()
+                ),
+            }
+        )
+    return pd.DataFrame(rows).sort_values(["stock_code", "holder_kind", "report_date"], ascending=[True, True, False])
+
+
+def build_individual_holder_changes(history: pd.DataFrame) -> pd.DataFrame:
+    """Build period-to-period changes for personal shareholders."""
+
+    if history.empty:
+        return pd.DataFrame()
+    rows: list[dict[str, Any]] = []
+    history = history.copy()
+    history["stock_code"] = history["stock_code"].astype(str).str.zfill(6)
+    for (code, stock_name, holder_kind), group in history.groupby(["stock_code", "stock_name", "holder_kind"], sort=False):
+        dates = sorted({_date_only(value) for value in group["report_date"].tolist() if _date_only(value)})
+        for prev_date, curr_date in zip(dates, dates[1:]):
+            prev = group[group["report_date"].eq(prev_date)]
+            curr = group[group["report_date"].eq(curr_date)]
+            prev_ind = {str(row["holder_name"]): row for _, row in prev[prev.get("is_individual", False).astype(bool)].iterrows()}
+            curr_ind = {str(row["holder_name"]): row for _, row in curr[curr.get("is_individual", False).astype(bool)].iterrows()}
+            for holder_name in sorted(set(prev_ind) | set(curr_ind)):
+                prev_row = prev_ind.get(holder_name)
+                curr_row = curr_ind.get(holder_name)
+                prev_ratio = _history_ratio_value(prev_row, str(holder_kind)) if prev_row is not None else None
+                curr_ratio = _history_ratio_value(curr_row, str(holder_kind)) if curr_row is not None else None
+                prev_hold = to_float(prev_row.get("hold_num")) if prev_row is not None else None
+                curr_hold = to_float(curr_row.get("hold_num")) if curr_row is not None else None
+                delta = (curr_ratio or 0.0) - (prev_ratio or 0.0)
+                if prev_row is None:
+                    status = "新进"
+                elif curr_row is None:
+                    status = "退出"
+                elif delta > 1e-6:
+                    status = "增持"
+                elif delta < -1e-6:
+                    status = "减持"
+                else:
+                    status = "不变"
+                rows.append(
+                    {
+                        "stock_code": code,
+                        "stock_name": stock_name,
+                        "holder_kind": holder_kind,
+                        "from_report_date": prev_date,
+                        "to_report_date": curr_date,
+                        "holder_name": holder_name,
+                        "holder_type": (
+                            (curr_row.get("holder_type") if curr_row is not None else None)
+                            or (prev_row.get("holder_type") if prev_row is not None else "")
+                        ),
+                        "status": status,
+                        "prev_rank": to_float(prev_row.get("rank")) if prev_row is not None else None,
+                        "current_rank": to_float(curr_row.get("rank")) if curr_row is not None else None,
+                        "prev_ratio_pct": prev_ratio,
+                        "current_ratio_pct": curr_ratio,
+                        "ratio_delta_pct": delta,
+                        "prev_hold_num": prev_hold,
+                        "current_hold_num": curr_hold,
+                        "hold_num_delta": (curr_hold or 0.0) - (prev_hold or 0.0),
+                    }
+                )
+    if not rows:
+        return pd.DataFrame()
+    changes = pd.DataFrame(rows)
+    changes["abs_ratio_delta_pct"] = changes["ratio_delta_pct"].abs()
+    return changes.sort_values(
+        ["stock_code", "holder_kind", "to_report_date", "abs_ratio_delta_pct"],
+        ascending=[True, True, False, False],
+    ).reset_index(drop=True)
+
+
+def enrich_shareholder_history(
+    rows: pd.DataFrame,
+    *,
+    periods: int,
+    force: bool = False,
+) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, dict[str, str]]:
+    """Fetch and calculate historical shareholder changes for output stocks."""
+
+    if rows.empty or periods <= 1:
+        return pd.DataFrame(), pd.DataFrame(), pd.DataFrame(), {}
+    errors: dict[str, str] = {}
+    history_records: list[dict[str, Any]] = []
+    for _, row in rows.iterrows():
+        code = _normalize_code(row.get("stock_code"))
+        stock_name = str(row.get("stock_name") or "")
+        for holder_kind in ("free", "total"):
+            try:
+                raw_rows = fetch_holder_history_rows(code, holder_kind=holder_kind, periods=periods, force=force)
+                history_records.extend(holder_history_records(code, stock_name, holder_kind, raw_rows, periods=periods))
+            except Exception as exc:  # noqa: BLE001
+                errors[f"{code}:{holder_kind}"] = str(exc)
+    history = pd.DataFrame(history_records)
+    summary = summarize_holder_history(history)
+    changes = build_individual_holder_changes(history)
+    return history, summary, changes, errors
 
 
 def enrich_shareholders(
@@ -1255,6 +1497,8 @@ def write_company_shareholder_reports(
     *,
     rows: pd.DataFrame,
     details: pd.DataFrame,
+    history_summary: pd.DataFrame | None = None,
+    individual_changes: pd.DataFrame | None = None,
     out_dir: Path,
     charts_dir: Path,
 ) -> list[dict[str, str]]:
@@ -1271,6 +1515,10 @@ def write_company_shareholder_reports(
         return []
     if details.empty:
         details = pd.DataFrame(columns=["stock_code", "holder_kind"])
+    if history_summary is None or history_summary.empty:
+        history_summary = pd.DataFrame(columns=["stock_code", "holder_kind", "report_date"])
+    if individual_changes is None or individual_changes.empty:
+        individual_changes = pd.DataFrame(columns=["stock_code", "holder_kind", "to_report_date"])
     reports: list[dict[str, str]] = []
     for _, stock in rows.iterrows():
         code = _normalize_code(stock.get("stock_code"))
@@ -1279,6 +1527,8 @@ def write_company_shareholder_reports(
         stem = f"{rank:02d}_{code}_{_safe_filename(name)}"
         md_path = out_dir / f"{stem}_shareholder_composition.md"
         stock_details = details[details["stock_code"].astype(str).str.zfill(6).eq(code)].copy()
+        stock_history_summary = history_summary[history_summary["stock_code"].astype(str).str.zfill(6).eq(code)].copy()
+        stock_individual_changes = individual_changes[individual_changes["stock_code"].astype(str).str.zfill(6).eq(code)].copy()
 
         chart_entries: list[tuple[str, Path]] = []
         for holder_kind, label, ratio_col in (
@@ -1306,6 +1556,29 @@ def write_company_shareholder_reports(
                     add_remainder=True,
                 )
                 chart_entries.append((label, chart_path))
+        if not stock_history_summary.empty:
+            series: dict[str, list[tuple[str, float]]] = {}
+            for holder_kind, label in (("free", "流通个人股东占比"), ("total", "总股本个人股东占比")):
+                sub = stock_history_summary[stock_history_summary["holder_kind"].eq(holder_kind)].copy()
+                if sub.empty:
+                    continue
+                sub = sub.sort_values("report_date")
+                points = [
+                    (str(row.get("report_date")), (to_float(row.get("individual_holder_ratio_sum_pct"), 0.0) or 0.0) / 100.0)
+                    for _, row in sub.iterrows()
+                ]
+                if points:
+                    series[label] = points
+            if series:
+                chart_path = charts_dir / f"{stem}_individual_holder_history.svg"
+                write_line_chart(
+                    chart_path,
+                    title=f"{code} {name} 个人股东占比历史",
+                    subtitle="前十大流通股东/十大股东中个人股东占比的报告期变迁。",
+                    series=series,
+                    value_kind="pct",
+                )
+                chart_entries.append(("个人股东历史占比", chart_path))
 
         lines: list[str] = [
             f"# {code} {name} 股东成分报告",
@@ -1352,17 +1625,55 @@ def write_company_shareholder_reports(
                 rel = chart_path.relative_to(REPORTS_DIR) if chart_path.is_relative_to(REPORTS_DIR) else chart_path
                 lines.append(f"![{label}](../{rel.as_posix()})")
                 lines.append("")
-        lines.extend(["## 4. 股东明细", ""])
+        lines.extend(["## 4. 历史股东变迁（个人股东重点）", ""])
+        if stock_history_summary.empty:
+            lines.append("- 暂无历史股东变迁数据。")
+            lines.append("")
+        else:
+            summary = stock_history_summary.sort_values(["report_date", "holder_kind"], ascending=[False, True])
+            lines.append("|报告期|口径|前十大占比|个人股东数|个人股东占比|个人股东|机构占比|基金/社保/QFII占比|")
+            lines.append("|---|---|---:|---:|---:|---|---:|---:|")
+            for _, item in summary.head(16).iterrows():
+                kind_label = "流通股东" if item.get("holder_kind") == "free" else "十大股东"
+                lines.append(
+                    f"|{item.get('report_date', '')}|{kind_label}|{_fmt_pct_value(item.get('top10_ratio_sum_pct'))}|"
+                    f"{int(to_float(item.get('individual_holder_count'), 0.0) or 0)}|"
+                    f"{_fmt_pct_value(item.get('individual_holder_ratio_sum_pct'))}|"
+                    f"{item.get('individual_holder_names', '')}|"
+                    f"{_fmt_pct_value(item.get('institution_holder_ratio_sum_pct'))}|"
+                    f"{_fmt_pct_value(item.get('fund_like_holder_ratio_sum_pct'))}|"
+                )
+            changes = stock_individual_changes.sort_values(
+                ["to_report_date", "abs_ratio_delta_pct"], ascending=[False, False]
+            ) if "abs_ratio_delta_pct" in stock_individual_changes.columns else stock_individual_changes
+            lines.extend(["", "### 个人股东逐期变化", ""])
+            if changes.empty:
+                lines.append("- 最近报告期内前十大名单未出现个人股东，或个人股东无可计算变化。")
+            else:
+                lines.append("|从|到|口径|个人股东|状态|上一期占比|本期占比|占比变化|上一期排名|本期排名|")
+                lines.append("|---|---|---|---|---|---:|---:|---:|---:|---:|")
+                for _, item in changes.head(24).iterrows():
+                    kind_label = "流通" if item.get("holder_kind") == "free" else "总股本"
+                    lines.append(
+                        f"|{item.get('from_report_date', '')}|{item.get('to_report_date', '')}|{kind_label}|"
+                        f"{item.get('holder_name', '')}|{item.get('status', '')}|"
+                        f"{_fmt_pct_value(item.get('prev_ratio_pct'))}|{_fmt_pct_value(item.get('current_ratio_pct'))}|"
+                        f"{_fmt_pct_value(item.get('ratio_delta_pct'))}|{_fmt_number(item.get('prev_rank'), 0)}|"
+                        f"{_fmt_number(item.get('current_rank'), 0)}|"
+                    )
+            lines.append("")
+        lines.extend(["## 5. 股东明细", ""])
         lines.extend(_holder_detail_table(stock_details, "free"))
         lines.append("")
         lines.extend(_holder_detail_table(stock_details, "total"))
         lines.extend(
             [
                 "",
-                "## 5. 解读要点",
+                "## 6. 解读要点",
                 "",
                 "- 若“成交额放大 + 高换手交易”同时出现，说明上涨背后有真实交易活跃度，但也可能伴随波动放大。",
                 "- 前十大流通股东占比越高，筹码越集中；机构/基金占比越高，越需要继续核对定期报告、基金持仓和是否存在被动指数持仓。",
+                "- 个人股东历史变迁重点看三类信号：连续增持、新进进入前十大、以及从前十大退出；个人股东占比变化越大，越需要核对公告和实际控制人/高管身份。",
                 "- 股东占比变化为增持/减持线索，需结合公告日、股价位置和成交额验证，不应单独作为买卖依据。",
                 "",
                 "## 数据源",
@@ -1389,6 +1700,8 @@ def write_markdown_report(
     etf_signals: pd.DataFrame,
     candidate_count: int,
     details_path: Path,
+    history_path: Path,
+    individual_changes_path: Path,
     company_reports: list[dict[str, str]],
     chart_paths: dict[str, str],
     errors: dict[str, str],
@@ -1477,6 +1790,8 @@ def write_markdown_report(
             "",
             f"- 看涨股票深挖表：`{path.with_suffix('.csv')}`",
             f"- 股东明细表：`{details_path}`",
+            f"- 历史股东变迁表：`{history_path}`",
+            f"- 个人股东逐期变化表：`{individual_changes_path}`",
             f"- 摘要 JSON：`{path.with_suffix('.json')}`",
         ]
     )
@@ -1544,22 +1859,42 @@ def run_deep_dive(args: argparse.Namespace) -> dict[str, Any]:
     out_prefix.parent.mkdir(parents=True, exist_ok=True)
     csv_path = out_prefix.with_suffix(".csv")
     details_path = out_prefix.with_name(out_prefix.name + "_shareholders.csv")
+    holder_history_path = out_prefix.with_name(out_prefix.name + "_holder_history.csv")
+    individual_changes_path = out_prefix.with_name(out_prefix.name + "_individual_holder_changes.csv")
     md_path = out_prefix.with_suffix(".md")
     json_path = out_prefix.with_suffix(".json")
     final = final[_ordered_output_columns(final)] if not final.empty else final
+    holder_history = pd.DataFrame()
+    holder_history_summary = pd.DataFrame()
+    individual_changes = pd.DataFrame()
+    holder_history_errors: dict[str, str] = {}
+    if not args.no_holder_history and args.holder_history_periods > 1:
+        holder_history, holder_history_summary, individual_changes, holder_history_errors = enrich_shareholder_history(
+            final,
+            periods=args.holder_history_periods,
+            force=args.force,
+        )
     final.to_csv(csv_path, index=False)
     shareholder_details.to_csv(details_path, index=False)
+    holder_history.to_csv(holder_history_path, index=False)
+    individual_changes.to_csv(individual_changes_path, index=False)
     chart_paths = write_deep_dive_charts(final, REPORTS_DIR / "charts")
     company_reports: list[dict[str, str]] = []
     if not args.no_company_reports:
         company_reports = write_company_shareholder_reports(
             rows=final,
             details=shareholder_details,
+            history_summary=holder_history_summary,
+            individual_changes=individual_changes,
             out_dir=Path(args.company_report_dir),
             charts_dir=REPORTS_DIR / "charts" / "shareholder_composition",
         )
 
-    errors = {**{f"history:{k}": v for k, v in history_errors.items()}, **{f"shareholder:{k}": v for k, v in shareholder_errors.items()}}
+    errors = {
+        **{f"history:{k}": v for k, v in history_errors.items()},
+        **{f"shareholder:{k}": v for k, v in shareholder_errors.items()},
+        **{f"holder_history:{k}": v for k, v in holder_history_errors.items()},
+    }
     summary = {
         "created_at": dt.datetime.now().isoformat(timespec="seconds"),
         "predictions_path": str(predictions_path),
@@ -1567,6 +1902,8 @@ def run_deep_dive(args: argparse.Namespace) -> dict[str, Any]:
         "out_csv": str(csv_path),
         "out_markdown": str(md_path),
         "out_shareholders": str(details_path),
+        "out_holder_history": str(holder_history_path),
+        "out_individual_holder_changes": str(individual_changes_path),
         "out_candidates": str(candidates_path),
         "company_reports": company_reports,
         "charts": chart_paths,
@@ -1574,6 +1911,8 @@ def run_deep_dive(args: argparse.Namespace) -> dict[str, Any]:
         "selected_etf_count": int(len(etf_signals)),
         "candidate_stock_count": int(len(candidates)),
         "bullish_stock_count": int(len(final)),
+        "holder_history_rows": int(len(holder_history)),
+        "individual_holder_change_rows": int(len(individual_changes)),
         "selected_etfs": etf_signals.head(50).to_dict("records"),
         "top_stocks": final.head(50).to_dict("records"),
         "errors": errors,
@@ -1585,6 +1924,8 @@ def run_deep_dive(args: argparse.Namespace) -> dict[str, Any]:
         etf_signals=etf_signals,
         candidate_count=len(candidates),
         details_path=details_path,
+        history_path=holder_history_path,
+        individual_changes_path=individual_changes_path,
         company_reports=company_reports,
         chart_paths=chart_paths,
         errors=errors,
@@ -1608,6 +1949,8 @@ def build_arg_parser() -> argparse.ArgumentParser:
     p.add_argument("--end", default=today_yyyymmdd(), help="End date for K-line fetch, YYYYMMDD. Defaults to today.")
     p.add_argument("--company-report-dir", default=str(REPORTS_DIR / "shareholder_composition"), help="Directory for per-company shareholder composition reports.")
     p.add_argument("--no-company-reports", action="store_true", help="Do not write per-company shareholder composition Markdown reports.")
+    p.add_argument("--holder-history-periods", type=int, default=8, help="Number of shareholder report periods to keep for historical holder-change analysis.")
+    p.add_argument("--no-holder-history", action="store_true", help="Disable historical shareholder and individual-holder change analysis.")
     p.add_argument("--refresh-related", action="store_true", help="Refresh related/component stocks from Eastmoney instead of only reading the CSV.")
     p.add_argument("--force", action="store_true", help="Ignore same-day caches and hit live endpoints.")
     return p
@@ -1618,6 +1961,8 @@ def main(argv: list[str] | None = None) -> dict[str, Any]:
     summary = run_deep_dive(args)
     print(f"看涨股票深挖表：{summary['out_csv']}")
     print(f"股东明细表：{summary['out_shareholders']}")
+    print(f"历史股东变迁表：{summary['out_holder_history']}")
+    print(f"个人股东逐期变化表：{summary['out_individual_holder_changes']}")
     print(f"Markdown 报告：{summary['out_markdown']}")
     print(f"候选池：{summary['out_candidates']}")
     if summary.get("company_reports"):

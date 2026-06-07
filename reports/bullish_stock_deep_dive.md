@@ -1,6 +1,6 @@
 # ETF 自动信号下钻：看涨股票成交额与股东占比深挖
 
-- 生成时间：2026-06-07T16:12:08
+- 生成时间：2026-06-07T16:17:50
 - ETF 信号文件：`/home/steve/文档/vibe coding/hp-ml/reports/latest_predictions_lite.csv`
 - 相关股票文件：`/home/steve/文档/vibe coding/hp-ml/reports/related_stocks_lite.csv`
 - 入池 ETF 信号：3 只；股票候选池：8 只；输出看涨股票：5 只。
@@ -37,6 +37,8 @@
 
 - 看涨股票深挖表：`/home/steve/文档/vibe coding/hp-ml/reports/bullish_stock_deep_dive.csv`
 - 股东明细表：`/home/steve/文档/vibe coding/hp-ml/reports/bullish_stock_deep_dive_shareholders.csv`
+- 历史股东变迁表：`/home/steve/文档/vibe coding/hp-ml/reports/bullish_stock_deep_dive_holder_history.csv`
+- 个人股东逐期变化表：`/home/steve/文档/vibe coding/hp-ml/reports/bullish_stock_deep_dive_individual_holder_changes.csv`
 - 摘要 JSON：`/home/steve/文档/vibe coding/hp-ml/reports/bullish_stock_deep_dive.json`
 - 公司股东成分报告索引：`/home/steve/文档/vibe coding/hp-ml/reports/shareholder_composition/index.md`
   - `002281` 光迅科技：`/home/steve/文档/vibe coding/hp-ml/reports/shareholder_composition/01_002281_光迅科技_shareholder_composition.md`

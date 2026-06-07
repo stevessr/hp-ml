@@ -18,6 +18,7 @@ from .ensemble import create_ensemble
 from .feature_learning import FeatureSelector, TechnicalIndicatorGenerator
 from .features import build_feature_panel
 from .model import make_model
+from .prediction_report import generate_prediction_report
 from .reporting import write_json
 from .universe import discover_broad_etfs
 from .visualization import create_all_visualizations, generate_markdown_report
@@ -328,10 +329,31 @@ def main(argv: list[str] | None = None) -> None:
     summary_path = REPORTS_DIR / "advanced_training_summary.json"
     write_json(summary_path, summary)
 
+    # 生成预测报告
+    print("\n生成预测详细报告...")
+    prediction_reports_dir = REPORTS_DIR / "advanced_prediction_reports"
+
+    for model_name, predictions in all_predictions.items():
+        print(f"  生成 {model_name} 预测报告...")
+        try:
+            report_files = generate_prediction_report(
+                predictions_df=predictions,
+                prediction_col="prediction",
+                actual_col=target_col,
+                model_name=f"advanced_{model_name}",
+                output_dir=prediction_reports_dir,
+                date_col="date" if "date" in predictions.columns else None,
+                code_col="code" if "code" in predictions.columns else None,
+            )
+            print(f"    ✓ {report_files.get('report', 'N/A').name}")
+        except Exception as e:
+            print(f"    ✗ 失败: {e}")
+
     print("\n" + "=" * 80)
     print("训练完成！")
     print(f"最佳模型: {summary['best_model']}")
     print(f"报告保存至: {REPORTS_DIR}")
+    print(f"预测报告保存至: {prediction_reports_dir}")
     print("=" * 80)
 
     # 显示回测结果

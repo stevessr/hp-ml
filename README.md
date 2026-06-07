@@ -73,6 +73,8 @@ make export-tdx
 - `reports/related_stocks_lite.csv`：每个宽基指数族对应的更多相关股票/指数成分股。
 - `reports/bullish_stock_deep_dive.csv`：从最新 ETF 信号下钻出的看涨相关股票，含成交额、换手、近期动量、主力净流入、前十大流通/总股东占比和机制标签。
 - `reports/bullish_stock_deep_dive_shareholders.csv`：看涨股票逐个十大流通股东/十大股东明细。
+- `reports/bullish_stock_deep_dive_holder_history.csv`：多报告期十大流通股东/十大股东历史明细，含是否个人股东、机构股东、基金/社保/QFII 类股东标记。
+- `reports/bullish_stock_deep_dive_individual_holder_changes.csv`：个人股东逐期变迁，追踪新进、退出、增持、减持和排名变化。
 - `reports/bullish_stock_deep_dive.md` / `.json`：自动深挖摘要、异常记录和数据源说明。
 - `reports/shareholder_composition/`：每家看涨公司的股东成分 Markdown 报告和索引，报告内用饼图展示十大流通股东/十大股东占比，适合继续做人工复核或交付材料。
 - `reports/long_history_coverage_lite.csv`：长起点采集后每只 ETF 的实际历史覆盖、全期收益和最大回撤。
@@ -223,8 +225,9 @@ make export-tdx
 2. 映射到对应指数族的成分股/相关股票，并按权重、自由流通市值和 ETF 信号排序候选池。
 3. 拉取 A 股现货行情与日 K，补充成交额、换手率、近 5/20/60 日收益、20 日成交额放大倍数、主力净流入等交易证据。
 4. 对自动判定的看涨股票拉取东方财富股东分析，汇总前十大流通股东占比、前十大股东占比、机构/基金类股东占比和第一大股东。
-5. 自动给每家看涨公司制作股东成分报告，包含公司交易线索、股东结构快照、十大流通股东/十大股东明细、股东占比饼图和解读要点。
-6. 输出 `reports/bullish_stock_deep_dive.csv`、`reports/bullish_stock_deep_dive_shareholders.csv`、`reports/bullish_stock_deep_dive.md`、`reports/shareholder_composition/index.md` 以及成交额/股东集中度/行业分布 SVG 图。
+5. 追加历史股东变迁分析，默认保留最近 8 个报告期，重点追踪个人股东的新进、退出、增持、减持、排名变化和个人股东占比趋势。
+6. 自动给每家看涨公司制作股东成分报告，包含公司交易线索、股东结构快照、十大流通股东/十大股东明细、股东占比饼图、个人股东历史变迁和解读要点。
+7. 输出 `reports/bullish_stock_deep_dive.csv`、`reports/bullish_stock_deep_dive_shareholders.csv`、`reports/bullish_stock_deep_dive_holder_history.csv`、`reports/bullish_stock_deep_dive_individual_holder_changes.csv`、`reports/bullish_stock_deep_dive.md`、`reports/shareholder_composition/index.md` 以及成交额/股东集中度/行业分布 SVG 图。
 
 常用参数：
 
@@ -232,6 +235,7 @@ make export-tdx
 - `--refresh-related`：忽略现有 `related_stocks_lite.csv`，按当前 ETF 家族重新拉取成分股。
 - `--force`：忽略当天行情、K 线和股东缓存，重新访问外部数据源。
 - `--company-report-dir reports/shareholder_composition`：指定每家公司股东成分报告输出目录；如只要 CSV，可用 `--no-company-reports` 关闭。
+- `--holder-history-periods 8`：历史股东变迁保留的报告期数量；如只要最新股东快照，可用 `--no-holder-history` 关闭。
 
 ## 数据源
 
@@ -285,3 +289,53 @@ make train-lite
 - `HPMLBUY`：`HPMLSCORE > --signal-threshold` 时为 1，否则为 0。
 
 如果旧版通达信导入中文注释乱码，可以加 `--encoding gbk` 重新导出。ETF 换手率在公式中用 `VOL/CAPITAL*100` 近似，`days_since_start` 用 `BARSCOUNT(CLOSE)-1` 近似，导出文件中也会保留这些说明。
+
+## 📚 文档
+
+- [快速入门](docs/QUICKSTART.md) - 5 分钟快速上手
+- [多模型训练](docs/MULTI_MODEL.md) - 6 种模型对比训练
+- [高级功能](docs/ADVANCED_FEATURES.md) - 超参数优化、集成学习、AI 辅助
+- [预测报告](docs/PREDICTION_REPORT.md) - 预测 vs 实际对比可视化 ⭐️ 新增
+- [算法公式](docs/FORMULAS.md) - 数学公式和技术细节
+- [功能总结](docs/SUMMARY.md) - 功能特性对比表
+
+## 🎯 核心功能
+
+### 基础功能
+- ✅ 自动发现中证宽基 ETF
+- ✅ 历史数据拉取和缓存
+- ✅ 特征工程（动量、波动率、均线等）
+- ✅ 多模型训练（Ridge、HGB、RF、Prophet、LSTM）
+- ✅ 时间序列划分验证
+- ✅ 回测框架
+
+### 高级功能（v3.0+）
+- ✅ 自动超参数调优（Optuna）
+- ✅ 模型集成学习（Stacking/Blending）
+- ✅ 技术指标特征学习（50+ 指标）
+- ✅ AI 辅助模型进化（Claude API + Claude Code）
+- ✅ 预测报告生成（预测 vs 实际对比）⭐️
+
+### 可视化和报告
+- ✅ 自动生成图表和 Markdown 报告
+- ✅ 预测 vs 实际对比图表
+- ✅ 误差分析和性能指标
+- ✅ 分股票对比和综合仪表板
+- ✅ 回测收益曲线
+
+## 🚀 快速命令
+
+```bash
+# 基础训练
+make train              # 单模型训练
+make train-multi        # 多模型对比训练
+
+# 高级功能
+make train-advanced     # 启用超参数优化和集成学习
+make auto-evolve        # AI 自主进化优化
+
+# 测试和演示
+make test-prediction-report  # 测试预测报告生成
+make test-multi              # 测试多模型功能
+```
+

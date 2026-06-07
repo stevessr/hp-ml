@@ -1,7 +1,7 @@
 PY ?= .venv/bin/python
 PIP ?= .venv/bin/pip
 
-.PHONY: setup discover train train-lite train-multi train-advanced auto-evolve auto-beat-baseline long-lite stock-deep-dive export-tdx quick quick-lite clean
+.PHONY: setup discover train train-lite train-multi train-advanced auto-evolve test-prediction-report quick quick-lite clean
 
 setup:
 	$(PY) -m pip install -U pip wheel setuptools
@@ -24,6 +24,9 @@ train-advanced:
 
 auto-evolve:
 	$(PY) scripts/auto_evolve.py --goal "提升夏普比率至1.5以上" --max-iterations 5
+
+test-prediction-report:
+	$(PY) scripts/test_prediction_report.py
 
 test-multi:
 	$(PY) scripts/test_multi_model.py
