@@ -74,6 +74,7 @@ make export-tdx
 - `reports/bullish_stock_deep_dive.csv`：从最新 ETF 信号下钻出的看涨相关股票，含成交额、换手、近期动量、主力净流入、前十大流通/总股东占比和机制标签。
 - `reports/bullish_stock_deep_dive_shareholders.csv`：看涨股票逐个十大流通股东/十大股东明细。
 - `reports/bullish_stock_deep_dive.md` / `.json`：自动深挖摘要、异常记录和数据源说明。
+- `reports/shareholder_composition/`：每家看涨公司的股东成分 Markdown 报告和索引，适合继续做人工复核或交付材料。
 - `reports/long_history_coverage_lite.csv`：长起点采集后每只 ETF 的实际历史覆盖、全期收益和最大回撤。
 - `reports/multi_scale_etf_metrics_lite.csv`：ETF × 持有周期的平均收益、胜率、波动、类 Sharpe、最佳/最差收益。
 - `reports/multi_scale_family_metrics_lite.csv`：指数族/全池 × 持有周期的跨时间尺度聚合统计。
@@ -222,13 +223,15 @@ make export-tdx
 2. 映射到对应指数族的成分股/相关股票，并按权重、自由流通市值和 ETF 信号排序候选池。
 3. 拉取 A 股现货行情与日 K，补充成交额、换手率、近 5/20/60 日收益、20 日成交额放大倍数、主力净流入等交易证据。
 4. 对自动判定的看涨股票拉取东方财富股东分析，汇总前十大流通股东占比、前十大股东占比、机构/基金类股东占比和第一大股东。
-5. 输出 `reports/bullish_stock_deep_dive.csv`、`reports/bullish_stock_deep_dive_shareholders.csv`、`reports/bullish_stock_deep_dive.md` 以及成交额/股东集中度/行业分布 SVG 图。
+5. 自动给每家看涨公司制作股东成分报告，包含公司交易线索、股东结构快照、十大流通股东/十大股东明细、占比图和解读要点。
+6. 输出 `reports/bullish_stock_deep_dive.csv`、`reports/bullish_stock_deep_dive_shareholders.csv`、`reports/bullish_stock_deep_dive.md`、`reports/shareholder_composition/index.md` 以及成交额/股东集中度/行业分布 SVG 图。
 
 常用参数：
 
 - `--min-etf-pred 0`：ETF 预测收益不低于该阈值会进入下钻；同时默认也保留 `--top-etfs` 只最高排序 ETF，避免风险收缩期候选过少。
 - `--refresh-related`：忽略现有 `related_stocks_lite.csv`，按当前 ETF 家族重新拉取成分股。
 - `--force`：忽略当天行情、K 线和股东缓存，重新访问外部数据源。
+- `--company-report-dir reports/shareholder_composition`：指定每家公司股东成分报告输出目录；如只要 CSV，可用 `--no-company-reports` 关闭。
 
 ## 数据源
 

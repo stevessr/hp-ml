@@ -14,8 +14,8 @@ import argparse
 import datetime as dt
 import json
 import math
+import re
 import time
-from collections import defaultdict
 from pathlib import Path
 from typing import Any
 
@@ -134,6 +134,13 @@ def _safe_join(values: list[Any], sep: str = ";") -> str:
             result.append(text)
             seen.add(text)
     return sep.join(result)
+
+
+def _safe_filename(value: Any, *, max_len: int = 80) -> str:
+    text = str(value or "").strip()
+    text = re.sub(r"[\\/:*?\"<>|\s]+", "_", text)
+    text = re.sub(r"_+", "_", text).strip("._")
+    return (text or "unknown")[:max_len]
 
 
 def _parse_end_date(end: str | None) -> dt.date:
@@ -943,6 +950,9 @@ def rank_bullish_rows(rows: pd.DataFrame, *, top_stocks: int, include_shareholde
     if rows.empty:
         return rows.copy()
     ranked = rows.copy()
+    for col in ("quote_amount", "history_amount", "source_etf_pred_fwd_ret_5_best"):
+        if col not in ranked.columns:
+            ranked[col] = math.nan
     ranked["bullish_score"] = ranked.apply(lambda row: compute_bullish_score(row, include_shareholders=include_shareholders), axis=1)
     ranked["mechanism_tags"] = ranked.apply(mechanism_tags, axis=1)
     ranked = ranked.sort_values(
@@ -951,6 +961,8 @@ def rank_bullish_rows(rows: pd.DataFrame, *, top_stocks: int, include_shareholde
     )
     if top_stocks > 0:
         ranked = ranked.head(int(top_stocks)).copy()
+    if "bullish_rank" in ranked.columns:
+        ranked = ranked.drop(columns=["bullish_rank"])
     ranked.insert(0, "bullish_rank", range(1, len(ranked) + 1))
     return ranked.reset_index(drop=True)
 
@@ -1073,6 +1085,169 @@ def write_deep_dive_charts(rows: pd.DataFrame, charts_dir: Path) -> dict[str, st
     return chart_paths
 
 
+def _holder_ratio_for_chart(detail: pd.Series) -> float | None:
+    ratio = to_float(detail.get("free_hold_ratio_pct"))
+    if ratio is None:
+        ratio = to_float(detail.get("hold_ratio_pct"))
+    if ratio is None:
+        return None
+    return ratio / 100.0
+
+
+def _holder_detail_table(details: pd.DataFrame, holder_kind: str) -> list[str]:
+    sub = details[details["holder_kind"].eq(holder_kind)].copy() if not details.empty else pd.DataFrame()
+    title = "十大流通股东" if holder_kind == "free" else "十大股东"
+    lines = [f"### {title}", ""]
+    if sub.empty:
+        lines.append("- 暂无明细。")
+        return lines
+    sub["rank_sort"] = pd.to_numeric(sub.get("rank"), errors="coerce").fillna(9999)
+    sub = sub.sort_values("rank_sort").head(10)
+    lines.append("|排名|股东名称|类型|股份类型|持股数|占总股本|占流通股本|占比变化|方向|参考市值|")
+    lines.append("|---:|---|---|---|---:|---:|---:|---:|---|---:|")
+    for _, row in sub.iterrows():
+        lines.append(
+            f"|{_fmt_number(row.get('rank'), 0)}|{row.get('holder_name', '')}|{row.get('holder_type', '')}|"
+            f"{row.get('shares_type', '')}|{_fmt_number(row.get('hold_num'), 0)}|"
+            f"{_fmt_pct_value(row.get('hold_ratio_pct'))}|{_fmt_pct_value(row.get('free_hold_ratio_pct'))}|"
+            f"{_fmt_pct_value(row.get('hold_ratio_change_pct'))}|{row.get('direction', '')}|"
+            f"{human_amount(to_float(row.get('holder_market_cap')))}|"
+        )
+    return lines
+
+
+def write_company_shareholder_reports(
+    *,
+    rows: pd.DataFrame,
+    details: pd.DataFrame,
+    out_dir: Path,
+    charts_dir: Path,
+) -> list[dict[str, str]]:
+    """Write one shareholder-composition report per output stock.
+
+    The deep-dive CSV is useful for screening, while these per-company reports
+    make the shareholder composition directly reviewable for each bullish stock.
+    They can also be attached to later research notes or PR artifacts.
+    """
+
+    out_dir.mkdir(parents=True, exist_ok=True)
+    charts_dir.mkdir(parents=True, exist_ok=True)
+    if rows.empty:
+        return []
+    if details.empty:
+        details = pd.DataFrame(columns=["stock_code", "holder_kind"])
+    reports: list[dict[str, str]] = []
+    for _, stock in rows.iterrows():
+        code = _normalize_code(stock.get("stock_code"))
+        name = str(stock.get("stock_name") or "")
+        rank = int(to_float(stock.get("bullish_rank"), 0.0) or 0)
+        stem = f"{rank:02d}_{code}_{_safe_filename(name)}"
+        md_path = out_dir / f"{stem}_shareholder_composition.md"
+        stock_details = details[details["stock_code"].astype(str).str.zfill(6).eq(code)].copy()
+
+        chart_entries: list[tuple[str, Path]] = []
+        for holder_kind, label, ratio_col in (
+            ("free", "十大流通股东占比", "free_hold_ratio_pct"),
+            ("total", "十大股东占比", "hold_ratio_pct"),
+        ):
+            sub = stock_details[stock_details["holder_kind"].eq(holder_kind)].copy()
+            if sub.empty:
+                continue
+            sub["rank_sort"] = pd.to_numeric(sub.get("rank"), errors="coerce").fillna(9999)
+            sub = sub.sort_values("rank_sort").head(10)
+            chart_rows: list[tuple[str, float]] = []
+            for _, item in sub.iterrows():
+                ratio = _holder_ratio_for_chart(item)
+                if ratio is None:
+                    continue
+                chart_rows.append((f"{_fmt_number(item.get('rank'), 0)} {item.get('holder_name', '')}", ratio))
+            if chart_rows:
+                chart_path = charts_dir / f"{stem}_{holder_kind}_holders.svg"
+                write_horizontal_bar_chart(
+                    chart_path,
+                    title=f"{code} {name} {label}",
+                    subtitle="东方财富股东分析口径；按排名展示最新报告期前十大股东占比。",
+                    rows=chart_rows,
+                    value_kind="pct",
+                    positive_color="#7c3aed" if holder_kind == "free" else "#2563eb",
+                )
+                chart_entries.append((label, chart_path))
+
+        lines: list[str] = [
+            f"# {code} {name} 股东成分报告",
+            "",
+            f"- 生成时间：{dt.datetime.now().isoformat(timespec='seconds')}",
+            f"- 看涨排名：{rank}；综合评分：{_fmt_number(stock.get('bullish_score'), 3)}。",
+            f"- ETF/指数线索：{stock.get('family_ids', '')} / {stock.get('source_etf_codes', '')} {stock.get('source_etf_names', '')}。",
+            f"- 增长/交易机制标签：{stock.get('mechanism_tags', '')}。",
+            "- 说明：本报告是股东结构研究工件，不构成投资建议。",
+            "",
+            "## 1. 公司交易与 ETF 线索",
+            "",
+            "|项目|数值|",
+            "|---|---:|",
+            f"|行业/地区|{stock.get('industry', '')} / {stock.get('region', '')}|",
+            f"|最新价|{_fmt_number(stock.get('latest_price'), 2)}|",
+            f"|成交额|{human_amount(to_float(stock.get('quote_amount')) or to_float(stock.get('history_amount')))}|",
+            f"|换手率|{_fmt_pct_value(stock.get('quote_turnover_rate') or stock.get('history_turnover_rate'))}|",
+            f"|5日收益|{_fmt_ratio(stock.get('stock_ret_5'))}|",
+            f"|20日收益|{_fmt_ratio(stock.get('stock_ret_20'))}|",
+            f"|20日成交额放大倍数|{_fmt_number(stock.get('history_amount_ratio_20'), 2)}|",
+            f"|主力净流入|{human_amount(to_float(stock.get('main_net_inflow')))} ({_fmt_pct_value(stock.get('main_net_inflow_pct'))})|",
+            "",
+            "## 2. 股东结构快照",
+            "",
+            "|项目|数值|",
+            "|---|---:|",
+            f"|流通股东报告期|{stock.get('holder_report_date_free', '')}|",
+            f"|前十大流通股东合计占流通股本|{_fmt_pct_value(stock.get('top_free_holder_ratio_sum_pct'))}|",
+            f"|其中机构类流通股东占比|{_fmt_pct_value(stock.get('top_free_institution_ratio_sum_pct'))}|",
+            f"|其中基金/社保/QFII 类占比|{_fmt_pct_value(stock.get('top_free_fund_like_ratio_sum_pct'))}|",
+            f"|前十大流通股东占比变化合计|{_fmt_pct_value(stock.get('top_free_hold_ratio_change_sum_pct'))}|",
+            f"|第一大流通股东|{stock.get('top_free_holder_name', '')} / {stock.get('top_free_holder_type', '')} / {_fmt_pct_value(stock.get('top_free_holder_ratio_pct'))}|",
+            f"|十大股东报告期|{stock.get('holder_report_date_total', '')}|",
+            f"|前十大股东合计占总股本|{_fmt_pct_value(stock.get('top_total_holder_ratio_sum_pct'))}|",
+            f"|其中机构类十大股东占比|{_fmt_pct_value(stock.get('top_total_institution_ratio_sum_pct'))}|",
+            f"|前十大股东占比变化合计|{_fmt_pct_value(stock.get('top_total_hold_ratio_change_sum_pct'))}|",
+            f"|第一大股东|{stock.get('top_total_holder_name', '')} / {stock.get('top_total_holder_type', '')} / {_fmt_pct_value(stock.get('top_total_holder_ratio_pct'))}|",
+            "",
+        ]
+        if chart_entries:
+            lines.extend(["## 3. 股东占比图", ""])
+            for label, chart_path in chart_entries:
+                rel = chart_path.relative_to(REPORTS_DIR) if chart_path.is_relative_to(REPORTS_DIR) else chart_path
+                lines.append(f"![{label}](../{rel.as_posix()})")
+                lines.append("")
+        lines.extend(["## 4. 股东明细", ""])
+        lines.extend(_holder_detail_table(stock_details, "free"))
+        lines.append("")
+        lines.extend(_holder_detail_table(stock_details, "total"))
+        lines.extend(
+            [
+                "",
+                "## 5. 解读要点",
+                "",
+                "- 若“成交额放大 + 高换手交易”同时出现，说明上涨背后有真实交易活跃度，但也可能伴随波动放大。",
+                "- 前十大流通股东占比越高，筹码越集中；机构/基金占比越高，越需要继续核对定期报告、基金持仓和是否存在被动指数持仓。",
+                "- 股东占比变化为增持/减持线索，需结合公告日、股价位置和成交额验证，不应单独作为买卖依据。",
+                "",
+                "## 数据源",
+                "",
+                f"- 股东数据：{SOURCE_NOTE['shareholder']} ({SOURCE_NOTE['shareholder_reports']})",
+                f"- 行情与 K 线：{SOURCE_NOTE['stock_spot']} / {SOURCE_NOTE['stock_kline']}",
+            ]
+        )
+        md_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+        reports.append({"stock_code": code, "stock_name": name, "path": str(md_path)})
+    index_path = out_dir / "index.md"
+    index_lines = ["# 公司股东成分报告索引", ""]
+    for item in reports:
+        index_lines.append(f"- [{item['stock_code']} {item['stock_name']}]({Path(item['path']).name})")
+    index_path.write_text("\n".join(index_lines) + "\n", encoding="utf-8")
+    reports.insert(0, {"stock_code": "INDEX", "stock_name": "股东成分报告索引", "path": str(index_path)})
+    return reports
+
+
 def write_markdown_report(
     path: Path,
     *,
@@ -1080,6 +1255,7 @@ def write_markdown_report(
     etf_signals: pd.DataFrame,
     candidate_count: int,
     details_path: Path,
+    company_reports: list[dict[str, str]],
     chart_paths: dict[str, str],
     errors: dict[str, str],
     args: argparse.Namespace,
@@ -1170,6 +1346,11 @@ def write_markdown_report(
             f"- 摘要 JSON：`{path.with_suffix('.json')}`",
         ]
     )
+    if company_reports:
+        index_report = company_reports[0]
+        lines.append(f"- 公司股东成分报告索引：`{index_report.get('path')}`")
+        for item in company_reports[1:11]:
+            lines.append(f"  - `{item.get('stock_code')}` {item.get('stock_name')}：`{item.get('path')}`")
     if chart_paths:
         for label, chart_path in chart_paths.items():
             rel = Path(chart_path)
@@ -1235,6 +1416,14 @@ def run_deep_dive(args: argparse.Namespace) -> dict[str, Any]:
     final.to_csv(csv_path, index=False)
     shareholder_details.to_csv(details_path, index=False)
     chart_paths = write_deep_dive_charts(final, REPORTS_DIR / "charts")
+    company_reports: list[dict[str, str]] = []
+    if not args.no_company_reports:
+        company_reports = write_company_shareholder_reports(
+            rows=final,
+            details=shareholder_details,
+            out_dir=Path(args.company_report_dir),
+            charts_dir=REPORTS_DIR / "charts" / "shareholder_composition",
+        )
 
     errors = {**{f"history:{k}": v for k, v in history_errors.items()}, **{f"shareholder:{k}": v for k, v in shareholder_errors.items()}}
     summary = {
@@ -1245,6 +1434,7 @@ def run_deep_dive(args: argparse.Namespace) -> dict[str, Any]:
         "out_markdown": str(md_path),
         "out_shareholders": str(details_path),
         "out_candidates": str(candidates_path),
+        "company_reports": company_reports,
         "charts": chart_paths,
         "source_note": SOURCE_NOTE,
         "selected_etf_count": int(len(etf_signals)),
@@ -1261,6 +1451,7 @@ def run_deep_dive(args: argparse.Namespace) -> dict[str, Any]:
         etf_signals=etf_signals,
         candidate_count=len(candidates),
         details_path=details_path,
+        company_reports=company_reports,
         chart_paths=chart_paths,
         errors=errors,
         args=args,
@@ -1281,6 +1472,8 @@ def build_arg_parser() -> argparse.ArgumentParser:
     p.add_argument("--top-stocks", type=int, default=30, help="Number of bullish stock rows to enrich with shareholders and output.")
     p.add_argument("--history-days", type=int, default=120, help="Lookback trading-day budget for stock momentum/amount features.")
     p.add_argument("--end", default=today_yyyymmdd(), help="End date for K-line fetch, YYYYMMDD. Defaults to today.")
+    p.add_argument("--company-report-dir", default=str(REPORTS_DIR / "shareholder_composition"), help="Directory for per-company shareholder composition reports.")
+    p.add_argument("--no-company-reports", action="store_true", help="Do not write per-company shareholder composition Markdown reports.")
     p.add_argument("--refresh-related", action="store_true", help="Refresh related/component stocks from Eastmoney instead of only reading the CSV.")
     p.add_argument("--force", action="store_true", help="Ignore same-day caches and hit live endpoints.")
     return p
@@ -1293,6 +1486,8 @@ def main(argv: list[str] | None = None) -> dict[str, Any]:
     print(f"股东明细表：{summary['out_shareholders']}")
     print(f"Markdown 报告：{summary['out_markdown']}")
     print(f"候选池：{summary['out_candidates']}")
+    if summary.get("company_reports"):
+        print(f"公司股东成分报告索引：{summary['company_reports'][0]['path']}")
     return summary
 
 
