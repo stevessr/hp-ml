@@ -21,55 +21,55 @@
 <text x="42" y="116" class="label">CSI_A500 601288 农业银行</text>
 <rect x="320.3" y="101" width="629.3" height="18" rx="5" fill="#2563eb" opacity="0.88"/>
 <text x="956.7" y="116" text-anchor="start" class="label">2.0304</text>
-<text x="42" y="150" class="label">CSI_A500 601398 工商银行</text>
-<rect x="320.3" y="135" width="608.4" height="18" rx="5" fill="#2563eb" opacity="0.88"/>
-<text x="935.7" y="150" text-anchor="start" class="label">1.9628</text>
-<text x="42" y="184" class="label">CSI_A50 300750 宁德时代</text>
-<rect x="320.3" y="169" width="562.6" height="18" rx="5" fill="#2563eb" opacity="0.88"/>
-<text x="890.0" y="184" text-anchor="start" class="label">1.8153</text>
-<text x="42" y="218" class="label">CSI_A500 300750 宁德时代</text>
-<rect x="320.3" y="203" width="562.6" height="18" rx="5" fill="#2563eb" opacity="0.88"/>
-<text x="890.0" y="218" text-anchor="start" class="label">1.8153</text>
+<text x="42" y="150" class="label">CSI_A100 601398 工商银行</text>
+<rect x="320.3" y="135" width="613.4" height="18" rx="5" fill="#2563eb" opacity="0.88"/>
+<text x="940.7" y="150" text-anchor="start" class="label">1.9790</text>
+<text x="42" y="184" class="label">CSI_A500 601398 工商银行</text>
+<rect x="320.3" y="169" width="613.4" height="18" rx="5" fill="#2563eb" opacity="0.88"/>
+<text x="940.7" y="184" text-anchor="start" class="label">1.9790</text>
+<text x="42" y="218" class="label">CSI_A100 601857 中国石油</text>
+<rect x="320.3" y="203" width="532.5" height="18" rx="5" fill="#2563eb" opacity="0.88"/>
+<text x="859.8" y="218" text-anchor="start" class="label">1.7180</text>
 <text x="42" y="252" class="label">CSI_A500 601857 中国石油</text>
-<rect x="320.3" y="237" width="544.5" height="18" rx="5" fill="#2563eb" opacity="0.88"/>
-<text x="871.9" y="252" text-anchor="start" class="label">1.7569</text>
-<text x="42" y="286" class="label">CSI_A500 600519 贵州茅台</text>
-<rect x="320.3" y="271" width="496.7" height="18" rx="5" fill="#2563eb" opacity="0.88"/>
-<text x="824.0" y="286" text-anchor="start" class="label">1.6025</text>
-<text x="42" y="320" class="label">CSI_A50 300308 中际旭创</text>
-<rect x="320.3" y="305" width="438.5" height="18" rx="5" fill="#2563eb" opacity="0.88"/>
-<text x="765.8" y="320" text-anchor="start" class="label">1.4148</text>
-<text x="42" y="354" class="label">CSI_A500 300308 中际旭创</text>
-<rect x="320.3" y="339" width="438.5" height="18" rx="5" fill="#2563eb" opacity="0.88"/>
-<text x="765.8" y="354" text-anchor="start" class="label">1.4148</text>
-<text x="42" y="388" class="label">CSI_A500 601988 中国银行</text>
-<rect x="320.3" y="373" width="388.7" height="18" rx="5" fill="#2563eb" opacity="0.88"/>
-<text x="716.0" y="388" text-anchor="start" class="label">1.2541</text>
-<text x="42" y="422" class="label">CSI_A500 688256 寒武纪</text>
-<rect x="320.3" y="407" width="268.4" height="18" rx="5" fill="#2563eb" opacity="0.88"/>
-<text x="595.7" y="422" text-anchor="start" class="label">0.8659</text>
-<text x="42" y="456" class="label">CSI_A500 601088 中国神华</text>
-<rect x="320.3" y="441" width="249.7" height="18" rx="5" fill="#2563eb" opacity="0.88"/>
-<text x="577.0" y="456" text-anchor="start" class="label">0.8056</text>
-<text x="42" y="490" class="label">CSI_A500 600036 招商银行</text>
-<rect x="320.3" y="475" width="246.2" height="18" rx="5" fill="#2563eb" opacity="0.88"/>
-<text x="573.5" y="490" text-anchor="start" class="label">0.7942</text>
-<text x="42" y="524" class="label">CSI_A50 300502 新易盛</text>
-<rect x="320.3" y="509" width="215.1" height="18" rx="5" fill="#2563eb" opacity="0.88"/>
-<text x="542.5" y="524" text-anchor="start" class="label">0.6941</text>
-<text x="42" y="558" class="label">CSI_A500 300502 新易盛</text>
-<rect x="320.3" y="543" width="215.1" height="18" rx="5" fill="#2563eb" opacity="0.88"/>
-<text x="542.5" y="558" text-anchor="start" class="label">0.6941</text>
-<text x="42" y="592" class="label">CSI_A500 601628 中国人寿</text>
-<rect x="320.3" y="577" width="212.2" height="18" rx="5" fill="#2563eb" opacity="0.88"/>
-<text x="539.6" y="592" text-anchor="start" class="label">0.6847</text>
-<text x="42" y="626" class="label">CSI_A500 600900 长江电力</text>
-<rect x="320.3" y="611" width="211.5" height="18" rx="5" fill="#2563eb" opacity="0.88"/>
-<text x="538.9" y="626" text-anchor="start" class="label">0.6824</text>
-<text x="42" y="660" class="label">CSI_A500 688041 海光信息</text>
-<rect x="320.3" y="645" width="206.0" height="18" rx="5" fill="#2563eb" opacity="0.88"/>
-<text x="533.3" y="660" text-anchor="start" class="label">0.6646</text>
-<text x="42" y="694" class="label">CSI_A500 601899 紫金矿业</text>
-<rect x="320.3" y="679" width="199.7" height="18" rx="5" fill="#2563eb" opacity="0.88"/>
-<text x="527.0" y="694" text-anchor="start" class="label">0.6442</text>
+<rect x="320.3" y="237" width="532.5" height="18" rx="5" fill="#2563eb" opacity="0.88"/>
+<text x="859.8" y="252" text-anchor="start" class="label">1.7180</text>
+<text x="42" y="286" class="label">CSI_A100 300750 宁德时代</text>
+<rect x="320.3" y="271" width="531.7" height="18" rx="5" fill="#2563eb" opacity="0.88"/>
+<text x="859.1" y="286" text-anchor="start" class="label">1.7156</text>
+<text x="42" y="320" class="label">CSI_A50 300750 宁德时代</text>
+<rect x="320.3" y="305" width="531.7" height="18" rx="5" fill="#2563eb" opacity="0.88"/>
+<text x="859.1" y="320" text-anchor="start" class="label">1.7156</text>
+<text x="42" y="354" class="label">CSI_A500 300750 宁德时代</text>
+<rect x="320.3" y="339" width="531.7" height="18" rx="5" fill="#2563eb" opacity="0.88"/>
+<text x="859.1" y="354" text-anchor="start" class="label">1.7156</text>
+<text x="42" y="388" class="label">CSI_A100 600519 贵州茅台</text>
+<rect x="320.3" y="373" width="493.2" height="18" rx="5" fill="#2563eb" opacity="0.88"/>
+<text x="820.5" y="388" text-anchor="start" class="label">1.5912</text>
+<text x="42" y="422" class="label">CSI_A500 600519 贵州茅台</text>
+<rect x="320.3" y="407" width="493.2" height="18" rx="5" fill="#2563eb" opacity="0.88"/>
+<text x="820.5" y="422" text-anchor="start" class="label">1.5912</text>
+<text x="42" y="456" class="label">CSI_A100 300308 中际旭创</text>
+<rect x="320.3" y="441" width="405.8" height="18" rx="5" fill="#2563eb" opacity="0.88"/>
+<text x="733.2" y="456" text-anchor="start" class="label">1.3093</text>
+<text x="42" y="490" class="label">CSI_A50 300308 中际旭创</text>
+<rect x="320.3" y="475" width="405.8" height="18" rx="5" fill="#2563eb" opacity="0.88"/>
+<text x="733.2" y="490" text-anchor="start" class="label">1.3093</text>
+<text x="42" y="524" class="label">CSI_A500 300308 中际旭创</text>
+<rect x="320.3" y="509" width="405.8" height="18" rx="5" fill="#2563eb" opacity="0.88"/>
+<text x="733.2" y="524" text-anchor="start" class="label">1.3093</text>
+<text x="42" y="558" class="label">CSI_A500 601988 中国银行</text>
+<rect x="320.3" y="543" width="395.2" height="18" rx="5" fill="#2563eb" opacity="0.88"/>
+<text x="722.6" y="558" text-anchor="start" class="label">1.2751</text>
+<text x="42" y="592" class="label">CSI_A100 688256 寒武纪</text>
+<rect x="320.3" y="577" width="253.0" height="18" rx="5" fill="#2563eb" opacity="0.88"/>
+<text x="580.3" y="592" text-anchor="start" class="label">0.8163</text>
+<text x="42" y="626" class="label">CSI_A500 688256 寒武纪</text>
+<rect x="320.3" y="611" width="253.0" height="18" rx="5" fill="#2563eb" opacity="0.88"/>
+<text x="580.3" y="626" text-anchor="start" class="label">0.8163</text>
+<text x="42" y="660" class="label">CSI_A100 601088 中国神华</text>
+<rect x="320.3" y="645" width="248.0" height="18" rx="5" fill="#2563eb" opacity="0.88"/>
+<text x="575.3" y="660" text-anchor="start" class="label">0.8001</text>
+<text x="42" y="694" class="label">CSI_A500 601088 中国神华</text>
+<rect x="320.3" y="679" width="248.0" height="18" rx="5" fill="#2563eb" opacity="0.88"/>
+<text x="575.3" y="694" text-anchor="start" class="label">0.8001</text>
 </svg>

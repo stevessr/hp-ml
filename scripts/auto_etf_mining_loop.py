@@ -118,16 +118,21 @@ def run_lite_train(config: dict[str, Any], force: bool = False) -> tuple[bool, P
     """运行lite_train生成ETF预测"""
     cmd = [
         sys.executable, "-m", "hp_ml.lite_train",
-        "--top-n", str(config["top_n"]),
+        "--max-etfs-per-index", str(config["max_etfs_per_index"]),
         "--min-amount", str(config["min_amount"]),
-        "--lookback", str(config["lookback"]),
+        "--test-days", str(config["test_days"]),
     ]
+    if config.get("auto_tune", False):
+        cmd.append("--auto-tune")
+    else:
+        cmd.append("--no-auto-tune")
+
     if force:
         cmd.append("--force")
 
     success, _ = run_command(
         cmd,
-        f"运行lite_train (top_n={config['top_n']}, min_amount={config['min_amount']}, lookback={config['lookback']})",
+        f"运行lite_train (max_etfs={config['max_etfs_per_index']}, min_amount={config['min_amount']}, test_days={config['test_days']}, auto_tune={config.get('auto_tune', False)})",
         timeout=900,
     )
 
@@ -205,7 +210,7 @@ def save_iteration_log(
     logs.append(log_entry)
 
     with open(log_path, "w") as f:
-        json.dumps(logs, f, indent=2, ensure_ascii=False)
+        json.dump(logs, f, indent=2, ensure_ascii=False)
 
     print(f"💾 迭代日志已保存: {log_path}")
 

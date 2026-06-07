@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="1254" viewBox="0 0 1120 1254" role="img">
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="574" viewBox="0 0 1120 574" role="img">
 <style>
   text { font-family: 'Noto Sans CJK SC','Microsoft YaHei','PingFang SC','WenQuanYi Micro Hei',Arial,sans-serif; fill: #0f172a; }
   .title { font-size: 24px; font-weight: 800; }
@@ -8,113 +8,53 @@
   .axis { stroke: #e2e8f0; stroke-width: 1; }
 </style>
 <rect width="100%" height="100%" fill="#f8fafc"/>
-<rect x="14" y="14" width="1092" height="1226" rx="18" fill="#ffffff"/>
+<rect x="14" y="14" width="1092" height="546" rx="18" fill="#ffffff"/>
 <text x="42" y="52" class="title">最新中证宽基 ETF 预测排序（未来 5 日）</text>
 <text x="42" y="76" class="subtitle">横轴为模型预测未来收益率；排序越靠上代表模型分数越高。</text>
-<line x1="904.9" y1="80" x2="904.9" y2="1228" stroke="#64748b" stroke-width="1.2" stroke-dasharray="4 4"/>
-<line x1="270.0" y1="82" x2="270.0" y2="1226" class="axis"/>
-<text x="270.0" y="1248" text-anchor="middle" class="muted">-0.88%</text>
-<line x1="904.9" y1="82" x2="904.9" y2="1226" class="axis"/>
-<text x="904.9" y="1248" text-anchor="middle" class="muted">0.00%</text>
-<line x1="1000.0" y1="82" x2="1000.0" y2="1226" class="axis"/>
-<text x="1000.0" y="1248" text-anchor="middle" class="muted">0.13%</text>
-<text x="42" y="116" class="label">1. 510500 中证500ETF南方</text>
-<rect x="904.9" y="101" width="44.7" height="18" rx="5" fill="#2563eb" opacity="0.88"/>
-<text x="956.7" y="116" text-anchor="start" class="label">0.06%</text>
-<text x="42" y="150" class="label">2. 560510 中证A500ETF泰康</text>
-<rect x="904.9" y="135" width="42.1" height="18" rx="5" fill="#2563eb" opacity="0.88"/>
-<text x="954.0" y="150" text-anchor="start" class="label">0.06%</text>
-<text x="42" y="184" class="label">3. 560530 中证A500ETF摩根</text>
-<rect x="889.6" y="169" width="15.3" height="18" rx="5" fill="#dc2626" opacity="0.88"/>
-<text x="882.6" y="184" text-anchor="end" class="label">-0.02%</text>
-<text x="42" y="218" class="label">4. 159338 中证A500ETF国泰</text>
-<rect x="883.7" y="203" width="21.2" height="18" rx="5" fill="#dc2626" opacity="0.88"/>
-<text x="876.7" y="218" text-anchor="end" class="label">-0.03%</text>
-<text x="42" y="252" class="label">5. 159358 中证A500ETF大成</text>
-<rect x="855.6" y="237" width="49.3" height="18" rx="5" fill="#dc2626" opacity="0.88"/>
-<text x="848.6" y="252" text-anchor="end" class="label">-0.07%</text>
-<text x="42" y="286" class="label">6. 159353 中证A500ETF景顺</text>
-<rect x="815.5" y="271" width="89.4" height="18" rx="5" fill="#dc2626" opacity="0.88"/>
-<text x="808.5" y="286" text-anchor="end" class="label">-0.12%</text>
-<text x="42" y="320" class="label">7. 159800 中证800ETF鹏华</text>
-<rect x="794.5" y="305" width="110.4" height="18" rx="5" fill="#dc2626" opacity="0.88"/>
-<text x="787.5" y="320" text-anchor="end" class="label">-0.15%</text>
-<text x="42" y="354" class="label">8. 510350 沪深300ETF工银</text>
-<rect x="784.0" y="339" width="120.9" height="18" rx="5" fill="#dc2626" opacity="0.88"/>
-<text x="777.0" y="354" text-anchor="end" class="label">-0.17%</text>
-<text x="42" y="388" class="label">9. 159136 A50ETF广发</text>
-<rect x="773.7" y="373" width="131.2" height="18" rx="5" fill="#dc2626" opacity="0.88"/>
-<text x="766.7" y="388" text-anchor="end" class="label">-0.18%</text>
-<text x="42" y="422" class="label">10. 159390 中证A50ETF国联</text>
-<rect x="748.4" y="407" width="156.5" height="18" rx="5" fill="#dc2626" opacity="0.88"/>
-<text x="741.4" y="422" text-anchor="end" class="label">-0.22%</text>
+<line x1="320.3" y1="80" x2="320.3" y2="548" stroke="#64748b" stroke-width="1.2" stroke-dasharray="4 4"/>
+<line x1="270.0" y1="82" x2="270.0" y2="546" class="axis"/>
+<text x="270.0" y="568" text-anchor="middle" class="muted">-0.10%</text>
+<line x1="320.3" y1="82" x2="320.3" y2="546" class="axis"/>
+<text x="320.3" y="568" text-anchor="middle" class="muted">0.00%</text>
+<line x1="1000.0" y1="82" x2="1000.0" y2="546" class="axis"/>
+<text x="1000.0" y="568" text-anchor="middle" class="muted">1.29%</text>
+<text x="42" y="116" class="label">1. 159352 中证A500ETF</text>
+<rect x="320.3" y="101" width="629.3" height="18" rx="5" fill="#2563eb" opacity="0.88"/>
+<text x="956.7" y="116" text-anchor="start" class="label">1.19%</text>
+<text x="42" y="150" class="label">2. 563360 中证A500ETF华泰柏瑞</text>
+<rect x="320.3" y="135" width="610.1" height="18" rx="5" fill="#2563eb" opacity="0.88"/>
+<text x="937.5" y="150" text-anchor="start" class="label">1.15%</text>
+<text x="42" y="184" class="label">3. 159601 中证A50ETF华夏</text>
+<rect x="320.3" y="169" width="584.8" height="18" rx="5" fill="#2563eb" opacity="0.88"/>
+<text x="912.2" y="184" text-anchor="start" class="label">1.11%</text>
+<text x="42" y="218" class="label">4. 159531 中证2000ETF南方</text>
+<rect x="320.3" y="203" width="561.9" height="18" rx="5" fill="#2563eb" opacity="0.88"/>
+<text x="889.2" y="218" text-anchor="start" class="label">1.06%</text>
+<text x="42" y="252" class="label">5. 510310 沪深300ETF易方达</text>
+<rect x="320.3" y="237" width="552.1" height="18" rx="5" fill="#2563eb" opacity="0.88"/>
+<text x="879.4" y="252" text-anchor="start" class="label">1.04%</text>
+<text x="42" y="286" class="label">6. 510300 沪深300ETF华泰柏瑞</text>
+<rect x="320.3" y="271" width="524.9" height="18" rx="5" fill="#2563eb" opacity="0.88"/>
+<text x="852.2" y="286" text-anchor="start" class="label">0.99%</text>
+<text x="42" y="320" class="label">7. 159627 中证A100ETF华夏</text>
+<rect x="320.3" y="305" width="451.2" height="18" rx="5" fill="#2563eb" opacity="0.88"/>
+<text x="778.6" y="320" text-anchor="start" class="label">0.85%</text>
+<text x="42" y="354" class="label">8. 510500 中证500ETF南方</text>
+<rect x="320.3" y="339" width="450.2" height="18" rx="5" fill="#2563eb" opacity="0.88"/>
+<text x="777.5" y="354" text-anchor="start" class="label">0.85%</text>
+<text x="42" y="388" class="label">9. 512100 中证1000ETF南方</text>
+<rect x="320.3" y="373" width="446.4" height="18" rx="5" fill="#2563eb" opacity="0.88"/>
+<text x="773.8" y="388" text-anchor="start" class="label">0.84%</text>
+<text x="42" y="422" class="label">10. 159800 中证800ETF鹏华</text>
+<rect x="320.3" y="407" width="428.8" height="18" rx="5" fill="#2563eb" opacity="0.88"/>
+<text x="756.1" y="422" text-anchor="start" class="label">0.81%</text>
 <text x="42" y="456" class="label">11. 512500 中证500ETF华夏</text>
-<rect x="735.3" y="441" width="169.6" height="18" rx="5" fill="#dc2626" opacity="0.88"/>
-<text x="728.3" y="456" text-anchor="end" class="label">-0.24%</text>
-<text x="42" y="490" class="label">12. 159592 A50ETF银华</text>
-<rect x="709.6" y="475" width="195.3" height="18" rx="5" fill="#dc2626" opacity="0.88"/>
-<text x="702.6" y="490" text-anchor="end" class="label">-0.27%</text>
-<text x="42" y="524" class="label">13. 159593 中证A50ETF平安</text>
-<rect x="698.5" y="509" width="206.4" height="18" rx="5" fill="#dc2626" opacity="0.88"/>
-<text x="691.5" y="524" text-anchor="end" class="label">-0.29%</text>
-<text x="42" y="558" class="label">14. 159591 A50ETF富国</text>
-<rect x="682.1" y="543" width="222.8" height="18" rx="5" fill="#dc2626" opacity="0.88"/>
-<text x="675.1" y="558" text-anchor="end" class="label">-0.31%</text>
-<text x="42" y="592" class="label">15. 510580 中证500ETF易方达</text>
-<rect x="673.4" y="577" width="231.5" height="18" rx="5" fill="#dc2626" opacity="0.88"/>
-<text x="666.4" y="592" text-anchor="end" class="label">-0.32%</text>
-<text x="42" y="626" class="label">16. 510300 沪深300ETF华泰柏瑞</text>
-<rect x="646.5" y="611" width="258.4" height="18" rx="5" fill="#dc2626" opacity="0.88"/>
-<text x="639.5" y="626" text-anchor="end" class="label">-0.36%</text>
-<text x="42" y="660" class="label">17. 159633 中证1000ETF易方达</text>
-<rect x="633.7" y="645" width="271.2" height="18" rx="5" fill="#dc2626" opacity="0.88"/>
-<text x="626.7" y="660" text-anchor="end" class="label">-0.38%</text>
-<text x="42" y="694" class="label">18. 560010 中证1000ETF广发</text>
-<rect x="626.8" y="679" width="278.1" height="18" rx="5" fill="#dc2626" opacity="0.88"/>
-<text x="619.8" y="694" text-anchor="end" class="label">-0.39%</text>
-<text x="42" y="728" class="label">19. 159922 中证500ETF嘉实</text>
-<rect x="618.1" y="713" width="286.9" height="18" rx="5" fill="#dc2626" opacity="0.88"/>
-<text x="611.1" y="728" text-anchor="end" class="label">-0.40%</text>
-<text x="42" y="762" class="label">20. 159845 中证1000ETF华夏</text>
-<rect x="607.0" y="747" width="297.9" height="18" rx="5" fill="#dc2626" opacity="0.88"/>
-<text x="600.0" y="762" text-anchor="end" class="label">-0.41%</text>
-<text x="42" y="796" class="label">21. 159629 中证1000ETF富国</text>
-<rect x="606.6" y="781" width="298.3" height="18" rx="5" fill="#dc2626" opacity="0.88"/>
-<text x="599.6" y="796" text-anchor="end" class="label">-0.41%</text>
-<text x="42" y="830" class="label">22. 510510 中证500ETF广发</text>
-<rect x="602.1" y="815" width="302.8" height="18" rx="5" fill="#dc2626" opacity="0.88"/>
-<text x="595.1" y="830" text-anchor="end" class="label">-0.42%</text>
-<text x="42" y="864" class="label">23. 510330 沪深300ETF华夏</text>
-<rect x="578.0" y="849" width="326.9" height="18" rx="5" fill="#dc2626" opacity="0.88"/>
-<text x="571.0" y="864" text-anchor="end" class="label">-0.45%</text>
-<text x="42" y="898" class="label">24. 510310 沪深300ETF易方达</text>
-<rect x="569.3" y="883" width="335.7" height="18" rx="5" fill="#dc2626" opacity="0.88"/>
-<text x="562.3" y="898" text-anchor="end" class="label">-0.47%</text>
-<text x="42" y="932" class="label">25. 515810 中证800ETF易方达</text>
-<rect x="559.9" y="917" width="345.0" height="18" rx="5" fill="#dc2626" opacity="0.88"/>
-<text x="552.9" y="932" text-anchor="end" class="label">-0.48%</text>
-<text x="42" y="966" class="label">26. 515800 中证800ETF汇添富</text>
-<rect x="554.8" y="951" width="350.1" height="18" rx="5" fill="#dc2626" opacity="0.88"/>
-<text x="547.8" y="966" text-anchor="end" class="label">-0.49%</text>
-<text x="42" y="1000" class="label">27. 159536 中证2000ETF汇添富</text>
-<rect x="532.1" y="985" width="372.9" height="18" rx="5" fill="#dc2626" opacity="0.88"/>
-<text x="525.1" y="1000" text-anchor="end" class="label">-0.52%</text>
-<text x="42" y="1034" class="label">28. 159919 沪深300ETF嘉实</text>
-<rect x="482.3" y="1019" width="422.7" height="18" rx="5" fill="#dc2626" opacity="0.88"/>
-<text x="475.3" y="1034" text-anchor="end" class="label">-0.59%</text>
-<text x="42" y="1068" class="label">29. 159532 中证2000ETF易方达</text>
-<rect x="421.7" y="1053" width="483.2" height="18" rx="5" fill="#dc2626" opacity="0.88"/>
-<text x="414.7" y="1068" text-anchor="end" class="label">-0.67%</text>
-<text x="42" y="1102" class="label">30. 159531 中证2000ETF南方</text>
-<rect x="411.7" y="1087" width="493.2" height="18" rx="5" fill="#dc2626" opacity="0.88"/>
-<text x="404.7" y="1102" text-anchor="end" class="label">-0.68%</text>
-<text x="42" y="1136" class="label">31. 512100 中证1000ETF南方</text>
-<rect x="380.9" y="1121" width="524.0" height="18" rx="5" fill="#dc2626" opacity="0.88"/>
-<text x="373.9" y="1136" text-anchor="end" class="label">-0.73%</text>
-<text x="42" y="1170" class="label">32. 159533 中证2000ETF博时</text>
-<rect x="366.5" y="1155" width="538.4" height="18" rx="5" fill="#dc2626" opacity="0.88"/>
-<text x="359.5" y="1170" text-anchor="end" class="label">-0.75%</text>
-<text x="42" y="1204" class="label">33. 159535 中证2000ETF嘉实</text>
-<rect x="320.3" y="1189" width="584.6" height="18" rx="5" fill="#dc2626" opacity="0.88"/>
-<text x="313.3" y="1204" text-anchor="end" class="label">-0.81%</text>
+<rect x="320.3" y="441" width="411.3" height="18" rx="5" fill="#2563eb" opacity="0.88"/>
+<text x="738.7" y="456" text-anchor="start" class="label">0.78%</text>
+<text x="42" y="490" class="label">12. 159845 中证1000ETF华夏</text>
+<rect x="320.3" y="475" width="392.9" height="18" rx="5" fill="#2563eb" opacity="0.88"/>
+<text x="720.2" y="490" text-anchor="start" class="label">0.74%</text>
+<text x="42" y="524" class="label">13. 159136 中证A50ETF广发</text>
+<rect x="320.3" y="509" width="342.7" height="18" rx="5" fill="#2563eb" opacity="0.88"/>
+<text x="670.0" y="524" text-anchor="start" class="label">0.65%</text>
 </svg>

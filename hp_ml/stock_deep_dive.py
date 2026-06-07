@@ -1511,6 +1511,12 @@ def write_company_shareholder_reports(
 
     out_dir.mkdir(parents=True, exist_ok=True)
     charts_dir.mkdir(parents=True, exist_ok=True)
+    for old in out_dir.glob("*_shareholder_composition.md"):
+        old.unlink()
+    for old in charts_dir.glob("*_holders*.svg"):
+        old.unlink()
+    for old in charts_dir.glob("*_individual_holder_history.svg"):
+        old.unlink()
     if rows.empty:
         return []
     if details.empty:

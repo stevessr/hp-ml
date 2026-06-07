@@ -11,47 +11,47 @@
 <rect x="14" y="14" width="1092" height="512" rx="18" fill="#ffffff"/>
 <text x="42" y="52" class="title">自动调参：购买策略参数 Top 组合</text>
 <text x="42" y="76" class="subtitle">按验证期综合目标排序，标签为 TopK / 最低预测收益。</text>
-<line x1="646.1" y1="80" x2="646.1" y2="514" stroke="#64748b" stroke-width="1.2" stroke-dasharray="4 4"/>
+<line x1="320.3" y1="80" x2="320.3" y2="514" stroke="#64748b" stroke-width="1.2" stroke-dasharray="4 4"/>
 <line x1="270.0" y1="82" x2="270.0" y2="512" class="axis"/>
-<text x="270.0" y="534" text-anchor="middle" class="muted">-0.375</text>
-<line x1="646.1" y1="82" x2="646.1" y2="512" class="axis"/>
-<text x="646.1" y="534" text-anchor="middle" class="muted">0.000</text>
+<text x="270.0" y="534" text-anchor="middle" class="muted">-0.049</text>
+<line x1="320.3" y1="82" x2="320.3" y2="512" class="axis"/>
+<text x="320.3" y="534" text-anchor="middle" class="muted">0.000</text>
 <line x1="1000.0" y1="82" x2="1000.0" y2="512" class="axis"/>
-<text x="1000.0" y="534" text-anchor="middle" class="muted">0.353</text>
-<text x="42" y="116" class="label">K=5 min=2.00%</text>
-<rect x="646.1" y="101" width="303.5" height="18" rx="5" fill="#2563eb" opacity="0.88"/>
-<text x="956.7" y="116" text-anchor="start" class="label">0.3029</text>
-<text x="42" y="150" class="label">K=4 min=2.00%</text>
-<rect x="646.1" y="135" width="303.2" height="18" rx="5" fill="#2563eb" opacity="0.88"/>
-<text x="956.3" y="150" text-anchor="start" class="label">0.3026</text>
-<text x="42" y="184" class="label">K=3 min=2.00%</text>
-<rect x="646.1" y="169" width="296.5" height="18" rx="5" fill="#2563eb" opacity="0.88"/>
-<text x="949.6" y="184" text-anchor="start" class="label">0.2959</text>
-<text x="42" y="218" class="label">K=2 min=2.00%</text>
-<rect x="646.1" y="203" width="284.6" height="18" rx="5" fill="#2563eb" opacity="0.88"/>
-<text x="937.8" y="218" text-anchor="start" class="label">0.2840</text>
-<text x="42" y="252" class="label">K=1 min=2.00%</text>
-<rect x="646.1" y="237" width="278.2" height="18" rx="5" fill="#2563eb" opacity="0.88"/>
-<text x="931.4" y="252" text-anchor="start" class="label">0.2777</text>
-<text x="42" y="286" class="label">K=5 min=0.50%</text>
-<rect x="453.1" y="271" width="193.0" height="18" rx="5" fill="#dc2626" opacity="0.88"/>
-<text x="446.1" y="286" text-anchor="end" class="label">-0.1926</text>
-<text x="42" y="320" class="label">K=5 min=1.00%</text>
-<rect x="386.8" y="305" width="259.4" height="18" rx="5" fill="#dc2626" opacity="0.88"/>
-<text x="379.8" y="320" text-anchor="end" class="label">-0.2589</text>
-<text x="42" y="354" class="label">K=2 min=0.50%</text>
-<rect x="380.2" y="339" width="265.9" height="18" rx="5" fill="#dc2626" opacity="0.88"/>
-<text x="373.2" y="354" text-anchor="end" class="label">-0.2654</text>
-<text x="42" y="388" class="label">K=3 min=0.50%</text>
-<rect x="356.3" y="373" width="289.8" height="18" rx="5" fill="#dc2626" opacity="0.88"/>
-<text x="349.3" y="388" text-anchor="end" class="label">-0.2893</text>
-<text x="42" y="422" class="label">K=4 min=0.50%</text>
-<rect x="354.5" y="407" width="291.7" height="18" rx="5" fill="#dc2626" opacity="0.88"/>
-<text x="347.5" y="422" text-anchor="end" class="label">-0.2911</text>
-<text x="42" y="456" class="label">K=2 min=-0.50%</text>
-<rect x="320.3" y="441" width="325.8" height="18" rx="5" fill="#dc2626" opacity="0.88"/>
-<text x="313.3" y="456" text-anchor="end" class="label">-0.3251</text>
-<text x="42" y="490" class="label">K=2 min=0.00%</text>
-<rect x="320.3" y="475" width="325.8" height="18" rx="5" fill="#dc2626" opacity="0.88"/>
-<text x="313.3" y="490" text-anchor="end" class="label">-0.3251</text>
+<text x="1000.0" y="534" text-anchor="middle" class="muted">0.666</text>
+<text x="42" y="116" class="label">K=5 min=0.50%</text>
+<rect x="320.3" y="101" width="629.3" height="18" rx="5" fill="#2563eb" opacity="0.88"/>
+<text x="956.7" y="116" text-anchor="start" class="label">0.6170</text>
+<text x="42" y="150" class="label">K=4 min=0.50%</text>
+<rect x="320.3" y="135" width="626.3" height="18" rx="5" fill="#2563eb" opacity="0.88"/>
+<text x="953.6" y="150" text-anchor="start" class="label">0.6140</text>
+<text x="42" y="184" class="label">K=2 min=0.50%</text>
+<rect x="320.3" y="169" width="623.2" height="18" rx="5" fill="#2563eb" opacity="0.88"/>
+<text x="950.6" y="184" text-anchor="start" class="label">0.6110</text>
+<text x="42" y="218" class="label">K=3 min=0.50%</text>
+<rect x="320.3" y="203" width="615.7" height="18" rx="5" fill="#2563eb" opacity="0.88"/>
+<text x="943.0" y="218" text-anchor="start" class="label">0.6036</text>
+<text x="42" y="252" class="label">K=2 min=1.00%</text>
+<rect x="320.3" y="237" width="596.6" height="18" rx="5" fill="#2563eb" opacity="0.88"/>
+<text x="924.0" y="252" text-anchor="start" class="label">0.5849</text>
+<text x="42" y="286" class="label">K=3 min=1.00%</text>
+<rect x="320.3" y="271" width="596.6" height="18" rx="5" fill="#2563eb" opacity="0.88"/>
+<text x="924.0" y="286" text-anchor="start" class="label">0.5849</text>
+<text x="42" y="320" class="label">K=4 min=1.00%</text>
+<rect x="320.3" y="305" width="596.6" height="18" rx="5" fill="#2563eb" opacity="0.88"/>
+<text x="924.0" y="320" text-anchor="start" class="label">0.5849</text>
+<text x="42" y="354" class="label">K=5 min=1.00%</text>
+<rect x="320.3" y="339" width="596.6" height="18" rx="5" fill="#2563eb" opacity="0.88"/>
+<text x="924.0" y="354" text-anchor="start" class="label">0.5849</text>
+<text x="42" y="388" class="label">K=1 min=0.50%</text>
+<rect x="320.3" y="373" width="579.0" height="18" rx="5" fill="#2563eb" opacity="0.88"/>
+<text x="906.4" y="388" text-anchor="start" class="label">0.5677</text>
+<text x="42" y="422" class="label">K=1 min=1.00%</text>
+<rect x="320.3" y="407" width="543.6" height="18" rx="5" fill="#2563eb" opacity="0.88"/>
+<text x="870.9" y="422" text-anchor="start" class="label">0.5329</text>
+<text x="42" y="456" class="label">K=4 min=-0.50%</text>
+<rect x="320.3" y="441" width="527.4" height="18" rx="5" fill="#2563eb" opacity="0.88"/>
+<text x="854.7" y="456" text-anchor="start" class="label">0.5170</text>
+<text x="42" y="490" class="label">K=3 min=-0.50%</text>
+<rect x="320.3" y="475" width="526.5" height="18" rx="5" fill="#2563eb" opacity="0.88"/>
+<text x="853.9" y="490" text-anchor="start" class="label">0.5162</text>
 </svg>
