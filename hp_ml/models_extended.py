@@ -527,6 +527,379 @@ class AttentionLSTMModel:
         return full_predictions
 
 
+class MultiHeadAttentionLSTM:
+    """多头注意力 LSTM 模型"""
+
+    def __init__(
+        self,
+        seq_length: int = 20,
+        units: int = 64,
+        num_heads: int = 4,
+        dropout: float = 0.2,
+        learning_rate: float = 0.001,
+        epochs: int = 50,
+        batch_size: int = 32,
+        early_stopping_patience: int = 10,
+    ):
+        if not TF_AVAILABLE:
+            raise ImportError("TensorFlow 未安装，请运行: pip install tensorflow")
+
+        self.seq_length = seq_length
+        self.units = units
+        self.num_heads = num_heads
+        self.dropout = dropout
+        self.learning_rate = learning_rate
+        self.epochs = epochs
+        self.batch_size = batch_size
+        self.early_stopping_patience = early_stopping_patience
+        self.model_: Any = None
+        self.scaler_ = StandardScaler()
+        self.feature_names_: list[str] = []
+
+    def _build_model(self, input_shape: tuple[int, int]) -> keras.Model:
+        """构建多头注意力 LSTM 模型"""
+        inputs = keras.layers.Input(shape=input_shape)
+
+        # LSTM 层
+        lstm_out = keras.layers.LSTM(self.units, return_sequences=True)(inputs)
+        lstm_out = keras.layers.Dropout(self.dropout)(lstm_out)
+
+        # 多头注意力层
+        attention_out = keras.layers.MultiHeadAttention(
+            num_heads=self.num_heads,
+            key_dim=self.units // self.num_heads,
+            dropout=self.dropout
+        )(lstm_out, lstm_out)
+
+        # 残差连接和层归一化
+        attention_out = keras.layers.Add()([lstm_out, attention_out])
+        attention_out = keras.layers.LayerNormalization()(attention_out)
+
+        # 全局平均池化
+        pooled = keras.layers.GlobalAveragePooling1D()(attention_out)
+
+        # 输出层
+        dense = keras.layers.Dense(32, activation="relu")(pooled)
+        dense = keras.layers.Dropout(self.dropout)(dense)
+        outputs = keras.layers.Dense(1)(dense)
+
+        model = keras.Model(inputs=inputs, outputs=outputs)
+        optimizer = keras.optimizers.Adam(learning_rate=self.learning_rate)
+        model.compile(optimizer=optimizer, loss="mse", metrics=["mae"])
+        return model
+
+    def fit(self, X: pd.DataFrame, y: pd.Series) -> MultiHeadAttentionLSTM:
+        """训练多头注意力 LSTM 模型"""
+        from .data_pipeline import prepare_lstm_sequences
+
+        feature_cols = [col for col in X.columns if col not in ["code", "date", "name", "family_id", "is_trainable"]]
+        self.feature_names_ = feature_cols
+
+        df_train = X.copy()
+        df_train["target"] = y.values
+
+        X_seq, y_seq = prepare_lstm_sequences(df_train, feature_cols, "target", self.seq_length)
+        X_seq_scaled = self.scaler_.fit_transform(X_seq.reshape(-1, X_seq.shape[-1])).reshape(X_seq.shape)
+
+        self.model_ = self._build_model((self.seq_length, len(feature_cols)))
+
+        early_stop = keras.callbacks.EarlyStopping(
+            monitor="val_loss",
+            patience=self.early_stopping_patience,
+            restore_best_weights=True
+        )
+
+        self.model_.fit(
+            X_seq_scaled, y_seq,
+            epochs=self.epochs,
+            batch_size=self.batch_size,
+            validation_split=0.2,
+            callbacks=[early_stop],
+            verbose=0
+        )
+
+        return self
+
+    def predict(self, X: pd.DataFrame) -> np.ndarray:
+        """预测"""
+        if self.model_ is None:
+            raise RuntimeError("模型未训练")
+
+        from .data_pipeline import prepare_lstm_sequences
+
+        df_pred = X.copy()
+        df_pred["target"] = 0.0
+
+        try:
+            X_seq, _ = prepare_lstm_sequences(df_pred, self.feature_names_, "target", self.seq_length)
+        except ValueError:
+            return np.zeros(len(X))
+
+        X_seq_scaled = self.scaler_.transform(X_seq.reshape(-1, X_seq.shape[-1])).reshape(X_seq.shape)
+        predictions = self.model_.predict(X_seq_scaled, verbose=0).flatten()
+
+        full_predictions = np.zeros(len(X))
+        full_predictions[-len(predictions):] = predictions
+
+        return full_predictions
+
+
+class SelfAttentionLSTM:
+    """自注意力 LSTM 模型（Transformer-style）"""
+
+    def __init__(
+        self,
+        seq_length: int = 20,
+        units: int = 64,
+        num_heads: int = 4,
+        ff_dim: int = 128,
+        dropout: float = 0.2,
+        learning_rate: float = 0.001,
+        epochs: int = 50,
+        batch_size: int = 32,
+        early_stopping_patience: int = 10,
+    ):
+        if not TF_AVAILABLE:
+            raise ImportError("TensorFlow 未安装，请运行: pip install tensorflow")
+
+        self.seq_length = seq_length
+        self.units = units
+        self.num_heads = num_heads
+        self.ff_dim = ff_dim
+        self.dropout = dropout
+        self.learning_rate = learning_rate
+        self.epochs = epochs
+        self.batch_size = batch_size
+        self.early_stopping_patience = early_stopping_patience
+        self.model_: Any = None
+        self.scaler_ = StandardScaler()
+        self.feature_names_: list[str] = []
+
+    def _build_model(self, input_shape: tuple[int, int]) -> keras.Model:
+        """构建自注意力 LSTM 模型"""
+        inputs = keras.layers.Input(shape=input_shape)
+
+        # 位置编码
+        positions = keras.layers.Dense(input_shape[1])(inputs)
+        x = keras.layers.Add()([inputs, positions])
+
+        # LSTM 编码
+        lstm_out = keras.layers.LSTM(self.units, return_sequences=True)(x)
+        lstm_out = keras.layers.Dropout(self.dropout)(lstm_out)
+
+        # 自注意力块
+        attention = keras.layers.MultiHeadAttention(
+            num_heads=self.num_heads,
+            key_dim=self.units // self.num_heads,
+            dropout=self.dropout
+        )(lstm_out, lstm_out)
+
+        attention = keras.layers.Add()([lstm_out, attention])
+        attention = keras.layers.LayerNormalization()(attention)
+
+        # 前馈网络
+        ff = keras.layers.Dense(self.ff_dim, activation="relu")(attention)
+        ff = keras.layers.Dropout(self.dropout)(ff)
+        ff = keras.layers.Dense(self.units)(ff)
+
+        ff = keras.layers.Add()([attention, ff])
+        ff = keras.layers.LayerNormalization()(ff)
+
+        # 全局池化和输出
+        pooled = keras.layers.GlobalAveragePooling1D()(ff)
+        dense = keras.layers.Dense(32, activation="relu")(pooled)
+        dense = keras.layers.Dropout(self.dropout)(dense)
+        outputs = keras.layers.Dense(1)(dense)
+
+        model = keras.Model(inputs=inputs, outputs=outputs)
+        optimizer = keras.optimizers.Adam(learning_rate=self.learning_rate)
+        model.compile(optimizer=optimizer, loss="mse", metrics=["mae"])
+        return model
+
+    def fit(self, X: pd.DataFrame, y: pd.Series) -> SelfAttentionLSTM:
+        """训练自注意力 LSTM 模型"""
+        from .data_pipeline import prepare_lstm_sequences
+
+        feature_cols = [col for col in X.columns if col not in ["code", "date", "name", "family_id", "is_trainable"]]
+        self.feature_names_ = feature_cols
+
+        df_train = X.copy()
+        df_train["target"] = y.values
+
+        X_seq, y_seq = prepare_lstm_sequences(df_train, feature_cols, "target", self.seq_length)
+        X_seq_scaled = self.scaler_.fit_transform(X_seq.reshape(-1, X_seq.shape[-1])).reshape(X_seq.shape)
+
+        self.model_ = self._build_model((self.seq_length, len(feature_cols)))
+
+        early_stop = keras.callbacks.EarlyStopping(
+            monitor="val_loss",
+            patience=self.early_stopping_patience,
+            restore_best_weights=True
+        )
+
+        self.model_.fit(
+            X_seq_scaled, y_seq,
+            epochs=self.epochs,
+            batch_size=self.batch_size,
+            validation_split=0.2,
+            callbacks=[early_stop],
+            verbose=0
+        )
+
+        return self
+
+    def predict(self, X: pd.DataFrame) -> np.ndarray:
+        """预测"""
+        if self.model_ is None:
+            raise RuntimeError("模型未训练")
+
+        from .data_pipeline import prepare_lstm_sequences
+
+        df_pred = X.copy()
+        df_pred["target"] = 0.0
+
+        try:
+            X_seq, _ = prepare_lstm_sequences(df_pred, self.feature_names_, "target", self.seq_length)
+        except ValueError:
+            return np.zeros(len(X))
+
+        X_seq_scaled = self.scaler_.transform(X_seq.reshape(-1, X_seq.shape[-1])).reshape(X_seq.shape)
+        predictions = self.model_.predict(X_seq_scaled, verbose=0).flatten()
+
+        full_predictions = np.zeros(len(X))
+        full_predictions[-len(predictions):] = predictions
+
+        return full_predictions
+
+
+class HierarchicalAttentionLSTM:
+    """分层注意力 LSTM 模型（多尺度注意力）"""
+
+    def __init__(
+        self,
+        seq_length: int = 20,
+        units: int = 64,
+        dropout: float = 0.2,
+        learning_rate: float = 0.001,
+        epochs: int = 50,
+        batch_size: int = 32,
+        early_stopping_patience: int = 10,
+    ):
+        if not TF_AVAILABLE:
+            raise ImportError("TensorFlow 未安装，请运行: pip install tensorflow")
+
+        self.seq_length = seq_length
+        self.units = units
+        self.dropout = dropout
+        self.learning_rate = learning_rate
+        self.epochs = epochs
+        self.batch_size = batch_size
+        self.early_stopping_patience = early_stopping_patience
+        self.model_: Any = None
+        self.scaler_ = StandardScaler()
+        self.feature_names_: list[str] = []
+
+    def _build_model(self, input_shape: tuple[int, int]) -> keras.Model:
+        """构建分层注意力 LSTM 模型"""
+        inputs = keras.layers.Input(shape=input_shape)
+
+        # 第一层 LSTM：局部特征提取
+        lstm1 = keras.layers.LSTM(self.units, return_sequences=True)(inputs)
+        lstm1 = keras.layers.Dropout(self.dropout)(lstm1)
+
+        # 局部注意力（关注短期模式）
+        local_attention = keras.layers.Dense(1, activation="tanh")(lstm1)
+        local_attention = keras.layers.Flatten()(local_attention)
+        local_attention = keras.layers.Activation("softmax")(local_attention)
+        local_attention = keras.layers.RepeatVector(self.units)(local_attention)
+        local_attention = keras.layers.Permute([2, 1])(local_attention)
+
+        local_context = keras.layers.multiply([lstm1, local_attention])
+        local_context = keras.layers.Lambda(lambda x: keras.backend.sum(x, axis=1))(local_context)
+
+        # 第二层 LSTM：全局特征提取
+        lstm2 = keras.layers.LSTM(self.units, return_sequences=True)(lstm1)
+        lstm2 = keras.layers.Dropout(self.dropout)(lstm2)
+
+        # 全局注意力（关注长期趋势）
+        global_attention = keras.layers.Dense(1, activation="tanh")(lstm2)
+        global_attention = keras.layers.Flatten()(global_attention)
+        global_attention = keras.layers.Activation("softmax")(global_attention)
+        global_attention = keras.layers.RepeatVector(self.units)(global_attention)
+        global_attention = keras.layers.Permute([2, 1])(global_attention)
+
+        global_context = keras.layers.multiply([lstm2, global_attention])
+        global_context = keras.layers.Lambda(lambda x: keras.backend.sum(x, axis=1))(global_context)
+
+        # 融合局部和全局上下文
+        combined = keras.layers.Concatenate()([local_context, global_context])
+        combined = keras.layers.Dense(self.units, activation="relu")(combined)
+        combined = keras.layers.Dropout(self.dropout)(combined)
+
+        # 输出层
+        outputs = keras.layers.Dense(1)(combined)
+
+        model = keras.Model(inputs=inputs, outputs=outputs)
+        optimizer = keras.optimizers.Adam(learning_rate=self.learning_rate)
+        model.compile(optimizer=optimizer, loss="mse", metrics=["mae"])
+        return model
+
+    def fit(self, X: pd.DataFrame, y: pd.Series) -> HierarchicalAttentionLSTM:
+        """训练分层注意力 LSTM 模型"""
+        from .data_pipeline import prepare_lstm_sequences
+
+        feature_cols = [col for col in X.columns if col not in ["code", "date", "name", "family_id", "is_trainable"]]
+        self.feature_names_ = feature_cols
+
+        df_train = X.copy()
+        df_train["target"] = y.values
+
+        X_seq, y_seq = prepare_lstm_sequences(df_train, feature_cols, "target", self.seq_length)
+        X_seq_scaled = self.scaler_.fit_transform(X_seq.reshape(-1, X_seq.shape[-1])).reshape(X_seq.shape)
+
+        self.model_ = self._build_model((self.seq_length, len(feature_cols)))
+
+        early_stop = keras.callbacks.EarlyStopping(
+            monitor="val_loss",
+            patience=self.early_stopping_patience,
+            restore_best_weights=True
+        )
+
+        self.model_.fit(
+            X_seq_scaled, y_seq,
+            epochs=self.epochs,
+            batch_size=self.batch_size,
+            validation_split=0.2,
+            callbacks=[early_stop],
+            verbose=0
+        )
+
+        return self
+
+    def predict(self, X: pd.DataFrame) -> np.ndarray:
+        """预测"""
+        if self.model_ is None:
+            raise RuntimeError("模型未训练")
+
+        from .data_pipeline import prepare_lstm_sequences
+
+        df_pred = X.copy()
+        df_pred["target"] = 0.0
+
+        try:
+            X_seq, _ = prepare_lstm_sequences(df_pred, self.feature_names_, "target", self.seq_length)
+        except ValueError:
+            return np.zeros(len(X))
+
+        X_seq_scaled = self.scaler_.transform(X_seq.reshape(-1, X_seq.shape[-1])).reshape(X_seq.shape)
+        predictions = self.model_.predict(X_seq_scaled, verbose=0).flatten()
+
+        full_predictions = np.zeros(len(X))
+        full_predictions[-len(predictions):] = predictions
+
+        return full_predictions
+
+
 class EnhancedRandomForest:
     """增强随机森林，包含特征重要性分析"""
 
@@ -600,7 +973,8 @@ def make_extended_model(
     创建扩展模型
 
     Args:
-        model_type: 模型类型 ('prophet', 'lstm', 'gru', 'bilstm', 'attention_lstm', 'enhanced_rf')
+        model_type: 模型类型 ('prophet', 'lstm', 'gru', 'bilstm', 'attention_lstm',
+                    'multihead_attention', 'self_attention', 'hierarchical_attention', 'enhanced_rf')
         random_state: 随机种子
         **kwargs: 模型特定参数
 
@@ -623,6 +997,15 @@ def make_extended_model(
 
     if model_type in {"attention_lstm", "lstm_attention"}:
         return AttentionLSTMModel(**kwargs)
+
+    if model_type in {"multihead_attention", "multihead_lstm"}:
+        return MultiHeadAttentionLSTM(**kwargs)
+
+    if model_type in {"self_attention", "self_attention_lstm"}:
+        return SelfAttentionLSTM(**kwargs)
+
+    if model_type in {"hierarchical_attention", "hierarchical_lstm"}:
+        return HierarchicalAttentionLSTM(**kwargs)
 
     if model_type in {"enhanced_rf", "rf_enhanced"}:
         return EnhancedRandomForest(random_state=random_state, **kwargs)
