@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="980" height="560" viewBox="0 0 980 560" role="img">
+<style>
+  text { font-family: 'Noto Sans CJK SC','Microsoft YaHei','PingFang SC','WenQuanYi Micro Hei',Arial,sans-serif; fill: #0f172a; }
+  .title { font-size: 24px; font-weight: 800; }
+  .subtitle { font-size: 13px; fill: #64748b; }
+  .label { font-size: 12px; fill: #0f172a; }
+  .muted { font-size: 11px; fill: #64748b; }
+  .axis { stroke: #e2e8f0; stroke-width: 1; }
+</style>
+<rect width="100%" height="100%" fill="#f8fafc"/>
+<rect x="14" y="14" width="952" height="532" rx="18" fill="#ffffff"/>
+<text x="42" y="52" class="title">003036 泰坦股份 十大股东占比</text>
+<text x="42" y="76" class="subtitle">东方财富股东分析口径；饼图含前十大股东及其他/未披露占比。</text>
+<path d="M 295.0 305.0 L 295.0 137.0 A 168.0 168.0 0 1 1 156.6 400.3 Z" fill="#2563eb" opacity="0.9" stroke="#ffffff" stroke-width="2"/>
+<text x="387.2" y="353.5" text-anchor="middle" class="label" font-weight="700">65.40%</text>
+<path d="M 295.0 305.0 L 156.6 400.3 A 168.0 168.0 0 0 1 138.4 365.9 Z" fill="#16a34a" opacity="0.9" stroke="#ffffff" stroke-width="2"/>
+<path d="M 295.0 305.0 L 138.4 365.9 A 168.0 168.0 0 0 1 129.4 333.3 Z" fill="#f59e0b" opacity="0.9" stroke="#ffffff" stroke-width="2"/>
+<path d="M 295.0 305.0 L 129.4 333.3 A 168.0 168.0 0 0 1 128.8 329.2 Z" fill="#7c3aed" opacity="0.9" stroke="#ffffff" stroke-width="2"/>
+<path d="M 295.0 305.0 L 128.8 329.2 A 168.0 168.0 0 0 1 128.2 325.1 Z" fill="#0891b2" opacity="0.9" stroke="#ffffff" stroke-width="2"/>
+<path d="M 295.0 305.0 L 128.2 325.1 A 168.0 168.0 0 0 1 127.8 321.5 Z" fill="#db2777" opacity="0.9" stroke="#ffffff" stroke-width="2"/>
+<path d="M 295.0 305.0 L 127.8 321.5 A 168.0 168.0 0 0 1 127.5 318.1 Z" fill="#475569" opacity="0.9" stroke="#ffffff" stroke-width="2"/>
+<path d="M 295.0 305.0 L 127.5 318.1 A 168.0 168.0 0 0 1 127.3 314.9 Z" fill="#059669" opacity="0.9" stroke="#ffffff" stroke-width="2"/>
+<path d="M 295.0 305.0 L 127.3 314.9 A 168.0 168.0 0 0 1 127.1 311.9 Z" fill="#2563eb" opacity="0.9" stroke="#ffffff" stroke-width="2"/>
+<path d="M 295.0 305.0 L 127.1 311.9 A 168.0 168.0 0 0 1 127.1 309.1 Z" fill="#16a34a" opacity="0.9" stroke="#ffffff" stroke-width="2"/>
+<path d="M 295.0 305.0 L 127.1 309.1 A 168.0 168.0 0 0 1 295.0 137.0 Z" fill="#f59e0b" opacity="0.9" stroke="#ffffff" stroke-width="2"/>
+<text x="220.5" y="232.3" text-anchor="middle" class="label" font-weight="700">25.39%</text>
+<rect x="520" y="106" width="18" height="18" rx="4" fill="#2563eb" opacity="0.9"/>
+<text x="548" y="120" class="label">1 绍兴泰坦投资股份有限公司</text>
+<text x="926" y="120" text-anchor="end" class="label">65.40%</text>
+<rect x="520" y="140" width="18" height="18" rx="4" fill="#16a34a" opacity="0.9"/>
+<text x="548" y="154" class="label">2 新昌县融泰投资有限公司</text>
+<text x="926" y="154" text-anchor="end" class="label">3.70%</text>
+<rect x="520" y="174" width="18" height="18" rx="4" fill="#f59e0b" opacity="0.9"/>
+<text x="548" y="188" class="label">3 陈其新</text>
+<text x="926" y="188" text-anchor="end" class="label">3.21%</text>
+<rect x="520" y="208" width="18" height="18" rx="4" fill="#7c3aed" opacity="0.9"/>
+<text x="548" y="222" class="label">4 梁行先</text>
+<text x="926" y="222" text-anchor="end" class="label">0.39%</text>
+<rect x="520" y="242" width="18" height="18" rx="4" fill="#0891b2" opacity="0.9"/>
+<text x="548" y="256" class="label">5 高盛国际-自有资金</text>
+<text x="926" y="256" text-anchor="end" class="label">0.39%</text>
+<rect x="520" y="276" width="18" height="18" rx="4" fill="#db2777" opacity="0.9"/>
+<text x="548" y="290" class="label">6 顾金阳</text>
+<text x="926" y="290" text-anchor="end" class="label">0.34%</text>
+<rect x="520" y="310" width="18" height="18" rx="4" fill="#475569" opacity="0.9"/>
+<text x="548" y="324" class="label">7 袁宝民</text>
+<text x="926" y="324" text-anchor="end" class="label">0.33%</text>
+<rect x="520" y="344" width="18" height="18" rx="4" fill="#059669" opacity="0.9"/>
+<text x="548" y="358" class="label">8 宁波梅山保税港区旻创资产管理有限公司-旻创奇</text>
+<text x="926" y="358" text-anchor="end" class="label">0.30%</text>
+<rect x="520" y="378" width="18" height="18" rx="4" fill="#2563eb" opacity="0.9"/>
+<text x="548" y="392" class="label">9 BARCLAYS BANK PLC</text>
+<text x="926" y="392" text-anchor="end" class="label">0.29%</text>
+<rect x="520" y="412" width="18" height="18" rx="4" fill="#16a34a" opacity="0.9"/>
+<text x="548" y="426" class="label">10 UBSAG</text>
+<text x="926" y="426" text-anchor="end" class="label">0.26%</text>
+<rect x="520" y="446" width="18" height="18" rx="4" fill="#f59e0b" opacity="0.9"/>
+<text x="548" y="460" class="label">其他/未披露</text>
+<text x="926" y="460" text-anchor="end" class="label">25.39%</text>
+</svg>

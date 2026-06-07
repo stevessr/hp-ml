@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="302" viewBox="0 0 1120 302" role="img">
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="642" viewBox="0 0 1120 642" role="img">
 <style>
   text { font-family: 'Noto Sans CJK SC','Microsoft YaHei','PingFang SC','WenQuanYi Micro Hei',Arial,sans-serif; fill: #0f172a; }
   .title { font-size: 24px; font-weight: 800; }
@@ -8,29 +8,59 @@
   .axis { stroke: #e2e8f0; stroke-width: 1; }
 </style>
 <rect width="100%" height="100%" fill="#f8fafc"/>
-<rect x="14" y="14" width="1092" height="274" rx="18" fill="#ffffff"/>
+<rect x="14" y="14" width="1092" height="614" rx="18" fill="#ffffff"/>
 <text x="42" y="52" class="title">看涨股票综合评分 Top</text>
 <text x="42" y="76" class="subtitle">综合 ETF 信号、价格动量、成交额放大、换手与股东结构；仅作研究排序。</text>
-<line x1="320.3" y1="80" x2="320.3" y2="276" stroke="#64748b" stroke-width="1.2" stroke-dasharray="4 4"/>
-<line x1="270.0" y1="82" x2="270.0" y2="274" class="axis"/>
-<text x="270.0" y="296" text-anchor="middle" class="muted">-3.161</text>
-<line x1="320.3" y1="82" x2="320.3" y2="274" class="axis"/>
-<text x="320.3" y="296" text-anchor="middle" class="muted">0.000</text>
-<line x1="1000.0" y1="82" x2="1000.0" y2="274" class="axis"/>
-<text x="1000.0" y="296" text-anchor="middle" class="muted">42.676</text>
-<text x="42" y="116" class="label">002281 光迅科技</text>
+<line x1="320.3" y1="80" x2="320.3" y2="616" stroke="#64748b" stroke-width="1.2" stroke-dasharray="4 4"/>
+<line x1="270.0" y1="82" x2="270.0" y2="614" class="axis"/>
+<text x="270.0" y="636" text-anchor="middle" class="muted">-6.458</text>
+<line x1="320.3" y1="82" x2="320.3" y2="614" class="axis"/>
+<text x="320.3" y="636" text-anchor="middle" class="muted">0.000</text>
+<line x1="1000.0" y1="82" x2="1000.0" y2="614" class="axis"/>
+<text x="1000.0" y="636" text-anchor="middle" class="muted">87.183</text>
+<text x="42" y="116" class="label">003036 泰坦股份</text>
 <rect x="320.3" y="101" width="629.3" height="18" rx="5" fill="#2563eb" opacity="0.88"/>
-<text x="956.7" y="116" text-anchor="start" class="label">39.5151</text>
-<text x="42" y="150" class="label">600487 亨通光电</text>
-<rect x="320.3" y="135" width="559.8" height="18" rx="5" fill="#2563eb" opacity="0.88"/>
-<text x="887.1" y="150" text-anchor="start" class="label">35.1497</text>
-<text x="42" y="184" class="label">002008 大族激光</text>
-<rect x="320.3" y="169" width="265.2" height="18" rx="5" fill="#2563eb" opacity="0.88"/>
-<text x="592.5" y="184" text-anchor="start" class="label">16.6496</text>
-<text x="42" y="218" class="label">300604 长川科技</text>
-<rect x="320.3" y="203" width="241.5" height="18" rx="5" fill="#2563eb" opacity="0.88"/>
-<text x="568.8" y="218" text-anchor="start" class="label">15.1623</text>
-<text x="42" y="252" class="label">688525 佰维存储</text>
-<rect x="320.3" y="237" width="195.4" height="18" rx="5" fill="#2563eb" opacity="0.88"/>
-<text x="522.7" y="252" text-anchor="start" class="label">12.2672</text>
+<text x="956.7" y="116" text-anchor="start" class="label">80.7252</text>
+<text x="42" y="150" class="label">688668 鼎通科技</text>
+<rect x="320.3" y="135" width="497.7" height="18" rx="5" fill="#2563eb" opacity="0.88"/>
+<text x="825.1" y="150" text-anchor="start" class="label">63.8465</text>
+<text x="42" y="184" class="label">300975 商络电子</text>
+<rect x="320.3" y="169" width="485.5" height="18" rx="5" fill="#2563eb" opacity="0.88"/>
+<text x="812.9" y="184" text-anchor="start" class="label">62.2794</text>
+<text x="42" y="218" class="label">688268 华特气体</text>
+<rect x="320.3" y="203" width="359.6" height="18" rx="5" fill="#2563eb" opacity="0.88"/>
+<text x="686.9" y="218" text-anchor="start" class="label">46.1282</text>
+<text x="42" y="252" class="label">688531 日联科技</text>
+<rect x="320.3" y="237" width="317.3" height="18" rx="5" fill="#2563eb" opacity="0.88"/>
+<text x="644.6" y="252" text-anchor="start" class="label">40.6980</text>
+<text x="42" y="286" class="label">600183 生益科技</text>
+<rect x="320.3" y="271" width="300.2" height="18" rx="5" fill="#2563eb" opacity="0.88"/>
+<text x="627.6" y="286" text-anchor="start" class="label">38.5120</text>
+<text x="42" y="320" class="label">300408 三环集团</text>
+<rect x="320.3" y="305" width="299.6" height="18" rx="5" fill="#2563eb" opacity="0.88"/>
+<text x="627.0" y="320" text-anchor="start" class="label">38.4350</text>
+<text x="42" y="354" class="label">000725 京东方A</text>
+<rect x="320.3" y="339" width="293.9" height="18" rx="5" fill="#2563eb" opacity="0.88"/>
+<text x="621.3" y="354" text-anchor="start" class="label">37.7037</text>
+<text x="42" y="388" class="label">603800 洪田股份</text>
+<rect x="320.3" y="373" width="283.6" height="18" rx="5" fill="#2563eb" opacity="0.88"/>
+<text x="610.9" y="388" text-anchor="start" class="label">36.3728</text>
+<text x="42" y="422" class="label">600487 亨通光电</text>
+<rect x="320.3" y="407" width="262.4" height="18" rx="5" fill="#2563eb" opacity="0.88"/>
+<text x="589.8" y="422" text-anchor="start" class="label">33.6605</text>
+<text x="42" y="456" class="label">300308 中际旭创</text>
+<rect x="320.3" y="441" width="248.7" height="18" rx="5" fill="#2563eb" opacity="0.88"/>
+<text x="576.1" y="456" text-anchor="start" class="label">31.9082</text>
+<text x="42" y="490" class="label">300720 海川智能</text>
+<rect x="320.3" y="475" width="233.1" height="18" rx="5" fill="#2563eb" opacity="0.88"/>
+<text x="560.4" y="490" text-anchor="start" class="label">29.8983</text>
+<text x="42" y="524" class="label">301128 强瑞技术</text>
+<rect x="320.3" y="509" width="228.0" height="18" rx="5" fill="#2563eb" opacity="0.88"/>
+<text x="555.4" y="524" text-anchor="start" class="label">29.2504</text>
+<text x="42" y="558" class="label">300489 光智科技</text>
+<rect x="320.3" y="543" width="224.8" height="18" rx="5" fill="#2563eb" opacity="0.88"/>
+<text x="552.1" y="558" text-anchor="start" class="label">28.8338</text>
+<text x="42" y="592" class="label">300502 新易盛</text>
+<rect x="320.3" y="577" width="223.3" height="18" rx="5" fill="#2563eb" opacity="0.88"/>
+<text x="550.6" y="592" text-anchor="start" class="label">28.6446</text>
 </svg>

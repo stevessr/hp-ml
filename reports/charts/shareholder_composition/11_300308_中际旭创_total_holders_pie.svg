@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="980" height="560" viewBox="0 0 980 560" role="img">
+<style>
+  text { font-family: 'Noto Sans CJK SC','Microsoft YaHei','PingFang SC','WenQuanYi Micro Hei',Arial,sans-serif; fill: #0f172a; }
+  .title { font-size: 24px; font-weight: 800; }
+  .subtitle { font-size: 13px; fill: #64748b; }
+  .label { font-size: 12px; fill: #0f172a; }
+  .muted { font-size: 11px; fill: #64748b; }
+  .axis { stroke: #e2e8f0; stroke-width: 1; }
+</style>
+<rect width="100%" height="100%" fill="#f8fafc"/>
+<rect x="14" y="14" width="952" height="532" rx="18" fill="#ffffff"/>
+<text x="42" y="52" class="title">300308 中际旭创 十大股东占比</text>
+<text x="42" y="76" class="subtitle">东方财富股东分析口径；饼图含前十大股东及其他/未披露占比。</text>
+<path d="M 295.0 305.0 L 295.0 137.0 A 168.0 168.0 0 0 1 401.5 175.1 Z" fill="#2563eb" opacity="0.9" stroke="#ffffff" stroke-width="2"/>
+<text x="330.1" y="206.9" text-anchor="middle" class="label" font-weight="700">10.93%</text>
+<path d="M 295.0 305.0 L 401.5 175.1 A 168.0 168.0 0 0 1 446.6 232.5 Z" fill="#16a34a" opacity="0.9" stroke="#ffffff" stroke-width="2"/>
+<text x="377.0" y="240.7" text-anchor="middle" class="label" font-weight="700">6.97%</text>
+<path d="M 295.0 305.0 L 446.6 232.5 A 168.0 168.0 0 0 1 462.8 296.3 Z" fill="#f59e0b" opacity="0.9" stroke="#ffffff" stroke-width="2"/>
+<text x="396.0" y="279.4" text-anchor="middle" class="label" font-weight="700">6.28%</text>
+<path d="M 295.0 305.0 L 462.8 296.3 A 168.0 168.0 0 0 1 459.2 340.4 Z" fill="#7c3aed" opacity="0.9" stroke="#ffffff" stroke-width="2"/>
+<path d="M 295.0 305.0 L 459.2 340.4 A 168.0 168.0 0 0 1 453.0 362.2 Z" fill="#0891b2" opacity="0.9" stroke="#ffffff" stroke-width="2"/>
+<path d="M 295.0 305.0 L 453.0 362.2 A 168.0 168.0 0 0 1 447.4 375.8 Z" fill="#db2777" opacity="0.9" stroke="#ffffff" stroke-width="2"/>
+<path d="M 295.0 305.0 L 447.4 375.8 A 168.0 168.0 0 0 1 443.6 383.4 Z" fill="#475569" opacity="0.9" stroke="#ffffff" stroke-width="2"/>
+<path d="M 295.0 305.0 L 443.6 383.4 A 168.0 168.0 0 0 1 439.7 390.3 Z" fill="#059669" opacity="0.9" stroke="#ffffff" stroke-width="2"/>
+<path d="M 295.0 305.0 L 439.7 390.3 A 168.0 168.0 0 0 1 435.6 396.9 Z" fill="#2563eb" opacity="0.9" stroke="#ffffff" stroke-width="2"/>
+<path d="M 295.0 305.0 L 435.6 396.9 A 168.0 168.0 0 0 1 432.2 401.9 Z" fill="#16a34a" opacity="0.9" stroke="#ffffff" stroke-width="2"/>
+<path d="M 295.0 305.0 L 432.2 401.9 A 168.0 168.0 0 1 1 295.0 137.0 Z" fill="#f59e0b" opacity="0.9" stroke="#ffffff" stroke-width="2"/>
+<text x="202.5" y="352.9" text-anchor="middle" class="label" font-weight="700">65.21%</text>
+<rect x="520" y="106" width="18" height="18" rx="4" fill="#2563eb" opacity="0.9"/>
+<text x="548" y="120" class="label">1 山东中际投资控股有限公司</text>
+<text x="926" y="120" text-anchor="end" class="label">10.93%</text>
+<rect x="520" y="140" width="18" height="18" rx="4" fill="#16a34a" opacity="0.9"/>
+<text x="548" y="154" class="label">2 香港中央结算有限公司</text>
+<text x="926" y="154" text-anchor="end" class="label">6.97%</text>
+<rect x="520" y="174" width="18" height="18" rx="4" fill="#f59e0b" opacity="0.9"/>
+<text x="548" y="188" class="label">3 王伟修</text>
+<text x="926" y="188" text-anchor="end" class="label">6.28%</text>
+<rect x="520" y="208" width="18" height="18" rx="4" fill="#7c3aed" opacity="0.9"/>
+<text x="548" y="222" class="label">4 苏州益兴福企业管理中心(有限合伙)</text>
+<text x="926" y="222" text-anchor="end" class="label">4.20%</text>
+<rect x="520" y="242" width="18" height="18" rx="4" fill="#0891b2" opacity="0.9"/>
+<text x="548" y="256" class="label">5 苏州云昌锦企业管理中心(有限合伙)</text>
+<text x="926" y="256" text-anchor="end" class="label">2.15%</text>
+<rect x="520" y="276" width="18" height="18" rx="4" fill="#db2777" opacity="0.9"/>
+<text x="548" y="290" class="label">6 Lumiza Limited</text>
+<text x="926" y="290" text-anchor="end" class="label">1.39%</text>
+<rect x="520" y="310" width="18" height="18" rx="4" fill="#475569" opacity="0.9"/>
+<text x="548" y="324" class="label">7 中国工商银行股份有限公司-华泰柏瑞沪深300</text>
+<text x="926" y="324" text-anchor="end" class="label">0.81%</text>
+<rect x="520" y="344" width="18" height="18" rx="4" fill="#059669" opacity="0.9"/>
+<text x="548" y="358" class="label">8 中国工商银行股份有限公司-易方达创业板交易型</text>
+<text x="926" y="358" text-anchor="end" class="label">0.75%</text>
+<rect x="520" y="378" width="18" height="18" rx="4" fill="#2563eb" opacity="0.9"/>
+<text x="548" y="392" class="label">9 苏州福睿晖企业管理中心(有限合伙)</text>
+<text x="926" y="392" text-anchor="end" class="label">0.73%</text>
+<rect x="520" y="412" width="18" height="18" rx="4" fill="#16a34a" opacity="0.9"/>
+<text x="548" y="426" class="label">10 MORGAN STANLEY&amp;CO.INT</text>
+<text x="926" y="426" text-anchor="end" class="label">0.58%</text>
+<rect x="520" y="446" width="18" height="18" rx="4" fill="#f59e0b" opacity="0.9"/>
+<text x="548" y="460" class="label">其他/未披露</text>
+<text x="926" y="460" text-anchor="end" class="label">65.21%</text>
+</svg>

@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="980" height="560" viewBox="0 0 980 560" role="img">
+<style>
+  text { font-family: 'Noto Sans CJK SC','Microsoft YaHei','PingFang SC','WenQuanYi Micro Hei',Arial,sans-serif; fill: #0f172a; }
+  .title { font-size: 24px; font-weight: 800; }
+  .subtitle { font-size: 13px; fill: #64748b; }
+  .label { font-size: 12px; fill: #0f172a; }
+  .muted { font-size: 11px; fill: #64748b; }
+  .axis { stroke: #e2e8f0; stroke-width: 1; }
+</style>
+<rect width="100%" height="100%" fill="#f8fafc"/>
+<rect x="14" y="14" width="952" height="532" rx="18" fill="#ffffff"/>
+<text x="42" y="52" class="title">688531 日联科技 十大股东占比</text>
+<text x="42" y="76" class="subtitle">东方财富股东分析口径；饼图含前十大股东及其他/未披露占比。</text>
+<path d="M 295.0 305.0 L 295.0 137.0 A 168.0 168.0 0 0 1 461.0 331.1 Z" fill="#2563eb" opacity="0.9" stroke="#ffffff" stroke-width="2"/>
+<text x="374.2" y="237.3" text-anchor="middle" class="label" font-weight="700">27.48%</text>
+<path d="M 295.0 305.0 L 461.0 331.1 A 168.0 168.0 0 0 1 446.1 378.4 Z" fill="#16a34a" opacity="0.9" stroke="#ffffff" stroke-width="2"/>
+<path d="M 295.0 305.0 L 446.1 378.4 A 168.0 168.0 0 0 1 420.9 416.3 Z" fill="#f59e0b" opacity="0.9" stroke="#ffffff" stroke-width="2"/>
+<path d="M 295.0 305.0 L 420.9 416.3 A 168.0 168.0 0 0 1 402.4 434.2 Z" fill="#7c3aed" opacity="0.9" stroke="#ffffff" stroke-width="2"/>
+<path d="M 295.0 305.0 L 402.4 434.2 A 168.0 168.0 0 0 1 385.6 446.4 Z" fill="#0891b2" opacity="0.9" stroke="#ffffff" stroke-width="2"/>
+<path d="M 295.0 305.0 L 385.6 446.4 A 168.0 168.0 0 0 1 368.8 455.9 Z" fill="#db2777" opacity="0.9" stroke="#ffffff" stroke-width="2"/>
+<path d="M 295.0 305.0 L 368.8 455.9 A 168.0 168.0 0 0 1 356.8 461.2 Z" fill="#475569" opacity="0.9" stroke="#ffffff" stroke-width="2"/>
+<path d="M 295.0 305.0 L 356.8 461.2 A 168.0 168.0 0 0 1 346.6 464.9 Z" fill="#059669" opacity="0.9" stroke="#ffffff" stroke-width="2"/>
+<path d="M 295.0 305.0 L 346.6 464.9 A 168.0 168.0 0 0 1 336.8 467.7 Z" fill="#2563eb" opacity="0.9" stroke="#ffffff" stroke-width="2"/>
+<path d="M 295.0 305.0 L 336.8 467.7 A 168.0 168.0 0 0 1 329.0 469.5 Z" fill="#16a34a" opacity="0.9" stroke="#ffffff" stroke-width="2"/>
+<path d="M 295.0 305.0 L 329.0 469.5 A 168.0 168.0 0 1 1 295.0 137.0 Z" fill="#f59e0b" opacity="0.9" stroke="#ffffff" stroke-width="2"/>
+<text x="191.4" y="315.6" text-anchor="middle" class="label" font-weight="700">53.24%</text>
+<rect x="520" y="106" width="18" height="18" rx="4" fill="#2563eb" opacity="0.9"/>
+<text x="548" y="120" class="label">1 无锡日联实业有限公司</text>
+<text x="926" y="120" text-anchor="end" class="label">27.48%</text>
+<rect x="520" y="140" width="18" height="18" rx="4" fill="#16a34a" opacity="0.9"/>
+<text x="548" y="154" class="label">2 深圳市共创日联投资发展合伙企业(有限合伙)</text>
+<text x="926" y="154" text-anchor="end" class="label">4.72%</text>
+<rect x="520" y="174" width="18" height="18" rx="4" fill="#f59e0b" opacity="0.9"/>
+<text x="548" y="188" class="label">3 香港中央结算有限公司</text>
+<text x="926" y="188" text-anchor="end" class="label">4.32%</text>
+<rect x="520" y="208" width="18" height="18" rx="4" fill="#7c3aed" opacity="0.9"/>
+<text x="548" y="222" class="label">4 陈云高</text>
+<text x="926" y="222" text-anchor="end" class="label">2.44%</text>
+<rect x="520" y="242" width="18" height="18" rx="4" fill="#0891b2" opacity="0.9"/>
+<text x="548" y="256" class="label">5 刘骏</text>
+<text x="926" y="256" text-anchor="end" class="label">1.97%</text>
+<rect x="520" y="276" width="18" height="18" rx="4" fill="#db2777" opacity="0.9"/>
+<text x="548" y="290" class="label">6 上海临芯投资管理有限公司-嘉兴君谱投资合伙企</text>
+<text x="926" y="290" text-anchor="end" class="label">1.83%</text>
+<rect x="520" y="310" width="18" height="18" rx="4" fill="#475569" opacity="0.9"/>
+<text x="548" y="324" class="label">7 秦晓兰</text>
+<text x="926" y="324" text-anchor="end" class="label">1.24%</text>
+<rect x="520" y="344" width="18" height="18" rx="4" fill="#059669" opacity="0.9"/>
+<text x="548" y="358" class="label">8 鼎泰海富投资管理有限公司</text>
+<text x="926" y="358" text-anchor="end" class="label">1.03%</text>
+<rect x="520" y="378" width="18" height="18" rx="4" fill="#2563eb" opacity="0.9"/>
+<text x="548" y="392" class="label">9 上海东方证券创新投资有限公司</text>
+<text x="926" y="392" text-anchor="end" class="label">0.97%</text>
+<rect x="520" y="412" width="18" height="18" rx="4" fill="#16a34a" opacity="0.9"/>
+<text x="548" y="426" class="label">10 海通创新证券投资有限公司</text>
+<text x="926" y="426" text-anchor="end" class="label">0.76%</text>
+<rect x="520" y="446" width="18" height="18" rx="4" fill="#f59e0b" opacity="0.9"/>
+<text x="548" y="460" class="label">其他/未披露</text>
+<text x="926" y="460" text-anchor="end" class="label">53.24%</text>
+</svg>

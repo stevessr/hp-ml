@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="980" height="560" viewBox="0 0 980 560" role="img">
+<style>
+  text { font-family: 'Noto Sans CJK SC','Microsoft YaHei','PingFang SC','WenQuanYi Micro Hei',Arial,sans-serif; fill: #0f172a; }
+  .title { font-size: 24px; font-weight: 800; }
+  .subtitle { font-size: 13px; fill: #64748b; }
+  .label { font-size: 12px; fill: #0f172a; }
+  .muted { font-size: 11px; fill: #64748b; }
+  .axis { stroke: #e2e8f0; stroke-width: 1; }
+</style>
+<rect width="100%" height="100%" fill="#f8fafc"/>
+<rect x="14" y="14" width="952" height="532" rx="18" fill="#ffffff"/>
+<text x="42" y="52" class="title">603986 兆易创新 十大流通股东占比</text>
+<text x="42" y="76" class="subtitle">东方财富股东分析口径；饼图含前十大股东及其他/未披露占比。</text>
+<path d="M 295.0 305.0 L 295.0 137.0 A 168.0 168.0 0 0 1 363.3 151.5 Z" fill="#2563eb" opacity="0.9" stroke="#ffffff" stroke-width="2"/>
+<text x="316.6" y="203.1" text-anchor="middle" class="label" font-weight="700">6.66%</text>
+<path d="M 295.0 305.0 L 363.3 151.5 A 168.0 168.0 0 0 1 415.2 187.6 Z" fill="#16a34a" opacity="0.9" stroke="#ffffff" stroke-width="2"/>
+<text x="354.5" y="219.5" text-anchor="middle" class="label" font-weight="700">6.02%</text>
+<path d="M 295.0 305.0 L 415.2 187.6 A 168.0 168.0 0 0 1 433.6 210.0 Z" fill="#f59e0b" opacity="0.9" stroke="#ffffff" stroke-width="2"/>
+<path d="M 295.0 305.0 L 433.6 210.0 A 168.0 168.0 0 0 1 446.1 231.6 Z" fill="#7c3aed" opacity="0.9" stroke="#ffffff" stroke-width="2"/>
+<path d="M 295.0 305.0 L 446.1 231.6 A 168.0 168.0 0 0 1 453.8 250.1 Z" fill="#0891b2" opacity="0.9" stroke="#ffffff" stroke-width="2"/>
+<path d="M 295.0 305.0 L 453.8 250.1 A 168.0 168.0 0 0 1 457.2 261.4 Z" fill="#db2777" opacity="0.9" stroke="#ffffff" stroke-width="2"/>
+<path d="M 295.0 305.0 L 457.2 261.4 A 168.0 168.0 0 0 1 459.9 272.8 Z" fill="#475569" opacity="0.9" stroke="#ffffff" stroke-width="2"/>
+<path d="M 295.0 305.0 L 459.9 272.8 A 168.0 168.0 0 0 1 461.4 281.5 Z" fill="#059669" opacity="0.9" stroke="#ffffff" stroke-width="2"/>
+<path d="M 295.0 305.0 L 461.4 281.5 A 168.0 168.0 0 0 1 462.3 289.8 Z" fill="#2563eb" opacity="0.9" stroke="#ffffff" stroke-width="2"/>
+<path d="M 295.0 305.0 L 462.3 289.8 A 168.0 168.0 0 0 1 462.8 297.0 Z" fill="#16a34a" opacity="0.9" stroke="#ffffff" stroke-width="2"/>
+<path d="M 295.0 305.0 L 462.8 297.0 A 168.0 168.0 0 1 1 295.0 137.0 Z" fill="#f59e0b" opacity="0.9" stroke="#ffffff" stroke-width="2"/>
+<text x="223.1" y="380.4" text-anchor="middle" class="label" font-weight="700">75.76%</text>
+<rect x="520" y="106" width="18" height="18" rx="4" fill="#2563eb" opacity="0.9"/>
+<text x="548" y="120" class="label">1 朱一明</text>
+<text x="926" y="120" text-anchor="end" class="label">6.66%</text>
+<rect x="520" y="140" width="18" height="18" rx="4" fill="#16a34a" opacity="0.9"/>
+<text x="548" y="154" class="label">2 香港中央结算有限公司</text>
+<text x="926" y="154" text-anchor="end" class="label">6.02%</text>
+<rect x="520" y="174" width="18" height="18" rx="4" fill="#f59e0b" opacity="0.9"/>
+<text x="548" y="188" class="label">3 HKSCCNOMINEES LIMITED</text>
+<text x="926" y="188" text-anchor="end" class="label">2.75%</text>
+<rect x="520" y="208" width="18" height="18" rx="4" fill="#7c3aed" opacity="0.9"/>
+<text x="548" y="222" class="label">4 葛卫东</text>
+<text x="926" y="222" text-anchor="end" class="label">2.37%</text>
+<rect x="520" y="242" width="18" height="18" rx="4" fill="#0891b2" opacity="0.9"/>
+<text x="548" y="256" class="label">5 InfoGridLimited</text>
+<text x="926" y="256" text-anchor="end" class="label">1.90%</text>
+<rect x="520" y="276" width="18" height="18" rx="4" fill="#db2777" opacity="0.9"/>
+<text x="548" y="290" class="label">6 中国建设银行股份有限公司-华夏国证半导体芯片</text>
+<text x="926" y="290" text-anchor="end" class="label">1.12%</text>
+<rect x="520" y="310" width="18" height="18" rx="4" fill="#475569" opacity="0.9"/>
+<text x="548" y="324" class="label">7 王萍</text>
+<text x="926" y="324" text-anchor="end" class="label">1.10%</text>
+<rect x="520" y="344" width="18" height="18" rx="4" fill="#059669" opacity="0.9"/>
+<text x="548" y="358" class="label">8 中信银行股份有限公司-永赢先锋半导体智选混合</text>
+<text x="926" y="358" text-anchor="end" class="label">0.84%</text>
+<rect x="520" y="378" width="18" height="18" rx="4" fill="#2563eb" opacity="0.9"/>
+<text x="548" y="392" class="label">9 中国工商银行股份有限公司-华泰柏瑞沪深300</text>
+<text x="926" y="392" text-anchor="end" class="label">0.78%</text>
+<rect x="520" y="412" width="18" height="18" rx="4" fill="#16a34a" opacity="0.9"/>
+<text x="548" y="426" class="label">10 陈雯鸶</text>
+<text x="926" y="426" text-anchor="end" class="label">0.69%</text>
+<rect x="520" y="446" width="18" height="18" rx="4" fill="#f59e0b" opacity="0.9"/>
+<text x="548" y="460" class="label">其他/未披露</text>
+<text x="926" y="460" text-anchor="end" class="label">75.76%</text>
+</svg>
