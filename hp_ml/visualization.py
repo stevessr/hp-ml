@@ -8,7 +8,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-plt.rcParams["font.sans-serif"] = ["SimHei", "DejaVu Sans"]
+# 设置中文字体为系统已有的思源黑体
+plt.rcParams["font.sans-serif"] = ["Source Han Sans CN", "Noto Sans CJK SC", "DejaVu Sans"]
 plt.rcParams["axes.unicode_minus"] = False
 
 
