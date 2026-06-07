@@ -1,0 +1,2 @@
+date,action,allocation_pct,reason
+2026-06-02,CASH,100.0,无 ETF 同时满足 rank<= 5 与 prediction >= 0.0200

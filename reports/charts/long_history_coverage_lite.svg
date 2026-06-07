@@ -1,0 +1,93 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="948" viewBox="0 0 1120 948" role="img">
+<style>
+  text { font-family: 'Noto Sans CJK SC','Microsoft YaHei','PingFang SC','WenQuanYi Micro Hei',Arial,sans-serif; fill: #0f172a; }
+  .title { font-size: 24px; font-weight: 800; }
+  .subtitle { font-size: 13px; fill: #64748b; }
+  .label { font-size: 12px; fill: #0f172a; }
+  .muted { font-size: 11px; fill: #64748b; }
+  .axis { stroke: #e2e8f0; stroke-width: 1; }
+</style>
+<rect width="100%" height="100%" fill="#f8fafc"/>
+<rect x="14" y="14" width="1092" height="920" rx="18" fill="#ffffff"/>
+<text x="42" y="52" class="title">长期历史数据覆盖年限</text>
+<text x="42" y="76" class="subtitle">从本次长起点抓取后，各 ETF 可用日线历史的覆盖年数（受上市日期限制）。</text>
+<line x1="320.3" y1="80" x2="320.3" y2="922" stroke="#64748b" stroke-width="1.2" stroke-dasharray="4 4"/>
+<line x1="270.0" y1="82" x2="270.0" y2="920" class="axis"/>
+<text x="270.0" y="942" text-anchor="middle" class="muted">-1.121</text>
+<line x1="320.3" y1="82" x2="320.3" y2="920" class="axis"/>
+<text x="320.3" y="942" text-anchor="middle" class="muted">0.000</text>
+<line x1="1000.0" y1="82" x2="1000.0" y2="920" class="axis"/>
+<text x="1000.0" y="942" text-anchor="middle" class="muted">15.136</text>
+<text x="42" y="116" class="label">159919 沪深300ETF嘉实</text>
+<rect x="320.3" y="101" width="629.3" height="18" rx="5" fill="#2563eb" opacity="0.88"/>
+<text x="956.7" y="116" text-anchor="start" class="label">14.0151</text>
+<text x="42" y="150" class="label">510300 沪深300ETF华泰柏瑞</text>
+<rect x="320.3" y="135" width="629.2" height="18" rx="5" fill="#2563eb" opacity="0.88"/>
+<text x="956.5" y="150" text-anchor="start" class="label">14.0123</text>
+<text x="42" y="184" class="label">510510 中证500ETF广发</text>
+<rect x="320.3" y="169" width="584.9" height="18" rx="5" fill="#2563eb" opacity="0.88"/>
+<text x="912.3" y="184" text-anchor="start" class="label">13.0267</text>
+<text x="42" y="218" class="label">510500 中证500ETF南方</text>
+<rect x="320.3" y="203" width="540.3" height="18" rx="5" fill="#2563eb" opacity="0.88"/>
+<text x="867.6" y="218" text-anchor="start" class="label">12.0329</text>
+<text x="42" y="252" class="label">159922 中证500ETF嘉实</text>
+<rect x="320.3" y="237" width="540.2" height="18" rx="5" fill="#2563eb" opacity="0.88"/>
+<text x="867.5" y="252" text-anchor="start" class="label">12.0301</text>
+<text x="42" y="286" class="label">510310 沪深300ETF易方达</text>
+<rect x="320.3" y="271" width="540.2" height="18" rx="5" fill="#2563eb" opacity="0.88"/>
+<text x="867.5" y="286" text-anchor="start" class="label">12.0301</text>
+<text x="42" y="320" class="label">510330 沪深300ETF华夏</text>
+<rect x="320.3" y="305" width="540.2" height="18" rx="5" fill="#2563eb" opacity="0.88"/>
+<text x="867.5" y="320" text-anchor="start" class="label">12.0301</text>
+<text x="42" y="354" class="label">512500 中证500ETF华夏</text>
+<rect x="320.3" y="339" width="494.6" height="18" rx="5" fill="#2563eb" opacity="0.88"/>
+<text x="821.9" y="354" text-anchor="start" class="label">11.0144</text>
+<text x="42" y="388" class="label">510580 中证500ETF易方达</text>
+<rect x="320.3" y="373" width="481.3" height="18" rx="5" fill="#2563eb" opacity="0.88"/>
+<text x="808.6" y="388" text-anchor="start" class="label">10.7187</text>
+<text x="42" y="422" class="label">512100 中证1000ETF南方</text>
+<rect x="320.3" y="407" width="430.0" height="18" rx="5" fill="#2563eb" opacity="0.88"/>
+<text x="757.4" y="422" text-anchor="start" class="label">9.5770</text>
+<text x="42" y="456" class="label">510350 沪深300ETF工银</text>
+<rect x="320.3" y="441" width="305.3" height="18" rx="5" fill="#2563eb" opacity="0.88"/>
+<text x="632.6" y="456" text-anchor="start" class="label">6.7981</text>
+<text x="42" y="490" class="label">515810 中证800ETF易方达</text>
+<rect x="320.3" y="475" width="296.6" height="18" rx="5" fill="#2563eb" opacity="0.88"/>
+<text x="624.0" y="490" text-anchor="start" class="label">6.6064</text>
+<text x="42" y="524" class="label">515800 中证800ETF汇添富</text>
+<rect x="320.3" y="509" width="290.3" height="18" rx="5" fill="#2563eb" opacity="0.88"/>
+<text x="617.6" y="524" text-anchor="start" class="label">6.4641</text>
+<text x="42" y="558" class="label">159845 中证1000ETF华夏</text>
+<rect x="320.3" y="543" width="181.6" height="18" rx="5" fill="#2563eb" opacity="0.88"/>
+<text x="508.9" y="558" text-anchor="start" class="label">4.0438</text>
+<text x="42" y="592" class="label">159629 中证1000ETF富国</text>
+<rect x="320.3" y="577" width="172.1" height="18" rx="5" fill="#2563eb" opacity="0.88"/>
+<text x="499.5" y="592" text-anchor="start" class="label">3.8330</text>
+<text x="42" y="626" class="label">159633 中证1000ETF易方达</text>
+<rect x="320.3" y="611" width="172.0" height="18" rx="5" fill="#2563eb" opacity="0.88"/>
+<text x="499.3" y="626" text-anchor="start" class="label">3.8303</text>
+<text x="42" y="660" class="label">560010 中证1000ETF广发</text>
+<rect x="320.3" y="645" width="172.0" height="18" rx="5" fill="#2563eb" opacity="0.88"/>
+<text x="499.3" y="660" text-anchor="start" class="label">3.8303</text>
+<text x="42" y="694" class="label">159531 中证2000ETF南方</text>
+<rect x="320.3" y="679" width="121.6" height="18" rx="5" fill="#2563eb" opacity="0.88"/>
+<text x="448.9" y="694" text-anchor="start" class="label">2.7077</text>
+<text x="42" y="728" class="label">159532 中证2000ETF易方达</text>
+<rect x="320.3" y="713" width="121.2" height="18" rx="5" fill="#2563eb" opacity="0.88"/>
+<text x="448.6" y="728" text-anchor="start" class="label">2.6995</text>
+<text x="42" y="762" class="label">159536 中证2000ETF汇添富</text>
+<rect x="320.3" y="747" width="121.2" height="18" rx="5" fill="#2563eb" opacity="0.88"/>
+<text x="448.6" y="762" text-anchor="start" class="label">2.6995</text>
+<text x="42" y="796" class="label">159535 中证2000ETF嘉实</text>
+<rect x="320.3" y="781" width="121.1" height="18" rx="5" fill="#2563eb" opacity="0.88"/>
+<text x="448.4" y="796" text-anchor="start" class="label">2.6968</text>
+<text x="42" y="830" class="label">159593 中证A50ETF平安</text>
+<rect x="320.3" y="815" width="99.9" height="18" rx="5" fill="#2563eb" opacity="0.88"/>
+<text x="427.3" y="830" text-anchor="start" class="label">2.2259</text>
+<text x="42" y="864" class="label">159591 A50ETF富国</text>
+<rect x="320.3" y="849" width="99.2" height="18" rx="5" fill="#2563eb" opacity="0.88"/>
+<text x="426.6" y="864" text-anchor="start" class="label">2.2094</text>
+<text x="42" y="898" class="label">159592 A50ETF银华</text>
+<rect x="320.3" y="883" width="99.2" height="18" rx="5" fill="#2563eb" opacity="0.88"/>
+<text x="426.6" y="898" text-anchor="start" class="label">2.2094</text>
+</svg>
