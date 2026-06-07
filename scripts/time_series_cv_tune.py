@@ -9,25 +9,24 @@ from __future__ import annotations
 import argparse
 import json
 import sys
-from datetime import datetime, timedelta
+from datetime import timedelta
 from pathlib import Path
 from typing import Any
 
 import pandas as pd
-import numpy as np
+from hp_ml.lite_train import (
+    train_ridge,
+    evaluate,
+    backtest_purchase_strategy,
+)
+from hp_ml.charts import write_horizontal_bar_chart
 
 # 项目根目录
 ROOT = Path(__file__).parent.parent
 REPORTS = ROOT / "reports"
 sys.path.insert(0, str(ROOT))
 
-from hp_ml.lite_train import (
-    load_broad_base_history,
-    train_ridge,
-    evaluate,
-    backtest_purchase_strategy,
-)
-from hp_ml.charts import write_horizontal_bar_chart, write_line_chart
+
 
 
 def generate_time_splits(
@@ -92,7 +91,7 @@ def generate_time_splits(
 
 
 def evaluate_time_split(
-    df: pd.DataFrame,
+    df: list[dict[str, Any]],
     feature_cols: list[str],
     target_col: str,
     train_start: str,
@@ -111,8 +110,8 @@ def evaluate_time_split(
         包含训练集评估、测试集评估和策略回测结果的字典
     """
     # 切分数据
-    train_df = df[(df["date"] >= train_start) & (df["date"] <= train_end)].copy()
-    test_df = df[(df["date"] > train_end) & (df["date"] <= test_end)].copy()
+    train_df = [r for r in df if train_start <= r['date'] <= train_end]
+    test_df = [r for r in df if train_end < r['date'] <= test_end]
 
     if len(train_df) == 0 or len(test_df) == 0:
         return {
@@ -125,7 +124,7 @@ def evaluate_time_split(
     try:
         model = train_ridge(train_df, feature_cols, target_col, l2=l2)
     except Exception as e:
-        return {"error": f"训练失败: {e}"}
+        return {"error": f"训练失败：{e}"}
 
     # 在训练集上评估
     train_metrics, train_preds = evaluate(train_df, model, target_col)
@@ -173,8 +172,7 @@ def evaluate_time_split(
 
 
 def run_time_series_cv(
-    data_dir: Path,
-    sentiment_path: Path,
+    panel_path: Path,
     target_col: str = "fwd_ret_5",
     n_splits: int = 5,
     min_train_days: int = 180,
@@ -189,18 +187,25 @@ def run_time_series_cv(
     运行时间序列交叉验证调优
 
     Returns:
-        (结果DataFrame, 汇总统计字典)
+        (结果 DataFrame, 汇总统计字典)
     """
     # 加载数据
-    print("📊 加载数据...")
-    df, feature_cols = load_broad_base_history(data_dir, sentiment_path)
-    print(f"  ✓ 数据行数: {len(df)}")
-    print(f"  ✓ 特征数量: {len(feature_cols)}")
-    print(f"  ✓ 日期范围: {df['date'].min()} ~ {df['date'].max()}")
+    print("📊 加载训练面板数据...")
+    panel_df = pd.read_csv(panel_path)
+    print(f"  ✓ 数据行数：{len(panel_df)}")
+    print(f"  ✓ 日期范围：{panel_df['date'].min()} ~ {panel_df['date'].max()}")
+
+    # 确定特征列
+    exclude_cols = {'date', 'code', 'name', 'family_id', 'close', target_col, 'is_trainable', 'is_future'}
+    feature_cols = [c for c in panel_df.columns if c not in exclude_cols and not c.startswith('fwd_')]
+    print(f"  ✓ 特征数量：{len(feature_cols)}")
+
+    # 转换为字典列表（lite_train 使用的格式）
+    df = panel_df.to_dict('records')
 
     # 生成时间切分
     print(f"\n⏱️  生成 {n_splits} 个时间切分...")
-    splits = generate_time_splits(df, n_splits, min_train_days, test_days)
+    splits = generate_time_splits(panel_df, n_splits, min_train_days, test_days)
 
     for i, (train_start, train_end, test_end) in enumerate(splits, 1):
         print(f"  切分 {i}: 训练 [{train_start} ~ {train_end}], 测试 [{train_end} ~ {test_end}]")
@@ -213,10 +218,10 @@ def run_time_series_cv(
     if min_pred_grid is None:
         min_pred_grid = [0.0, 0.005, 0.01]
 
-    print(f"\n🔍 超参数搜索空间:")
-    print(f"  L2 正则化: {l2_grid}")
+    print(f"\n🔍 超参数搜索空间：")
+    print(f"  L2 正则化：{l2_grid}")
     print(f"  Top K: {top_k_grid}")
-    print(f"  最小预测: {min_pred_grid}")
+    print(f"  最小预测：{min_pred_grid}")
 
     # 遍历所有组合
     results = []
@@ -259,11 +264,11 @@ def run_time_series_cv(
                         # 显示进度
                         if current % 10 == 0 or current == total_combinations:
                             progress = current / total_combinations * 100
-                            print(f"  进度: {current}/{total_combinations} ({progress:.1f}%)")
+                            print(f"  进度：{current}/{total_combinations} ({progress:.1f}%)")
 
     print(f"\n✅ 评估完成！共 {len(results)} 个有效结果\n")
 
-    # 转换为DataFrame
+    # 转换为 DataFrame
     results_df = pd.DataFrame(results)
 
     # 计算汇总统计
@@ -296,7 +301,7 @@ def run_time_series_cv(
         # 最佳配置（按策略收益）
         "best_by_return": results_df.loc[results_df["strategy_cumulative_return"].idxmax()].to_dict(),
 
-        # 最稳定配置（按测试集IC标准差最小）
+        # 最稳定配置（按测试集 IC 标准差最小）
         "most_stable": results_df.groupby(["l2", "top_k", "min_pred"])["test_spearman_ic"].std().idxmin(),
     }
 
@@ -350,7 +355,7 @@ def create_visualizations(
         value_kind="pct",
     )
 
-    print(f"📊 可视化图表已保存到: {output_dir}")
+    print(f"📊 可视化图表已保存到：{output_dir}")
 
 
 def main() -> int:
@@ -370,11 +375,11 @@ def main() -> int:
     print("\n" + "="*80)
     print("🎯 时间序列交叉验证 - 模型鲁棒性测试")
     print("="*80)
-    print(f"📁 数据目录: {args.data_dir}")
-    print(f"📈 情绪数据: {args.sentiment}")
-    print(f"🔢 切分数量: {args.n_splits}")
-    print(f"📅 训练天数: {args.min_train_days}")
-    print(f"📅 测试天数: {args.test_days}")
+    print(f"📁 数据目录：{args.data_dir}")
+    print(f"📈 情绪数据：{args.sentiment}")
+    print(f"🔢 切分数量：{args.n_splits}")
+    print(f"📅 训练天数：{args.min_train_days}")
+    print(f"📅 测试天数：{args.test_days}")
     print("="*80 + "\n")
 
     try:
@@ -390,11 +395,11 @@ def main() -> int:
 
         # 保存结果
         results_df.to_csv(args.output, index=False)
-        print(f"💾 详细结果已保存: {args.output}")
+        print(f"💾 详细结果已保存：{args.output}")
 
         with open(args.summary, "w", encoding="utf-8") as f:
             json.dump(summary, f, indent=2, ensure_ascii=False, default=str)
-        print(f"💾 汇总统计已保存: {args.summary}")
+        print(f"💾 汇总统计已保存：{args.summary}")
 
         # 创建可视化
         create_visualizations(results_df, args.charts)
@@ -404,27 +409,27 @@ def main() -> int:
         print("📊 鲁棒性分析结果")
         print("="*80)
         print(f"\n【平均表现】")
-        print(f"  测试集方向准确率: {summary['avg_test_directional_accuracy']:.4f}")
+        print(f"  测试集方向准确率：{summary['avg_test_directional_accuracy']:.4f}")
         print(f"  测试集 Spearman IC: {summary['avg_test_spearman_ic']:.4f}")
-        print(f"  策略平均收益: {summary['avg_strategy_return']:.4f}")
-        print(f"  策略平均夏普: {summary['avg_strategy_sharpe']:.4f}")
+        print(f"  策略平均收益：{summary['avg_strategy_return']:.4f}")
+        print(f"  策略平均夏普：{summary['avg_strategy_sharpe']:.4f}")
 
         print(f"\n【稳定性指标】（标准差越小越稳定）")
-        print(f"  准确率标准差: {summary['std_test_directional_accuracy']:.4f}")
-        print(f"  IC 标准差: {summary['std_test_spearman_ic']:.4f}")
-        print(f"  收益标准差: {summary['std_strategy_return']:.4f}")
+        print(f"  准确率标准差：{summary['std_test_directional_accuracy']:.4f}")
+        print(f"  IC 标准差：{summary['std_test_spearman_ic']:.4f}")
+        print(f"  收益标准差：{summary['std_strategy_return']:.4f}")
 
         best_acc = summary['best_by_accuracy']
         print(f"\n【最佳准确率配置】")
         print(f"  L2={best_acc['l2']}, Top_K={best_acc['top_k']}, Min_Pred={best_acc['min_pred']}")
-        print(f"  测试集准确率: {best_acc['test_directional_accuracy']:.4f}")
-        print(f"  策略收益: {best_acc['strategy_cumulative_return']:.4f}")
+        print(f"  测试集准确率：{best_acc['test_directional_accuracy']:.4f}")
+        print(f"  策略收益：{best_acc['strategy_cumulative_return']:.4f}")
 
         best_ret = summary['best_by_return']
         print(f"\n【最佳收益配置】")
         print(f"  L2={best_ret['l2']}, Top_K={best_ret['top_k']}, Min_Pred={best_ret['min_pred']}")
-        print(f"  策略收益: {best_ret['strategy_cumulative_return']:.4f}")
-        print(f"  测试集准确率: {best_ret['test_directional_accuracy']:.4f}")
+        print(f"  策略收益：{best_ret['strategy_cumulative_return']:.4f}")
+        print(f"  测试集准确率：{best_ret['test_directional_accuracy']:.4f}")
 
         print("\n" + "="*80)
         print("✅ 时间序列交叉验证完成！")
@@ -433,7 +438,7 @@ def main() -> int:
         return 0
 
     except Exception as e:
-        print(f"\n❌ 错误: {e}")
+        print(f"\n❌ 错误：{e}")
         import traceback
         traceback.print_exc()
         return 1

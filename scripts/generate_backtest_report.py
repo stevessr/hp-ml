@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""生成ETF策略回测可视化报告
+"""生成 ETF 策略回测可视化报告
 
 包含：
 1. 累计收益率曲线对比图
@@ -22,11 +22,12 @@ import pandas as pd
 # 使用非交互式后端
 matplotlib.use('Agg')
 
-# 设置中文字体
-plt.rcParams['font.sans-serif'] = ['SimHei', 'DejaVu Sans', 'Arial Unicode MS', 'WenQuanYi Micro Hei']
+# 设置中文字体 - 使用系统可用字体
+plt.rcParams['font.sans-serif'] = ['Source Han Sans CN', 'Noto Sans CJK SC', 'WenQuanYi Zen Hei', 'DejaVu Sans']
 plt.rcParams['axes.unicode_minus'] = False
+plt.rcParams['font.size'] = 10
 
-# 尝试导入seaborn（可选）
+# 尝试导入 seaborn（可选）
 try:
     import seaborn as sns
     sns.set_style("whitegrid")
@@ -34,7 +35,7 @@ try:
     HAS_SEABORN = True
 except ImportError:
     HAS_SEABORN = False
-    print("⚠️  seaborn未安装，将使用matplotlib原生绘图")
+    print("⚠️  seaborn 未安装，将使用 matplotlib 原生绘图")
 
 ROOT = Path(__file__).parent.parent
 REPORTS = ROOT / "reports"
@@ -64,26 +65,25 @@ def plot_cumulative_returns(df: pd.DataFrame, output_path: Path) -> None:
     ax.plot(df['date'], df['benchmark_cumulative'] * 100,
             label='基准 (等权)', linewidth=2.5, color='#3498db', linestyle='--')
 
-    ax.set_xlabel('日期', fontsize=12, fontweight='bold')
-    ax.set_ylabel('累计收益率 (%)', fontsize=12, fontweight='bold')
-    ax.set_title('ETF策略 vs 基准累计收益率对比', fontsize=14, fontweight='bold', pad=20)
-    ax.legend(loc='upper left', fontsize=11, frameon=True, shadow=True)
-    ax.grid(True, alpha=0.3)
+    ax.set_xlabel('日期', fontsize=11)
+    ax.set_ylabel('累计收益率 (%)', fontsize=11)
+    ax.set_title('ETF 策略 vs 基准累计收益率对比', fontsize=13, fontweight='bold', pad=15)
+    ax.legend(loc='upper left', fontsize=10, frameon=True, shadow=False)
+    ax.grid(True, alpha=0.3, linestyle='--')
 
-    # 添加关键指标文本框
+    # 在图表下方添加关键指标说明
     final_strategy = df['strategy_cumulative'].iloc[-1] * 100
     final_benchmark = df['benchmark_cumulative'].iloc[-1] * 100
     excess = final_strategy - final_benchmark
 
-    textstr = f'策略收益: {final_strategy:.2f}%\n基准收益: {final_benchmark:.2f}%\n超额收益: {excess:.2f}%'
-    props = dict(boxstyle='round', facecolor='wheat', alpha=0.8)
-    ax.text(0.02, 0.98, textstr, transform=ax.transAxes, fontsize=11,
-            verticalalignment='top', bbox=props)
+    # 使用 fig.text 在图外添加说明
+    fig.text(0.12, 0.02, f'策略收益：{final_strategy:.2f}%  |  基准收益：{final_benchmark:.2f}%  |  超额收益：{excess:.2f}%',
+             fontsize=10, ha='left', bbox=dict(boxstyle='round', facecolor='lightblue', alpha=0.3))
 
-    plt.tight_layout()
+    plt.tight_layout(rect=[0, 0.04, 1, 1])  # 为底部文字留出空间
     plt.savefig(output_path, dpi=300, bbox_inches='tight')
     plt.close()
-    print(f"✅ 累计收益率曲线已保存: {output_path}")
+    print(f"✅ 累计收益率曲线已保存：{output_path}")
 
 
 def plot_daily_returns_distribution(df: pd.DataFrame, output_path: Path) -> None:
@@ -93,29 +93,29 @@ def plot_daily_returns_distribution(df: pd.DataFrame, output_path: Path) -> None
     # 策略收益分布
     strategy_returns = df['strategy_return_raw'].dropna() * 100
     ax1.hist(strategy_returns, bins=50, alpha=0.7, color='#e74c3c', edgecolor='black')
-    ax1.axvline(strategy_returns.mean(), color='darkred', linestyle='--', linewidth=2, label=f'均值: {strategy_returns.mean():.3f}%')
+    ax1.axvline(strategy_returns.mean(), color='darkred', linestyle='--', linewidth=2, label=f'均值：{strategy_returns.mean():.3f}%')
     ax1.axvline(0, color='gray', linestyle='-', linewidth=1)
-    ax1.set_xlabel('日收益率 (%)', fontsize=11)
-    ax1.set_ylabel('频数', fontsize=11)
-    ax1.set_title('策略日收益率分布', fontsize=12, fontweight='bold')
-    ax1.legend(fontsize=10)
-    ax1.grid(True, alpha=0.3)
+    ax1.set_xlabel('日收益率 (%)', fontsize=10)
+    ax1.set_ylabel('频数', fontsize=10)
+    ax1.set_title('策略日收益率分布', fontsize=11, fontweight='bold')
+    ax1.legend(fontsize=9)
+    ax1.grid(True, alpha=0.3, linestyle='--')
 
     # 基准收益分布
     benchmark_returns = df['Benchmark'].dropna() * 100
     ax2.hist(benchmark_returns, bins=50, alpha=0.7, color='#3498db', edgecolor='black')
-    ax2.axvline(benchmark_returns.mean(), color='darkblue', linestyle='--', linewidth=2, label=f'均值: {benchmark_returns.mean():.3f}%')
+    ax2.axvline(benchmark_returns.mean(), color='darkblue', linestyle='--', linewidth=2, label=f'均值：{benchmark_returns.mean():.3f}%')
     ax2.axvline(0, color='gray', linestyle='-', linewidth=1)
-    ax2.set_xlabel('日收益率 (%)', fontsize=11)
-    ax2.set_ylabel('频数', fontsize=11)
-    ax2.set_title('基准日收益率分布', fontsize=12, fontweight='bold')
-    ax2.legend(fontsize=10)
-    ax2.grid(True, alpha=0.3)
+    ax2.set_xlabel('日收益率 (%)', fontsize=10)
+    ax2.set_ylabel('频数', fontsize=10)
+    ax2.set_title('基准日收益率分布', fontsize=11, fontweight='bold')
+    ax2.legend(fontsize=9)
+    ax2.grid(True, alpha=0.3, linestyle='--')
 
     plt.tight_layout()
     plt.savefig(output_path, dpi=300, bbox_inches='tight')
     plt.close()
-    print(f"✅ 日收益率分布图已保存: {output_path}")
+    print(f"✅ 日收益率分布图已保存：{output_path}")
 
 
 def plot_drawdown(df: pd.DataFrame, output_path: Path) -> None:
@@ -132,24 +132,22 @@ def plot_drawdown(df: pd.DataFrame, output_path: Path) -> None:
     ax.fill_between(df['date'], strategy_drawdown, 0, alpha=0.5, color='#e74c3c', label='策略回撤')
     ax.fill_between(df['date'], benchmark_drawdown, 0, alpha=0.5, color='#3498db', label='基准回撤')
 
-    ax.set_xlabel('日期', fontsize=12, fontweight='bold')
-    ax.set_ylabel('回撤 (%)', fontsize=12, fontweight='bold')
-    ax.set_title('策略回撤曲线对比', fontsize=14, fontweight='bold', pad=20)
-    ax.legend(loc='lower left', fontsize=11, frameon=True, shadow=True)
-    ax.grid(True, alpha=0.3)
+    ax.set_xlabel('日期', fontsize=11)
+    ax.set_ylabel('回撤 (%)', fontsize=11)
+    ax.set_title('策略回撤曲线对比', fontsize=13, fontweight='bold', pad=15)
+    ax.legend(loc='lower left', fontsize=10, frameon=True, shadow=False)
+    ax.grid(True, alpha=0.3, linestyle='--')
 
-    # 标注最大回撤
+    # 在图表下方标注最大回撤
     max_dd_strategy = strategy_drawdown.min()
     max_dd_benchmark = benchmark_drawdown.min()
-    textstr = f'策略最大回撤: {max_dd_strategy:.2f}%\n基准最大回撤: {max_dd_benchmark:.2f}%'
-    props = dict(boxstyle='round', facecolor='lightcoral', alpha=0.8)
-    ax.text(0.02, 0.02, textstr, transform=ax.transAxes, fontsize=11,
-            verticalalignment='bottom', bbox=props)
+    fig.text(0.12, 0.02, f'策略最大回撤：{max_dd_strategy:.2f}%  |  基准最大回撤：{max_dd_benchmark:.2f}%',
+             fontsize=10, ha='left', bbox=dict(boxstyle='round', facecolor='lightcoral', alpha=0.3))
 
-    plt.tight_layout()
+    plt.tight_layout(rect=[0, 0.04, 1, 1])
     plt.savefig(output_path, dpi=300, bbox_inches='tight')
     plt.close()
-    print(f"✅ 回撤曲线已保存: {output_path}")
+    print(f"✅ 回撤曲线已保存：{output_path}")
 
 
 def plot_monthly_returns_heatmap(df: pd.DataFrame, output_path: Path) -> None:
@@ -180,7 +178,7 @@ def plot_monthly_returns_heatmap(df: pd.DataFrame, output_path: Path) -> None:
         sns.heatmap(pivot, annot=True, fmt='.2f', cmap='RdYlGn', center=0,
                     cbar_kws={'label': '月度收益率 (%)'}, ax=ax, linewidths=0.5)
     else:
-        # 使用matplotlib的imshow作为替代
+        # 使用 matplotlib 的 imshow 作为替代
         im = ax.imshow(pivot.values, cmap='RdYlGn', aspect='auto', vmin=-10, vmax=10)
 
         # 添加数值标注
@@ -196,15 +194,15 @@ def plot_monthly_returns_heatmap(df: pd.DataFrame, output_path: Path) -> None:
         ax.set_yticklabels(pivot.index)
         plt.colorbar(im, ax=ax, label='月度收益率 (%)')
 
-    ax.set_xlabel('月份', fontsize=12, fontweight='bold')
-    ax.set_ylabel('年份', fontsize=12, fontweight='bold')
-    ax.set_title('策略月度收益率热力图', fontsize=14, fontweight='bold', pad=20)
+    ax.set_xlabel('月份', fontsize=11)
+    ax.set_ylabel('年份', fontsize=11)
+    ax.set_title('策略月度收益率热力图', fontsize=13, fontweight='bold', pad=15)
     ax.set_xticklabels([f'{i}月' for i in range(1, 13)])
 
     plt.tight_layout()
     plt.savefig(output_path, dpi=300, bbox_inches='tight')
     plt.close()
-    print(f"✅ 月度收益热力图已保存: {output_path}")
+    print(f"✅ 月度收益热力图已保存：{output_path}")
 
 
 def plot_win_rate_pie(df: pd.DataFrame, output_path: Path) -> None:
@@ -218,11 +216,11 @@ def plot_win_rate_pie(df: pd.DataFrame, output_path: Path) -> None:
     strategy_flat = (strategy_returns == 0).sum()
 
     colors1 = ['#2ecc71', '#e74c3c', '#95a5a6']
-    ax1.pie([strategy_win, strategy_loss, strategy_flat],
-            labels=[f'盈利: {strategy_win}天', f'亏损: {strategy_loss}天', f'持平: {strategy_flat}天'],
-            autopct='%1.1f%%', colors=colors1, startangle=90, textprops={'fontsize': 11})
-    ax1.set_title(f'策略胜率统计 (胜率: {strategy_win/(strategy_win+strategy_loss)*100:.1f}%)',
-                  fontsize=12, fontweight='bold')
+    wedges1, texts1, autotexts1 = ax1.pie([strategy_win, strategy_loss, strategy_flat],
+            labels=[f'盈利 {strategy_win}天', f'亏损 {strategy_loss}天', f'持平 {strategy_flat}天'],
+            autopct='%1.1f%%', colors=colors1, startangle=90, textprops={'fontsize': 9})
+    ax1.set_title(f'策略胜率统计',
+                  fontsize=12, fontweight='bold', pad=10)
 
     # 相对基准胜率
     excess = df['strategy_return_raw'] - df['Benchmark']
@@ -231,16 +229,22 @@ def plot_win_rate_pie(df: pd.DataFrame, output_path: Path) -> None:
     excess_flat = (excess == 0).sum()
 
     colors2 = ['#3498db', '#e67e22', '#95a5a6']
-    ax2.pie([excess_win, excess_loss, excess_flat],
-            labels=[f'跑赢: {excess_win}天', f'跑输: {excess_loss}天', f'持平: {excess_flat}天'],
-            autopct='%1.1f%%', colors=colors2, startangle=90, textprops={'fontsize': 11})
-    ax2.set_title(f'相对基准胜率 (胜率: {excess_win/(excess_win+excess_loss)*100:.1f}%)',
-                  fontsize=12, fontweight='bold')
+    wedges2, texts2, autotexts2 = ax2.pie([excess_win, excess_loss, excess_flat],
+            labels=[f'跑赢 {excess_win}天', f'跑输 {excess_loss}天', f'持平 {excess_flat}天'],
+            autopct='%1.1f%%', colors=colors2, startangle=90, textprops={'fontsize': 9})
+    ax2.set_title(f'相对基准胜率',
+                  fontsize=12, fontweight='bold', pad=10)
 
-    plt.tight_layout()
+    # 在图表下方添加说明
+    win_rate_strategy = strategy_win/(strategy_win+strategy_loss)*100
+    win_rate_excess = excess_win/(excess_win+excess_loss)*100
+    fig.text(0.5, 0.02, f'策略绝对胜率：{win_rate_strategy:.1f}%  |  相对基准胜率：{win_rate_excess:.1f}%',
+             fontsize=10, ha='center', bbox=dict(boxstyle='round', facecolor='lightgreen', alpha=0.3))
+
+    plt.tight_layout(rect=[0, 0.04, 1, 1])
     plt.savefig(output_path, dpi=300, bbox_inches='tight')
     plt.close()
-    print(f"✅ 胜率统计饼图已保存: {output_path}")
+    print(f"✅ 胜率统计饼图已保存：{output_path}")
 
 
 def plot_rolling_metrics(df: pd.DataFrame, output_path: Path, window: int = 60) -> None:
@@ -274,7 +278,7 @@ def plot_rolling_metrics(df: pd.DataFrame, output_path: Path, window: int = 60) 
     plt.tight_layout()
     plt.savefig(output_path, dpi=300, bbox_inches='tight')
     plt.close()
-    print(f"✅ 滚动指标图已保存: {output_path}")
+    print(f"✅ 滚动指标图已保存：{output_path}")
 
 
 def generate_summary_table(df: pd.DataFrame, output_path: Path) -> dict:
@@ -316,15 +320,15 @@ def generate_summary_table(df: pd.DataFrame, output_path: Path) -> dict:
 
     summary_df = pd.DataFrame(metrics)
     summary_df.to_csv(output_path, index=False, encoding='utf-8-sig')
-    print(f"✅ 性能摘要表已保存: {output_path}")
+    print(f"✅ 性能摘要表已保存：{output_path}")
 
     return metrics
 
 
 def main():
-    parser = argparse.ArgumentParser(description='生成ETF策略回测可视化报告')
+    parser = argparse.ArgumentParser(description='生成 ETF 策略回测可视化报告')
     parser.add_argument('--daily-csv', default=str(REPORTS / 'ml_auto_tune_until_baseline.csv'),
-                        help='日度收益CSV文件路径')
+                        help='日度收益 CSV 文件路径')
     parser.add_argument('--output-dir', default=str(CHARTS_DIR),
                         help='图表输出目录')
     parser.add_argument('--rolling-window', type=int, default=60,
@@ -337,14 +341,14 @@ def main():
     output_dir.mkdir(parents=True, exist_ok=True)
 
     print("\n" + "="*80)
-    print("📊 ETF策略回测可视化报告生成器")
+    print("📊 ETF 策略回测可视化报告生成器")
     print("="*80)
-    print(f"📁 输入文件: {daily_csv}")
-    print(f"📁 输出目录: {output_dir}")
+    print(f"📁 输入文件：{daily_csv}")
+    print(f"📁 输出目录：{output_dir}")
     print("="*80 + "\n")
 
     if not daily_csv.exists():
-        print(f"❌ 错误: 找不到输入文件 {daily_csv}")
+        print(f"❌ 错误：找不到输入文件 {daily_csv}")
         return 1
 
     try:
@@ -370,19 +374,19 @@ def main():
         print("\n" + "="*80)
         print("✅ 所有报告元素生成完成！")
         print("="*80)
-        print(f"\n📊 生成的文件:")
-        print(f"  1. 累计收益率曲线: {output_dir / 'cumulative_returns.png'}")
-        print(f"  2. 日收益率分布: {output_dir / 'daily_returns_distribution.png'}")
-        print(f"  3. 回撤曲线: {output_dir / 'drawdown.png'}")
-        print(f"  4. 月度收益热力图: {output_dir / 'monthly_returns_heatmap.png'}")
-        print(f"  5. 胜率统计饼图: {output_dir / 'win_rate_pie.png'}")
-        print(f"  6. 滚动指标图: {output_dir / 'rolling_metrics.png'}")
-        print(f"  7. 性能摘要表: {output_dir / 'performance_summary.csv'}\n")
+        print(f"\n📊 生成的文件：")
+        print(f"  1. 累计收益率曲线：{output_dir / 'cumulative_returns.png'}")
+        print(f"  2. 日收益率分布：{output_dir / 'daily_returns_distribution.png'}")
+        print(f"  3. 回撤曲线：{output_dir / 'drawdown.png'}")
+        print(f"  4. 月度收益热力图：{output_dir / 'monthly_returns_heatmap.png'}")
+        print(f"  5. 胜率统计饼图：{output_dir / 'win_rate_pie.png'}")
+        print(f"  6. 滚动指标图：{output_dir / 'rolling_metrics.png'}")
+        print(f"  7. 性能摘要表：{output_dir / 'performance_summary.csv'}\n")
 
         return 0
 
     except Exception as exc:
-        print(f"\n❌ 错误: {exc}")
+        print(f"\n❌ 错误：{exc}")
         import traceback
         traceback.print_exc()
         return 1

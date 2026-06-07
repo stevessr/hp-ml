@@ -19,6 +19,7 @@ dependencies = [
   "akshare>=1.18.64",
   "kaggle>=1.7.4.5",
   "pytest>=9.0.3",
+  "seaborn>=0.13.2",
 ]
 
 [project.scripts]
