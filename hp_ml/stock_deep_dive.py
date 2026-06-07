@@ -27,6 +27,7 @@ from .config import RAW_DIR, REPORTS_DIR
 from .data_sources import (
     EASTMONEY_KLINE_URL,
     HISTORY_COLUMNS,
+    TENCENT_KLINE_URL,
     _get_json,
     human_amount,
     latest_cache_path,
@@ -38,6 +39,7 @@ from .data_sources import (
 EASTMONEY_STOCK_LIST_URL = "https://push2.eastmoney.com/api/qt/clist/get"
 EASTMONEY_STOCK_ULIST_URL = "https://push2.eastmoney.com/api/qt/ulist.np/get"
 EASTMONEY_DATACENTER_URL = "https://datacenter-web.eastmoney.com/api/data/v1/get"
+TENCENT_REALTIME_URL = "https://qt.gtimg.cn/q="
 
 # Shanghai main/KCB and Shenzhen main/ChiNext.  The index-component data used by
 # this project is currently concentrated here.  Beijing symbols can be added if
@@ -123,6 +125,11 @@ def _fmt_number(value: Any, digits: int = 2) -> str:
 
 def _normalize_code(value: Any) -> str:
     return str(value or "").strip().zfill(6)
+
+
+def _tencent_symbol(code: str) -> str:
+    code = _normalize_code(code)
+    return ("sh" if code.startswith(("5", "6", "9")) else "sz") + code
 
 
 def _safe_join(values: list[Any], sep: str = ";") -> str:
@@ -491,11 +498,77 @@ def fetch_stock_spot_by_codes(codes: list[str], *, force: bool = False) -> pd.Da
             for code in chunk:
                 rows.append({"f12": code})
     df = _spot_rows_to_dataframe(rows)
+    if df.empty or "quote_amount" not in df.columns or df["quote_amount"].isna().all():
+        try:
+            tencent = fetch_stock_spot_tencent_by_codes(codes)
+            if df.empty:
+                df = tencent
+            else:
+                df = pd.concat([df, tencent], ignore_index=True, sort=False)
+                df = df.sort_values(
+                    ["stock_code", "quote_amount"],
+                    ascending=[True, True],
+                    na_position="first",
+                ).drop_duplicates("stock_code", keep="last")
+        except Exception:
+            pass
     if not cached.empty:
         df = pd.concat([cached, df], ignore_index=True, sort=False)
-        df = df.drop_duplicates("stock_code", keep="last")
+        df = df.sort_values(
+            ["stock_code", "quote_amount"],
+            ascending=[True, True],
+            na_position="first",
+        ).drop_duplicates("stock_code", keep="last")
     df.to_csv(cache_path, index=False)
     return df[df["stock_code"].isin(code_set)].copy()
+
+
+def fetch_stock_spot_tencent_by_codes(codes: list[str]) -> pd.DataFrame:
+    """Fetch selected real-time quote rows from Tencent as an amount fallback."""
+
+    rows: list[dict[str, Any]] = []
+    session = requests.Session()
+    session.headers.update({"User-Agent": "Mozilla/5.0"})
+    for i in range(0, len(codes), 80):
+        chunk = [_tencent_symbol(code) for code in codes[i : i + 80]]
+        response = session.get(TENCENT_REALTIME_URL + ",".join(chunk), timeout=10)
+        response.raise_for_status()
+        text = response.content.decode("gbk", "ignore")
+        for line in text.splitlines():
+            if '="' not in line:
+                continue
+            payload = line.split('="', 1)[1].rsplit('"', 1)[0]
+            parts = payload.split("~")
+            if len(parts) < 40:
+                continue
+            code = _normalize_code(parts[2])
+            trade_parts = parts[35].split("/") if len(parts) > 35 else []
+            amount = to_float(trade_parts[2]) if len(trade_parts) >= 3 else None
+            volume = to_float(trade_parts[1]) if len(trade_parts) >= 2 else to_float(parts[36])
+            amount_10k = to_float(parts[37]) if len(parts) > 37 else None
+            if amount is None and amount_10k is not None:
+                amount = amount_10k * 10000
+            rows.append(
+                {
+                    "stock_code": code,
+                    "stock_name_quote": parts[1],
+                    "latest_price": to_float(parts[3]),
+                    "quote_pct_chg": to_float(parts[32]),
+                    "quote_price_change": to_float(parts[31]),
+                    "quote_volume": volume,
+                    "quote_amount": amount,
+                    "quote_high": to_float(parts[33]),
+                    "quote_low": to_float(parts[34]),
+                    "quote_open": to_float(parts[5]),
+                    "quote_prev_close": to_float(parts[4]),
+                    "quote_turnover_rate": to_float(parts[38]),
+                    "pe_ttm": to_float(parts[39]),
+                    "quote_time": parts[30],
+                    "source": "tencent_realtime",
+                    "fetched_at": dt.datetime.now().isoformat(timespec="seconds"),
+                }
+            )
+    return pd.DataFrame(rows)
 
 
 def fetch_stock_history(
