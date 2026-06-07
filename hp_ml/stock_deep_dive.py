@@ -22,7 +22,7 @@ from typing import Any
 import pandas as pd
 import requests
 
-from .charts import write_column_chart, write_horizontal_bar_chart
+from .charts import write_column_chart, write_horizontal_bar_chart, write_pie_chart
 from .config import RAW_DIR, REPORTS_DIR
 from .data_sources import (
     EASTMONEY_KLINE_URL,
@@ -588,35 +588,94 @@ def fetch_stock_history(
     cache_path = STOCK_HISTORY_DIR / f"{code}_{start}_{end}_{adjust or 'raw'}.csv"
     if cache_path.exists() and not force:
         return pd.read_csv(cache_path, dtype={"stock_code": str}, parse_dates=["date"])
-    if sleep_seconds:
-        time.sleep(sleep_seconds)
-    session = make_session()
-    payload = _get_json(
-        session,
-        EASTMONEY_KLINE_URL,
-        params={
-            "secid": secid_for_code(code),
-            "fields1": "f1,f2,f3,f4,f5,f6",
-            "fields2": "f51,f52,f53,f54,f55,f56,f57,f58,f59,f60,f61",
-            "klt": 101,
-            "fqt": adjust_key,
-            "beg": start,
-            "end": end,
-        },
-        timeout=15,
-    )
-    klines = ((payload.get("data") or {}).get("klines")) or []
-    if not klines:
-        raise RuntimeError(f"No stock K-line rows for {code}")
-    records: list[list[str]] = [line.split(",") for line in klines]
-    df = pd.DataFrame(records, columns=HISTORY_COLUMNS)
-    df.insert(0, "stock_code", code)
+    try:
+        if sleep_seconds:
+            time.sleep(sleep_seconds)
+        session = make_session()
+        payload = _get_json(
+            session,
+            EASTMONEY_KLINE_URL,
+            params={
+                "secid": secid_for_code(code),
+                "fields1": "f1,f2,f3,f4,f5,f6",
+                "fields2": "f51,f52,f53,f54,f55,f56,f57,f58,f59,f60,f61",
+                "klt": 101,
+                "fqt": adjust_key,
+                "beg": start,
+                "end": end,
+            },
+            timeout=15,
+        )
+        klines = ((payload.get("data") or {}).get("klines")) or []
+        if not klines:
+            raise RuntimeError(f"No stock K-line rows for {code}")
+        records: list[list[str]] = [line.split(",") for line in klines]
+        df = pd.DataFrame(records, columns=HISTORY_COLUMNS)
+        df.insert(0, "stock_code", code)
+        df["date"] = pd.to_datetime(df["date"])
+        for col in HISTORY_COLUMNS[1:]:
+            df[col] = pd.to_numeric(df[col], errors="coerce")
+        df = df.sort_values("date").drop_duplicates(["stock_code", "date"], keep="last")
+    except Exception:
+        df = fetch_stock_history_tencent(code, start=start, end=end, adjust=adjust)
+    df.to_csv(cache_path, index=False)
+    return df
+
+
+def fetch_stock_history_tencent(code: str, *, start: str, end: str, adjust: str = "qfq") -> pd.DataFrame:
+    """Fetch stock daily history from Tencent and approximate amount.
+
+    Tencent's daily endpoint returns volume in lots and no explicit amount.
+    ``amount`` is approximated as close * volume * 100, which is sufficient for
+    detecting amount expansion when Eastmoney K-line is unavailable.
+    """
+
+    code = _normalize_code(code)
+    symbol = _tencent_symbol(code)
+    fq = "qfq" if adjust.lower() == "qfq" else ""
+    param = f"{symbol},day,{_date_only(pd.to_datetime(start))},{_date_only(pd.to_datetime(end))},1000,{fq}".rstrip(",")
+    payload = _get_json(make_session(), TENCENT_KLINE_URL, params={"param": param}, timeout=12)
+    node = (payload.get("data") or {}).get(symbol) or {}
+    lines = node.get("qfqday") or node.get("hfqday") or node.get("day") or []
+    if not lines:
+        raise RuntimeError(f"No Tencent stock K-line rows for {code}")
+    rows: list[dict[str, Any]] = []
+    prev_close: float | None = None
+    for item in lines:
+        if len(item) < 6:
+            continue
+        date_s, open_v, close_v, high_v, low_v, volume_v = item[:6]
+        close_f = to_float(close_v)
+        high_f = to_float(high_v)
+        low_f = to_float(low_v)
+        volume_f = to_float(volume_v)
+        row = {
+            "stock_code": code,
+            "date": date_s,
+            "open": to_float(open_v),
+            "close": close_f,
+            "high": high_f,
+            "low": low_f,
+            "volume": volume_f,
+            "amount": close_f * volume_f * 100 if close_f is not None and volume_f is not None else None,
+            "amplitude": None,
+            "pct_chg": None,
+            "price_change": None,
+            "turnover_rate": None,
+        }
+        if prev_close not in (None, 0) and close_f is not None:
+            row["price_change"] = close_f - prev_close
+            row["pct_chg"] = row["price_change"] / prev_close * 100
+            if high_f is not None and low_f is not None:
+                row["amplitude"] = (high_f - low_f) / prev_close * 100
+        if close_f is not None:
+            prev_close = close_f
+        rows.append(row)
+    df = pd.DataFrame(rows)
     df["date"] = pd.to_datetime(df["date"])
     for col in HISTORY_COLUMNS[1:]:
         df[col] = pd.to_numeric(df[col], errors="coerce")
-    df = df.sort_values("date").drop_duplicates(["stock_code", "date"], keep="last")
-    df.to_csv(cache_path, index=False)
-    return df
+    return df.sort_values("date").drop_duplicates(["stock_code", "date"], keep="last")
 
 
 def stock_history_features(history: pd.DataFrame) -> dict[str, Any]:
@@ -1238,14 +1297,13 @@ def write_company_shareholder_reports(
                     continue
                 chart_rows.append((f"{_fmt_number(item.get('rank'), 0)} {item.get('holder_name', '')}", ratio))
             if chart_rows:
-                chart_path = charts_dir / f"{stem}_{holder_kind}_holders.svg"
-                write_horizontal_bar_chart(
+                chart_path = charts_dir / f"{stem}_{holder_kind}_holders_pie.svg"
+                write_pie_chart(
                     chart_path,
                     title=f"{code} {name} {label}",
-                    subtitle="东方财富股东分析口径；按排名展示最新报告期前十大股东占比。",
+                    subtitle="东方财富股东分析口径；饼图含前十大股东及其他/未披露占比。",
                     rows=chart_rows,
-                    value_kind="pct",
-                    positive_color="#7c3aed" if holder_kind == "free" else "#2563eb",
+                    add_remainder=True,
                 )
                 chart_entries.append((label, chart_path))
 
@@ -1289,7 +1347,7 @@ def write_company_shareholder_reports(
             "",
         ]
         if chart_entries:
-            lines.extend(["## 3. 股东占比图", ""])
+            lines.extend(["## 3. 股东占比饼图", ""])
             for label, chart_path in chart_entries:
                 rel = chart_path.relative_to(REPORTS_DIR) if chart_path.is_relative_to(REPORTS_DIR) else chart_path
                 lines.append(f"![{label}](../{rel.as_posix()})")

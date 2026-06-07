@@ -13,24 +13,24 @@
 <text x="42" y="76" class="subtitle">综合 ETF 信号、价格动量、成交额放大、换手与股东结构；仅作研究排序。</text>
 <line x1="320.3" y1="80" x2="320.3" y2="276" stroke="#64748b" stroke-width="1.2" stroke-dasharray="4 4"/>
 <line x1="270.0" y1="82" x2="270.0" y2="274" class="axis"/>
-<text x="270.0" y="296" text-anchor="middle" class="muted">-0.359</text>
+<text x="270.0" y="296" text-anchor="middle" class="muted">-3.161</text>
 <line x1="320.3" y1="82" x2="320.3" y2="274" class="axis"/>
 <text x="320.3" y="296" text-anchor="middle" class="muted">0.000</text>
 <line x1="1000.0" y1="82" x2="1000.0" y2="274" class="axis"/>
-<text x="1000.0" y="296" text-anchor="middle" class="muted">4.853</text>
+<text x="1000.0" y="296" text-anchor="middle" class="muted">42.676</text>
 <text x="42" y="116" class="label">002281 光迅科技</text>
 <rect x="320.3" y="101" width="629.3" height="18" rx="5" fill="#2563eb" opacity="0.88"/>
-<text x="956.7" y="116" text-anchor="start" class="label">4.4933</text>
-<text x="42" y="150" class="label">002008 大族激光</text>
-<rect x="320.3" y="135" width="599.7" height="18" rx="5" fill="#2563eb" opacity="0.88"/>
-<text x="927.0" y="150" text-anchor="start" class="label">4.2819</text>
-<text x="42" y="184" class="label">600487 亨通光电</text>
-<rect x="320.3" y="169" width="592.3" height="18" rx="5" fill="#2563eb" opacity="0.88"/>
-<text x="919.7" y="184" text-anchor="start" class="label">4.2293</text>
-<text x="42" y="218" class="label">688525 佰维存储</text>
-<rect x="320.3" y="203" width="576.1" height="18" rx="5" fill="#2563eb" opacity="0.88"/>
-<text x="903.5" y="218" text-anchor="start" class="label">4.1137</text>
-<text x="42" y="252" class="label">300604 长川科技</text>
-<rect x="320.3" y="237" width="535.5" height="18" rx="5" fill="#2563eb" opacity="0.88"/>
-<text x="862.8" y="252" text-anchor="start" class="label">3.8234</text>
+<text x="956.7" y="116" text-anchor="start" class="label">39.5151</text>
+<text x="42" y="150" class="label">600487 亨通光电</text>
+<rect x="320.3" y="135" width="559.8" height="18" rx="5" fill="#2563eb" opacity="0.88"/>
+<text x="887.1" y="150" text-anchor="start" class="label">35.1497</text>
+<text x="42" y="184" class="label">002008 大族激光</text>
+<rect x="320.3" y="169" width="265.2" height="18" rx="5" fill="#2563eb" opacity="0.88"/>
+<text x="592.5" y="184" text-anchor="start" class="label">16.6496</text>
+<text x="42" y="218" class="label">300604 长川科技</text>
+<rect x="320.3" y="203" width="241.5" height="18" rx="5" fill="#2563eb" opacity="0.88"/>
+<text x="568.8" y="218" text-anchor="start" class="label">15.1623</text>
+<text x="42" y="252" class="label">688525 佰维存储</text>
+<rect x="320.3" y="237" width="195.4" height="18" rx="5" fill="#2563eb" opacity="0.88"/>
+<text x="522.7" y="252" text-anchor="start" class="label">12.2672</text>
 </svg>

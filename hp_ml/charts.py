@@ -42,6 +42,11 @@ def _fmt_pct(value: float) -> str:
     return f"{value * 100:.2f}%"
 
 
+def _polar(cx: float, cy: float, r: float, angle_deg: float) -> tuple[float, float]:
+    rad = math.radians(angle_deg)
+    return cx + r * math.cos(rad), cy + r * math.sin(rad)
+
+
 def _svg_root(width: int, height: int, body: str) -> str:
     return f"""<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"{width}\" height=\"{height}\" viewBox=\"0 0 {width} {height}\" role=\"img\">
 <style>
@@ -173,6 +178,82 @@ def write_column_chart(
         elems.append(f"<rect x=\"{x:.1f}\" y=\"{y:.1f}\" width=\"{bar_w:.1f}\" height=\"{h:.1f}\" rx=\"6\" fill=\"{color}\" opacity=\"0.88\"/>")
         elems.append(f"<text x=\"{x + bar_w / 2:.1f}\" y=\"{min(y, zero_y) - 7:.1f}\" text-anchor=\"middle\" class=\"muted\">{val_text}</text>")
         elems.append(f"<text x=\"{x + bar_w / 2:.1f}\" y=\"{bottom + 22}\" text-anchor=\"middle\" class=\"muted\">{_esc(label[:12])}</text>")
+    path.write_text(_svg_root(width, height, "\n".join(elems)), encoding="utf-8")
+    return path
+
+
+def write_pie_chart(
+    path: Path,
+    *,
+    title: str,
+    subtitle: str,
+    rows: list[tuple[str, float]],
+    width: int = 980,
+    height: int = 560,
+    add_remainder: bool = True,
+    remainder_label: str = "其他/未披露",
+) -> Path:
+    """Write a dependency-free SVG pie chart.
+
+    ``rows`` values should be fractions (0.25 means 25%).  When
+    ``add_remainder`` is true and the provided ratios sum to less than 100%, an
+    extra remainder slice is added so shareholder concentration is visually
+    comparable across companies.
+    """
+
+    path.parent.mkdir(parents=True, exist_ok=True)
+    clean: list[tuple[str, float]] = []
+    for label, value in rows:
+        v = _finite(value)
+        if v is None or v <= 0:
+            continue
+        clean.append((str(label), min(float(v), 1.0)))
+    total = sum(v for _, v in clean)
+    if add_remainder and total < 0.999:
+        clean.append((remainder_label, max(0.0, 1.0 - total)))
+        total = 1.0
+    if not clean or total <= 0:
+        clean = [("无数据", 1.0)]
+        total = 1.0
+
+    cx, cy, r = 295, 305, 168
+    elems = [
+        f"<text x=\"42\" y=\"52\" class=\"title\">{_esc(title)}</text>",
+        f"<text x=\"42\" y=\"76\" class=\"subtitle\">{_esc(subtitle)}</text>",
+    ]
+    angle = -90.0
+    for i, (label, value) in enumerate(clean):
+        frac = value / total
+        sweep = frac * 360.0
+        color = PALETTE[i % len(PALETTE)]
+        if sweep >= 359.999:
+            elems.append(f"<circle cx=\"{cx}\" cy=\"{cy}\" r=\"{r}\" fill=\"{color}\" opacity=\"0.9\"/>")
+        else:
+            x1, y1 = _polar(cx, cy, r, angle)
+            x2, y2 = _polar(cx, cy, r, angle + sweep)
+            large = 1 if sweep > 180 else 0
+            elems.append(
+                f"<path d=\"M {cx:.1f} {cy:.1f} L {x1:.1f} {y1:.1f} "
+                f"A {r:.1f} {r:.1f} 0 {large} 1 {x2:.1f} {y2:.1f} Z\" "
+                f"fill=\"{color}\" opacity=\"0.9\" stroke=\"{PANEL}\" stroke-width=\"2\"/>"
+            )
+        mid = angle + sweep / 2
+        if frac >= 0.055:
+            tx, ty = _polar(cx, cy, r * 0.62, mid)
+            elems.append(
+                f"<text x=\"{tx:.1f}\" y=\"{ty:.1f}\" text-anchor=\"middle\" class=\"label\" "
+                f"font-weight=\"700\">{_fmt_pct(value)}</text>"
+            )
+        angle += sweep
+
+    legend_x, legend_y = 520, 118
+    row_h = 34
+    for i, (label, value) in enumerate(clean):
+        y = legend_y + i * row_h
+        color = PALETTE[i % len(PALETTE)]
+        elems.append(f"<rect x=\"{legend_x}\" y=\"{y - 12}\" width=\"18\" height=\"18\" rx=\"4\" fill=\"{color}\" opacity=\"0.9\"/>")
+        elems.append(f"<text x=\"{legend_x + 28}\" y=\"{y + 2}\" class=\"label\">{_esc(label[:24])}</text>")
+        elems.append(f"<text x=\"{width - 54}\" y=\"{y + 2}\" text-anchor=\"end\" class=\"label\">{_fmt_pct(value)}</text>")
     path.write_text(_svg_root(width, height, "\n".join(elems)), encoding="utf-8")
     return path
 

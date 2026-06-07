@@ -1,6 +1,6 @@
 # ETF 自动信号下钻：看涨股票成交额与股东占比深挖
 
-- 生成时间：2026-06-07T16:04:24
+- 生成时间：2026-06-07T16:12:08
 - ETF 信号文件：`/home/steve/文档/vibe coding/hp-ml/reports/latest_predictions_lite.csv`
 - 相关股票文件：`/home/steve/文档/vibe coding/hp-ml/reports/related_stocks_lite.csv`
 - 入池 ETF 信号：3 只；股票候选池：8 只；输出看涨股票：5 只。
@@ -19,18 +19,18 @@
 
 |排名|股票|行业|ETF/指数线索|机制标签|评分|成交额|换手|5日收益|20日收益|前十大流通股东占比|机构流通占比|第一流通股东|
 |---:|---|---|---|---|---:|---:|---:|---:|---:|---:|---:|---|
-|1|002281 光迅科技|通信设备|CSI_500 / 510500|ETF信号牵引;流通股东集中;机构股东参与|4.493|||||47.95%|47.38%|烽火科技集团有限公司 (37.37%)|
-|2|002008 大族激光|自动化设备|CSI_500 / 510500|ETF信号牵引;流通股东集中;机构股东参与|4.282|||||37.66%|35.15%|大族控股集团有限公司 (16.91%)|
-|3|600487 亨通光电|通信设备|CSI_500 / 510500|ETF信号牵引;流通股东集中;机构股东参与|4.229|||||36.69%|32.29%|亨通集团有限公司 (24.28%)|
-|4|688525 佰维存储|半导体|CSI_500 / 510500|ETF信号牵引;流通股东集中;机构股东参与;ROE支撑|4.114|||||35.50%|16.44%|孙成思 (17.77%)|
-|5|300604 长川科技|半导体|CSI_500 / 510500|ETF信号牵引;机构股东参与|3.823|||||23.70%|13.12%|赵轶 (7.23%)|
+|1|002281 光迅科技|通信设备|CSI_500 / 510500|ETF信号牵引;价格动量;高换手交易;流通股东集中;机构股东参与|39.515|169.78亿|9.44%|11.59%|25.93%|47.95%|47.38%|烽火科技集团有限公司 (37.37%)|
+|2|600487 亨通光电|通信设备|CSI_500 / 510500|ETF信号牵引;价格动量;成交额放大;高换手交易;流通股东集中;机构股东参与|35.150|247.42亿|10.26%|24.64%|24.39%|36.69%|32.29%|亨通集团有限公司 (24.28%)|
+|3|002008 大族激光|自动化设备|CSI_500 / 510500|ETF信号牵引;高换手交易;流通股东集中;机构股东参与|16.650|74.58亿|5.94%|-3.02%|4.93%|37.66%|35.15%|大族控股集团有限公司 (16.91%)|
+|4|300604 长川科技|半导体|CSI_500 / 510500|ETF信号牵引;高换手交易;机构股东参与|15.162|64.67亿|6.25%|-1.88%|13.64%|23.70%|13.12%|赵轶 (7.23%)|
+|5|688525 佰维存储|半导体|CSI_500 / 510500|ETF信号牵引;高换手交易;流通股东集中;机构股东参与;ROE支撑|12.267|155.08亿|10.23%|-5.00%|7.08%|35.50%|16.44%|孙成思 (17.77%)|
 
 ## 3. 机制拆解
 
 - 行业集中：通信设备(2)，半导体(2)，自动化设备(1)。
-- 交易确认：输出股票平均成交额约 ，平均换手 ；成交额放大与高换手会被写入 `mechanism_tags`。
+- 交易确认：输出股票平均成交额约 142.31亿，平均换手 8.42%；成交额放大与高换手会被写入 `mechanism_tags`。
 - 股东结构：前十大流通股东平均占比 36.30%；机构/基金类持股占比单独保存在 CSV，便于过滤“筹码集中 + 机构参与”的股票。
-- 成交额最活跃：002281光迅科技()，002008大族激光()，600487亨通光电()，688525佰维存储()，300604长川科技()。
+- 成交额最活跃：600487亨通光电(247.42亿)，002281光迅科技(169.78亿)，688525佰维存储(155.08亿)，002008大族激光(74.58亿)，300604长川科技(64.67亿)。
 - 流通股东最集中：002281光迅科技(47.95%)，002008大族激光(37.66%)，600487亨通光电(36.69%)，688525佰维存储(35.50%)，300604长川科技(23.70%)。
 
 ## 4. 输出文件
@@ -40,24 +40,14 @@
 - 摘要 JSON：`/home/steve/文档/vibe coding/hp-ml/reports/bullish_stock_deep_dive.json`
 - 公司股东成分报告索引：`/home/steve/文档/vibe coding/hp-ml/reports/shareholder_composition/index.md`
   - `002281` 光迅科技：`/home/steve/文档/vibe coding/hp-ml/reports/shareholder_composition/01_002281_光迅科技_shareholder_composition.md`
-  - `002008` 大族激光：`/home/steve/文档/vibe coding/hp-ml/reports/shareholder_composition/02_002008_大族激光_shareholder_composition.md`
-  - `600487` 亨通光电：`/home/steve/文档/vibe coding/hp-ml/reports/shareholder_composition/03_600487_亨通光电_shareholder_composition.md`
-  - `688525` 佰维存储：`/home/steve/文档/vibe coding/hp-ml/reports/shareholder_composition/04_688525_佰维存储_shareholder_composition.md`
-  - `300604` 长川科技：`/home/steve/文档/vibe coding/hp-ml/reports/shareholder_composition/05_300604_长川科技_shareholder_composition.md`
+  - `600487` 亨通光电：`/home/steve/文档/vibe coding/hp-ml/reports/shareholder_composition/02_600487_亨通光电_shareholder_composition.md`
+  - `002008` 大族激光：`/home/steve/文档/vibe coding/hp-ml/reports/shareholder_composition/03_002008_大族激光_shareholder_composition.md`
+  - `300604` 长川科技：`/home/steve/文档/vibe coding/hp-ml/reports/shareholder_composition/04_300604_长川科技_shareholder_composition.md`
+  - `688525` 佰维存储：`/home/steve/文档/vibe coding/hp-ml/reports/shareholder_composition/05_688525_佰维存储_shareholder_composition.md`
 - 图表 score_top：`/home/steve/文档/vibe coding/hp-ml/reports/charts/bullish_stock_score_top.svg`
+- 图表 amount_top：`/home/steve/文档/vibe coding/hp-ml/reports/charts/bullish_stock_amount_top.svg`
 - 图表 holder_concentration：`/home/steve/文档/vibe coding/hp-ml/reports/charts/bullish_stock_holder_concentration.svg`
 - 图表 industry_counts：`/home/steve/文档/vibe coding/hp-ml/reports/charts/bullish_stock_industry_counts.svg`
-
-## 5. 拉取异常
-
-- `history:600487`：HTTPSConnectionPool(host='push2his.eastmoney.com', port=443): Max retries exceeded with url: /api/qt/stock/kline/get?secid=1.600487&fields1=f1%2Cf2%2Cf3%2Cf4%2Cf5%2Cf6&fields2=f51%2Cf52%2Cf53%2Cf54%2Cf55%2Cf56%2Cf57%2Cf58%2Cf59%2Cf60%2Cf61&klt=101&fqt=1&beg=20250905&end=20260605 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))
-- `history:002008`：HTTPSConnectionPool(host='push2his.eastmoney.com', port=443): Max retries exceeded with url: /api/qt/stock/kline/get?secid=0.002008&fields1=f1%2Cf2%2Cf3%2Cf4%2Cf5%2Cf6&fields2=f51%2Cf52%2Cf53%2Cf54%2Cf55%2Cf56%2Cf57%2Cf58%2Cf59%2Cf60%2Cf61&klt=101&fqt=1&beg=20250905&end=20260605 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))
-- `history:002281`：HTTPSConnectionPool(host='push2his.eastmoney.com', port=443): Max retries exceeded with url: /api/qt/stock/kline/get?secid=0.002281&fields1=f1%2Cf2%2Cf3%2Cf4%2Cf5%2Cf6&fields2=f51%2Cf52%2Cf53%2Cf54%2Cf55%2Cf56%2Cf57%2Cf58%2Cf59%2Cf60%2Cf61&klt=101&fqt=1&beg=20250905&end=20260605 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))
-- `history:688525`：HTTPSConnectionPool(host='push2his.eastmoney.com', port=443): Max retries exceeded with url: /api/qt/stock/kline/get?secid=1.688525&fields1=f1%2Cf2%2Cf3%2Cf4%2Cf5%2Cf6&fields2=f51%2Cf52%2Cf53%2Cf54%2Cf55%2Cf56%2Cf57%2Cf58%2Cf59%2Cf60%2Cf61&klt=101&fqt=1&beg=20250905&end=20260605 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))
-- `history:300604`：HTTPSConnectionPool(host='push2his.eastmoney.com', port=443): Max retries exceeded with url: /api/qt/stock/kline/get?secid=0.300604&fields1=f1%2Cf2%2Cf3%2Cf4%2Cf5%2Cf6&fields2=f51%2Cf52%2Cf53%2Cf54%2Cf55%2Cf56%2Cf57%2Cf58%2Cf59%2Cf60%2Cf61&klt=101&fqt=1&beg=20250905&end=20260605 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))
-- `history:601288`：HTTPSConnectionPool(host='push2his.eastmoney.com', port=443): Max retries exceeded with url: /api/qt/stock/kline/get?secid=1.601288&fields1=f1%2Cf2%2Cf3%2Cf4%2Cf5%2Cf6&fields2=f51%2Cf52%2Cf53%2Cf54%2Cf55%2Cf56%2Cf57%2Cf58%2Cf59%2Cf60%2Cf61&klt=101&fqt=1&beg=20250905&end=20260605 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))
-- `history:601398`：HTTPSConnectionPool(host='push2his.eastmoney.com', port=443): Max retries exceeded with url: /api/qt/stock/kline/get?secid=1.601398&fields1=f1%2Cf2%2Cf3%2Cf4%2Cf5%2Cf6&fields2=f51%2Cf52%2Cf53%2Cf54%2Cf55%2Cf56%2Cf57%2Cf58%2Cf59%2Cf60%2Cf61&klt=101&fqt=1&beg=20250905&end=20260605 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))
-- `history:300750`：HTTPSConnectionPool(host='push2his.eastmoney.com', port=443): Max retries exceeded with url: /api/qt/stock/kline/get?secid=0.300750&fields1=f1%2Cf2%2Cf3%2Cf4%2Cf5%2Cf6&fields2=f51%2Cf52%2Cf53%2Cf54%2Cf55%2Cf56%2Cf57%2Cf58%2Cf59%2Cf60%2Cf61&klt=101&fqt=1&beg=20250905&end=20260605 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))
 
 ## 数据源与风险提示
 

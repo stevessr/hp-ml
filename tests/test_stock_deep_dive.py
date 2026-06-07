@@ -139,7 +139,10 @@ def test_writes_per_company_shareholder_composition_report(tmp_path):
     assert reports[0]["stock_code"] == "INDEX"
     report_path = tmp_path / "reports" / "01_300059_东方财富_shareholder_composition.md"
     assert report_path.exists()
+    assert (tmp_path / "charts" / "01_300059_东方财富_free_holders_pie.svg").exists()
+    assert (tmp_path / "charts" / "01_300059_东方财富_total_holders_pie.svg").exists()
     text = report_path.read_text(encoding="utf-8")
     assert "股东成分报告" in text
+    assert "饼图" in text
     assert "十大流通股东" in text
     assert "控股集团" in text

@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="980" height="560" viewBox="0 0 980 560" role="img">
+<style>
+  text { font-family: 'Noto Sans CJK SC','Microsoft YaHei','PingFang SC','WenQuanYi Micro Hei',Arial,sans-serif; fill: #0f172a; }
+  .title { font-size: 24px; font-weight: 800; }
+  .subtitle { font-size: 13px; fill: #64748b; }
+  .label { font-size: 12px; fill: #0f172a; }
+  .muted { font-size: 11px; fill: #64748b; }
+  .axis { stroke: #e2e8f0; stroke-width: 1; }
+</style>
+<rect width="100%" height="100%" fill="#f8fafc"/>
+<rect x="14" y="14" width="952" height="532" rx="18" fill="#ffffff"/>
+<text x="42" y="52" class="title">002008 大族激光 十大流通股东占比</text>
+<text x="42" y="76" class="subtitle">东方财富股东分析口径；饼图含前十大股东及其他/未披露占比。</text>
+<path d="M 295.0 305.0 L 295.0 137.0 A 168.0 168.0 0 0 1 441.8 223.2 Z" fill="#2563eb" opacity="0.9" stroke="#ffffff" stroke-width="2"/>
+<text x="347.8" y="215.2" text-anchor="middle" class="label" font-weight="700">16.91%</text>
+<path d="M 295.0 305.0 L 441.8 223.2 A 168.0 168.0 0 0 1 460.8 331.9 Z" fill="#16a34a" opacity="0.9" stroke="#ffffff" stroke-width="2"/>
+<text x="397.6" y="287.0" text-anchor="middle" class="label" font-weight="700">10.65%</text>
+<path d="M 295.0 305.0 L 460.8 331.9 A 168.0 168.0 0 0 1 454.5 357.7 Z" fill="#f59e0b" opacity="0.9" stroke="#ffffff" stroke-width="2"/>
+<path d="M 295.0 305.0 L 454.5 357.7 A 168.0 168.0 0 0 1 445.0 380.8 Z" fill="#7c3aed" opacity="0.9" stroke="#ffffff" stroke-width="2"/>
+<path d="M 295.0 305.0 L 445.0 380.8 A 168.0 168.0 0 0 1 440.1 389.6 Z" fill="#0891b2" opacity="0.9" stroke="#ffffff" stroke-width="2"/>
+<path d="M 295.0 305.0 L 440.1 389.6 A 168.0 168.0 0 0 1 435.0 397.8 Z" fill="#db2777" opacity="0.9" stroke="#ffffff" stroke-width="2"/>
+<path d="M 295.0 305.0 L 435.0 397.8 A 168.0 168.0 0 0 1 429.6 405.5 Z" fill="#475569" opacity="0.9" stroke="#ffffff" stroke-width="2"/>
+<path d="M 295.0 305.0 L 429.6 405.5 A 168.0 168.0 0 0 1 424.1 412.5 Z" fill="#059669" opacity="0.9" stroke="#ffffff" stroke-width="2"/>
+<path d="M 295.0 305.0 L 424.1 412.5 A 168.0 168.0 0 0 1 418.4 419.1 Z" fill="#2563eb" opacity="0.9" stroke="#ffffff" stroke-width="2"/>
+<path d="M 295.0 305.0 L 418.4 419.1 A 168.0 168.0 0 0 1 412.6 425.0 Z" fill="#16a34a" opacity="0.9" stroke="#ffffff" stroke-width="2"/>
+<path d="M 295.0 305.0 L 412.6 425.0 A 168.0 168.0 0 1 1 295.0 137.0 Z" fill="#f59e0b" opacity="0.9" stroke="#ffffff" stroke-width="2"/>
+<text x="198.6" y="344.4" text-anchor="middle" class="label" font-weight="700">62.34%</text>
+<rect x="520" y="106" width="18" height="18" rx="4" fill="#2563eb" opacity="0.9"/>
+<text x="548" y="120" class="label">1 大族控股集团有限公司</text>
+<text x="926" y="120" text-anchor="end" class="label">16.91%</text>
+<rect x="520" y="140" width="18" height="18" rx="4" fill="#16a34a" opacity="0.9"/>
+<text x="548" y="154" class="label">2 香港中央结算有限公司</text>
+<text x="926" y="154" text-anchor="end" class="label">10.65%</text>
+<rect x="520" y="174" width="18" height="18" rx="4" fill="#f59e0b" opacity="0.9"/>
+<text x="548" y="188" class="label">3 高云峰</text>
+<text x="926" y="188" text-anchor="end" class="label">2.52%</text>
+<rect x="520" y="208" width="18" height="18" rx="4" fill="#7c3aed" opacity="0.9"/>
+<text x="548" y="222" class="label">4 兴业银行股份有限公司-华夏中证机器人交易型开</text>
+<text x="926" y="222" text-anchor="end" class="label">2.36%</text>
+<rect x="520" y="242" width="18" height="18" rx="4" fill="#0891b2" opacity="0.9"/>
+<text x="548" y="256" class="label">5 中国工商银行股份有限公司-汇添富科技创新灵活</text>
+<text x="926" y="256" text-anchor="end" class="label">0.95%</text>
+<rect x="520" y="276" width="18" height="18" rx="4" fill="#db2777" opacity="0.9"/>
+<text x="548" y="290" class="label">6 国泰海通证券股份有限公司-天弘中证机器人交易</text>
+<text x="926" y="290" text-anchor="end" class="label">0.92%</text>
+<rect x="520" y="310" width="18" height="18" rx="4" fill="#475569" opacity="0.9"/>
+<text x="548" y="324" class="label">7 招商银行股份有限公司-兴全合润混合型证券投资</text>
+<text x="926" y="324" text-anchor="end" class="label">0.89%</text>
+<rect x="520" y="344" width="18" height="18" rx="4" fill="#059669" opacity="0.9"/>
+<text x="548" y="358" class="label">8 中国光大银行股份有限公司-兴全商业模式优选混</text>
+<text x="926" y="358" text-anchor="end" class="label">0.85%</text>
+<rect x="520" y="378" width="18" height="18" rx="4" fill="#2563eb" opacity="0.9"/>
+<text x="548" y="392" class="label">9 招商银行股份有限公司-睿远成长价值混合型证券</text>
+<text x="926" y="392" text-anchor="end" class="label">0.83%</text>
+<rect x="520" y="412" width="18" height="18" rx="4" fill="#16a34a" opacity="0.9"/>
+<text x="548" y="426" class="label">10 中国民生银行股份有限公司-汇添富数字未来混</text>
+<text x="926" y="426" text-anchor="end" class="label">0.79%</text>
+<rect x="520" y="446" width="18" height="18" rx="4" fill="#f59e0b" opacity="0.9"/>
+<text x="548" y="460" class="label">其他/未披露</text>
+<text x="926" y="460" text-anchor="end" class="label">62.34%</text>
+</svg>
