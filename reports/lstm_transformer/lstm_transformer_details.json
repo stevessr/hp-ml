@@ -1,0 +1,14 @@
+{
+  "train_metrics": {
+    "directional_accuracy": 0.5302172722293226,
+    "spearman_ic_by_date": 0.010441907462144856,
+    "rmse": 0.033856628346429544,
+    "mae": 0.02261125171077869
+  },
+  "test_metrics": {
+    "directional_accuracy": 0.6653846153846154,
+    "spearman_ic_by_date": 0.24028015869761918,
+    "rmse": 0.028016685717811702,
+    "mae": 0.022189353120813774
+  }
+}

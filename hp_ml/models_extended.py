@@ -900,6 +900,182 @@ class HierarchicalAttentionLSTM:
         return full_predictions
 
 
+class LSTMTransformer:
+    """LSTM-Transformer 混合模型：结合 LSTM 序列编码和 Transformer 自注意力机制"""
+
+    def __init__(
+        self,
+        seq_length: int = 20,
+        lstm_units: int = 64,
+        num_heads: int = 4,
+        ff_dim: int = 128,
+        num_transformer_blocks: int = 2,
+        dropout: float = 0.2,
+        learning_rate: float = 0.001,
+        epochs: int = 50,
+        batch_size: int = 32,
+        early_stopping_patience: int = 10,
+    ):
+        if not TF_AVAILABLE:
+            raise ImportError("TensorFlow 未安装，请运行: pip install tensorflow")
+
+        self.seq_length = seq_length
+        self.lstm_units = lstm_units
+        self.num_heads = num_heads
+        self.ff_dim = ff_dim
+        self.num_transformer_blocks = num_transformer_blocks
+        self.dropout = dropout
+        self.learning_rate = learning_rate
+        self.epochs = epochs
+        self.batch_size = batch_size
+        self.early_stopping_patience = early_stopping_patience
+        self.model_: Any = None
+        self.scaler_ = StandardScaler()
+        self.feature_names_: list[str] = []
+
+    def _transformer_block(self, inputs: Any, d_model: int) -> Any:
+        """构建单个 Transformer 块"""
+        # 多头自注意力
+        attention_output = keras.layers.MultiHeadAttention(
+            num_heads=self.num_heads,
+            key_dim=d_model // self.num_heads,
+            dropout=self.dropout
+        )(inputs, inputs)
+        attention_output = keras.layers.Dropout(self.dropout)(attention_output)
+
+        # 残差连接 + 层归一化
+        x1 = keras.layers.Add()([inputs, attention_output])
+        x1 = keras.layers.LayerNormalization(epsilon=1e-6)(x1)
+
+        # 前馈网络
+        ffn_output = keras.layers.Dense(self.ff_dim, activation="relu")(x1)
+        ffn_output = keras.layers.Dropout(self.dropout)(ffn_output)
+        ffn_output = keras.layers.Dense(d_model)(ffn_output)
+        ffn_output = keras.layers.Dropout(self.dropout)(ffn_output)
+
+        # 残差连接 + 层归一化
+        x2 = keras.layers.Add()([x1, ffn_output])
+        x2 = keras.layers.LayerNormalization(epsilon=1e-6)(x2)
+
+        return x2
+
+    def _positional_encoding(self, inputs: Any) -> Any:
+        """添加位置编码"""
+        seq_len = self.seq_length
+        d_model = self.lstm_units
+
+        # 简化的位置编码：使用可学习的嵌入
+        position_embedding = keras.layers.Dense(d_model)(inputs)
+        return keras.layers.Add()([inputs, position_embedding])
+
+    def _build_model(self, input_shape: tuple[int, int]) -> keras.Model:
+        """构建 LSTM-Transformer 混合模型"""
+        inputs = keras.layers.Input(shape=input_shape)
+
+        # 第一阶段：LSTM 编码器（提取时序特征）
+        lstm_out = keras.layers.LSTM(
+            self.lstm_units,
+            return_sequences=True,
+            dropout=self.dropout,
+            recurrent_dropout=self.dropout
+        )(inputs)
+        lstm_out = keras.layers.LayerNormalization(epsilon=1e-6)(lstm_out)
+
+        # 第二阶段：位置编码
+        x = self._positional_encoding(lstm_out)
+
+        # 第三阶段：堆叠 Transformer 块（捕获长距离依赖）
+        for _ in range(self.num_transformer_blocks):
+            x = self._transformer_block(x, self.lstm_units)
+
+        # 第四阶段：全局池化和输出
+        # 使用注意力池化而不是简单的平均池化
+        attention_weights = keras.layers.Dense(1, activation="tanh")(x)
+        attention_weights = keras.layers.Flatten()(attention_weights)
+        attention_weights = keras.layers.Activation("softmax")(attention_weights)
+        attention_weights = keras.layers.RepeatVector(self.lstm_units)(attention_weights)
+        attention_weights = keras.layers.Permute([2, 1])(attention_weights)
+
+        context = keras.layers.multiply([x, attention_weights])
+        pooled = keras.layers.Lambda(lambda z: keras.backend.sum(z, axis=1))(context)
+
+        # 输出层
+        dense = keras.layers.Dense(64, activation="relu")(pooled)
+        dense = keras.layers.Dropout(self.dropout)(dense)
+        dense = keras.layers.Dense(32, activation="relu")(dense)
+        dense = keras.layers.Dropout(self.dropout)(dense)
+        outputs = keras.layers.Dense(1)(dense)
+
+        model = keras.Model(inputs=inputs, outputs=outputs)
+
+        optimizer = keras.optimizers.Adam(learning_rate=self.learning_rate)
+        model.compile(optimizer=optimizer, loss="mse", metrics=["mae"])
+
+        return model
+
+    def fit(self, X: pd.DataFrame, y: pd.Series) -> LSTMTransformer:
+        """训练 LSTM-Transformer 模型"""
+        from .data_pipeline import prepare_lstm_sequences
+
+        feature_cols = [col for col in X.columns if col not in ["code", "date", "name", "family_id", "is_trainable"]]
+        self.feature_names_ = feature_cols
+
+        df_train = X.copy()
+        df_train["target"] = y.values
+
+        X_seq, y_seq = prepare_lstm_sequences(df_train, feature_cols, "target", self.seq_length)
+        X_seq_scaled = self.scaler_.fit_transform(X_seq.reshape(-1, X_seq.shape[-1])).reshape(X_seq.shape)
+
+        self.model_ = self._build_model((self.seq_length, len(feature_cols)))
+
+        early_stop = keras.callbacks.EarlyStopping(
+            monitor="val_loss",
+            patience=self.early_stopping_patience,
+            restore_best_weights=True
+        )
+
+        reduce_lr = keras.callbacks.ReduceLROnPlateau(
+            monitor="val_loss",
+            factor=0.5,
+            patience=5,
+            min_lr=1e-6
+        )
+
+        self.model_.fit(
+            X_seq_scaled, y_seq,
+            epochs=self.epochs,
+            batch_size=self.batch_size,
+            validation_split=0.2,
+            callbacks=[early_stop, reduce_lr],
+            verbose=0
+        )
+
+        return self
+
+    def predict(self, X: pd.DataFrame) -> np.ndarray:
+        """预测"""
+        if self.model_ is None:
+            raise RuntimeError("模型未训练")
+
+        from .data_pipeline import prepare_lstm_sequences
+
+        df_pred = X.copy()
+        df_pred["target"] = 0.0
+
+        try:
+            X_seq, _ = prepare_lstm_sequences(df_pred, self.feature_names_, "target", self.seq_length)
+        except ValueError:
+            return np.zeros(len(X))
+
+        X_seq_scaled = self.scaler_.transform(X_seq.reshape(-1, X_seq.shape[-1])).reshape(X_seq.shape)
+        predictions = self.model_.predict(X_seq_scaled, verbose=0).flatten()
+
+        full_predictions = np.zeros(len(X))
+        full_predictions[-len(predictions):] = predictions
+
+        return full_predictions
+
+
 class EnhancedRandomForest:
     """增强随机森林，包含特征重要性分析"""
 
@@ -1006,6 +1182,9 @@ def make_extended_model(
 
     if model_type in {"hierarchical_attention", "hierarchical_lstm"}:
         return HierarchicalAttentionLSTM(**kwargs)
+
+    if model_type in {"lstm_transformer", "transformer_lstm", "hybrid_transformer"}:
+        return LSTMTransformer(**kwargs)
 
     if model_type in {"enhanced_rf", "rf_enhanced"}:
         return EnhancedRandomForest(random_state=random_state, **kwargs)
