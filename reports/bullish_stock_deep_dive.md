@@ -1,6 +1,6 @@
 # ETF 自动信号下钻：看涨股票成交额与股东占比深挖
 
-- 生成时间：2026-06-07T16:34:51
+- 生成时间：2026-06-07T16:40:07
 - ETF 信号文件：`/home/steve/文档/vibe coding/hp-ml/reports/latest_predictions_lite.csv`
 - 相关股票文件：`/home/steve/文档/vibe coding/hp-ml/reports/related_stocks_lite.csv`
 - 入池 ETF 信号：13 只；股票候选池：80 只；输出看涨股票：30 只。
