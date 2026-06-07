@@ -122,21 +122,60 @@ def train_memory_models(
             model.fit(X_train, y_train)
             print(f"  ✓ 训练完成")
 
-            # 在训练集上评估
-            train_data_list = train_df.to_dict('records')
-            train_metrics, _ = evaluate(
-                train_data_list,
-                {"predict": lambda X: model.predict(pd.DataFrame(X))},
-                target_col
+            # 在训练集上评估（直接计算指标）
+            print(f"  评估训练集...")
+            train_predictions = model.predict(train_df[feature_cols + ["code", "date"]])
+            train_actuals = train_df[target_col].values
+
+            # 计算训练集指标
+            train_mae = np.mean(np.abs(train_predictions - train_actuals))
+            train_rmse = np.sqrt(np.mean((train_predictions - train_actuals) ** 2))
+            train_directional_accuracy = np.mean(
+                (train_predictions > 0) == (train_actuals > 0)
             )
 
+            # 计算 Spearman IC
+            from scipy.stats import spearmanr
+            train_ic, _ = spearmanr(train_predictions, train_actuals)
+
+            train_metrics = {
+                "directional_accuracy": train_directional_accuracy,
+                "spearman_ic_by_date": train_ic,
+                "rmse": train_rmse,
+                "mae": train_mae,
+            }
+
             # 在测试集上评估
-            test_data_list = test_df.to_dict('records')
-            test_metrics, test_preds = evaluate(
-                test_data_list,
-                {"predict": lambda X: model.predict(pd.DataFrame(X))},
-                target_col
+            print(f"  评估测试集...")
+            test_predictions = model.predict(test_df[feature_cols + ["code", "date"]])
+            test_actuals = test_df[target_col].values
+
+            # 计算测试集指标
+            test_mae = np.mean(np.abs(test_predictions - test_actuals))
+            test_rmse = np.sqrt(np.mean((test_predictions - test_actuals) ** 2))
+            test_directional_accuracy = np.mean(
+                (test_predictions > 0) == (test_actuals > 0)
             )
+
+            test_ic, _ = spearmanr(test_predictions, test_actuals)
+
+            test_metrics = {
+                "directional_accuracy": test_directional_accuracy,
+                "spearman_ic_by_date": test_ic,
+                "rmse": test_rmse,
+                "mae": test_mae,
+            }
+
+            # 构建预测结果
+            test_preds = []
+            test_df_reset = test_df.reset_index(drop=True)
+            for i in range(len(test_df_reset)):
+                test_preds.append({
+                    "date": test_df_reset.loc[i, "date"],
+                    "code": test_df_reset.loc[i, "code"],
+                    "prediction": test_predictions[i],
+                    target_col: test_actuals[i],
+                })
 
             # 保存结果
             results[model_type] = {

@@ -1,0 +1,58 @@
+{
+  "lstm": {
+    "train_metrics": {
+      "directional_accuracy": 0.5269308015336863,
+      "spearman_ic_by_date": 0.06373576823342528,
+      "rmse": 0.03922963499646882,
+      "mae": 0.026407730224316035
+    },
+    "test_metrics": {
+      "directional_accuracy": 0.5641025641025641,
+      "spearman_ic_by_date": 0.15904448369117696,
+      "rmse": 0.028400164705803827,
+      "mae": 0.022638277627081083
+    }
+  },
+  "gru": {
+    "train_metrics": {
+      "directional_accuracy": 0.5103158663501917,
+      "spearman_ic_by_date": 0.038219867688289146,
+      "rmse": 0.03456845097106656,
+      "mae": 0.023119303806442386
+    },
+    "test_metrics": {
+      "directional_accuracy": 0.46153846153846156,
+      "spearman_ic_by_date": -0.18858884652156702,
+      "rmse": 0.02928447792001597,
+      "mae": 0.023213330620449592
+    }
+  },
+  "bilstm": {
+    "train_metrics": {
+      "directional_accuracy": 0.5114113565820705,
+      "spearman_ic_by_date": 0.026229938459684406,
+      "rmse": 0.03868958980230718,
+      "mae": 0.02599919059579509
+    },
+    "test_metrics": {
+      "directional_accuracy": 0.46153846153846156,
+      "spearman_ic_by_date": -0.10624576087222994,
+      "rmse": 0.029453349275826317,
+      "mae": 0.02347569232765042
+    }
+  },
+  "attention_lstm": {
+    "train_metrics": {
+      "directional_accuracy": 0.5314953441665146,
+      "spearman_ic_by_date": -0.032974175971504725,
+      "rmse": 0.0362048410295203,
+      "mae": 0.024701015398526247
+    },
+    "test_metrics": {
+      "directional_accuracy": 0.6025641025641025,
+      "spearman_ic_by_date": 0.049927937590428385,
+      "rmse": 0.02867922636213584,
+      "mae": 0.022873038230264306
+    }
+  }
+}
