@@ -1,6 +1,8 @@
 # hp-ml：中证宽基指数 ETF 自动挖掘、拉取数据与训练
 
-这个项目把“自动搜索 → 挖掘候选 ETF → 拉取历史行情 → 特征工程 → 训练模型 → 输出排序报告”串成一条可运行流水线，重点覆盖中证/沪深宽基指数 ETF（沪深300、中证500、中证1000、中证2000、中证800、中证A500、中证A50、中证A100，以及中证200/700/全指/流通/A股等有 ETF 时自动纳入的宽基族）。
+这个项目把”自动搜索 → 挖掘候选 ETF → 拉取历史行情 → 特征工程 → 训练模型 → 输出排序报告”串成一条可运行流水线，重点覆盖中证/沪深宽基指数 ETF（沪深 300、中证 500、中证 1000、中证 2000、中证 800、中证 A500、中证 A50、中证 A100，以及中证 200/700/全指/流通/A 股等有 ETF 时自动纳入的宽基族）。
+
+**🆕 新增功能**：支持多模型训练与对比（Prophet、LSTM、增强随机森林等），完整的数据划分管道，统一回测框架，自动生成可视化报告。详见 [多模型文档](docs/MULTI_MODEL.md)。
 
 > 说明：输出仅用于量化研究和模型验证，不构成投资建议。
 
@@ -16,8 +18,14 @@ make discover
 # 拉取 2018 至今数据并训练 5 日前瞻收益模型
 make train
 
+# 🆕 多模型训练与对比（Ridge, HGB, 随机森林）
+make train-multi
+
 # 更快的短历史 smoke run
 make quick
+
+# 将 ETF 看涨信号下钻到相关成分股，补成交额/换手/股东占比
+make stock-deep-dive
 
 # 滚动模型自动调优，搜索到策略累计收益超过等权 baseline 后输出报告
 make auto-beat-baseline
@@ -39,7 +47,7 @@ make export-tdx
 ## 流水线做了什么
 
 1. **自动搜索 ETF 池**：扫描东方财富 ETF 行情/基金代码列表，不靠手写固定清单。
-2. **聚焦中证宽基**：用名称模式识别沪深300/中证500/中证1000/中证2000/中证800/中证A500/中证A50/中证A100，以及中证200/700/全指/流通/A股等宽基族。
+2. **聚焦中证宽基**：用名称模式识别沪深 300/中证 500/中证 1000/中证 2000/中证 800/中证 A500/中证 A50/中证 A100，以及中证 200/700/全指/流通/A 股等宽基族。
 3. **剔除非纯宽基**：默认排除行业、主题、风格、跨境、债券、货币和指数增强产品；可用 `--include-enhanced` / `--include-style` 放开。
 4. **拉取历史行情**：对筛出的 ETF 拉取前复权日线 K 线，并缓存到 `data/raw/history/`。
 5. **设计训练样本**：生成动量、波动率、均线乖离、回撤、成交额冲击、换手率、振幅、月份周期、指数族哑变量等特征。
@@ -63,6 +71,9 @@ make export-tdx
 - `reports/ml_auto_tune_until_baseline.csv`：自动调优后跑赢等权 baseline 的逐日策略/基准曲线。
 - `reports/ml_auto_tune_trials.csv` / `ml_auto_tune_summary.json`：每组模型/策略参数的搜索结果与最佳配置摘要。
 - `reports/related_stocks_lite.csv`：每个宽基指数族对应的更多相关股票/指数成分股。
+- `reports/bullish_stock_deep_dive.csv`：从最新 ETF 信号下钻出的看涨相关股票，含成交额、换手、近期动量、主力净流入、前十大流通/总股东占比和机制标签。
+- `reports/bullish_stock_deep_dive_shareholders.csv`：看涨股票逐个十大流通股东/十大股东明细。
+- `reports/bullish_stock_deep_dive.md` / `.json`：自动深挖摘要、异常记录和数据源说明。
 - `reports/long_history_coverage_lite.csv`：长起点采集后每只 ETF 的实际历史覆盖、全期收益和最大回撤。
 - `reports/multi_scale_etf_metrics_lite.csv`：ETF × 持有周期的平均收益、胜率、波动、类 Sharpe、最佳/最差收益。
 - `reports/multi_scale_family_metrics_lite.csv`：指数族/全池 × 持有周期的跨时间尺度聚合统计。
@@ -184,7 +195,7 @@ make export-tdx
 
 为了让 ETF 研究不仅停留在基金层面，流水线会按发现到的宽基指数族拉取更多相关股票/指数成分股：
 
-- 沪深300、中证500、中证1000、中证2000、中证800、中证A500、中证A50、中证A100 等。
+- 沪深 300、中证 500、中证 1000、中证 2000、中证 800、中证 A500、中证 A50、中证 A100 等。
 - 有权重字段的指数按权重排序；无权重字段时按自由流通市值排序。
 - 输出股票代码、名称、行业、地区、权重、自由流通市值、PE、涨跌幅等字段。
 
@@ -192,6 +203,32 @@ make export-tdx
 
 - `reports/related_stocks_lite.csv`
 - `reports/charts/related_stock_top_exposure_lite.svg`
+
+### ETF 信号下钻到看涨股票
+
+在已经生成 `reports/latest_predictions_lite.csv` 与 `reports/related_stocks_lite.csv` 后，可以继续深挖 ETF 看涨信号背后的股票交易和股东结构：
+
+```bash
+.venv/bin/python -m hp_ml.stock_deep_dive \
+  --top-etfs 8 \
+  --stocks-per-family 25 \
+  --max-candidates 80 \
+  --top-stocks 30
+```
+
+该命令会：
+
+1. 读取最新 ETF 预测排序，把非负预测和 TopN ETF 作为信号入口。
+2. 映射到对应指数族的成分股/相关股票，并按权重、自由流通市值和 ETF 信号排序候选池。
+3. 拉取 A 股现货行情与日 K，补充成交额、换手率、近 5/20/60 日收益、20 日成交额放大倍数、主力净流入等交易证据。
+4. 对自动判定的看涨股票拉取东方财富股东分析，汇总前十大流通股东占比、前十大股东占比、机构/基金类股东占比和第一大股东。
+5. 输出 `reports/bullish_stock_deep_dive.csv`、`reports/bullish_stock_deep_dive_shareholders.csv`、`reports/bullish_stock_deep_dive.md` 以及成交额/股东集中度/行业分布 SVG 图。
+
+常用参数：
+
+- `--min-etf-pred 0`：ETF 预测收益不低于该阈值会进入下钻；同时默认也保留 `--top-etfs` 只最高排序 ETF，避免风险收缩期候选过少。
+- `--refresh-related`：忽略现有 `related_stocks_lite.csv`，按当前 ETF 家族重新拉取成分股。
+- `--force`：忽略当天行情、K 线和股东缓存，重新访问外部数据源。
 
 ## 数据源
 

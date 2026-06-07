@@ -26,6 +26,7 @@ hp-ml-train = "hp_ml.train:main"
 hp-ml-discover = "hp_ml.discover:main"
 hp-ml-auto-tune = "hp_ml.auto_tune_baseline:main"
 hp-ml-export-tdx = "hp_ml.export_tdx:main"
+hp-ml-stock-deep-dive = "hp_ml.stock_deep_dive:main"
 
 [tool.setuptools]
 packages = ["hp_ml"]
