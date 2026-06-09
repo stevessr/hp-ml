@@ -2,7 +2,9 @@
 
 这个项目把”自动搜索 → 挖掘候选 ETF → 拉取历史行情 → 特征工程 → 训练模型 → 输出排序报告”串成一条可运行流水线，重点覆盖中证/沪深宽基指数 ETF（沪深 300、中证 500、中证 1000、中证 2000、中证 800、中证 A500、中证 A50、中证 A100，以及中证 200/700/全指/流通/A 股等有 ETF 时自动纳入的宽基族）。
 
-**🆕 新增功能**：支持多模型训练与对比（Prophet、LSTM、增强随机森林等），完整的数据划分管道，统一回测框架，自动生成可视化报告。详见 [多模型文档](docs/MULTI_MODEL.md)。
+**🆕 新增功能**：
+- **通达信数据源支持**：可选择使用通达信服务器直接拉取数据，作为东方财富API的可靠备选方案
+- **多模型训练与对比**：支持Prophet、LSTM、增强随机森林等，完整的数据划分管道，统一回测框架，自动生成可视化报告。详见 [多模型文档](docs/MULTI_MODEL.md)
 
 > 说明：输出仅用于量化研究和模型验证，不构成投资建议。
 
@@ -15,8 +17,11 @@ make setup
 # 只发现候选 ETF
 make discover
 
-# 拉取 2018 至今数据并训练 5 日前瞻收益模型
+# 拉取 2018 至今数据并训练 5 日前瞻收益模型（默认使用东方财富数据源）
 make train
+
+# 🆕 使用通达信数据源训练（更稳定，直连行情服务器）
+python -m hp_ml.train --data-source tdx
 
 # 🆕 多模型训练与对比（Ridge, HGB, 随机森林）
 make train-multi
@@ -239,9 +244,38 @@ make export-tdx
 
 ## 数据源
 
+### 东方财富（默认）
 - ETF 列表与行情：优先使用东方财富 ETF 行情 `push2.eastmoney.com/api/qt/clist/get`；不可用时回退到 `fund.eastmoney.com/js/fundcode_search.js`。
 - ETF 历史 K 线：优先使用东方财富 K 线 `push2his.eastmoney.com/api/qt/stock/kline/get`；不可用时回退到腾讯 K 线 `web.ifzq.gtimg.cn/appstock/app/fqkline/get`。
-- 指数族定义：代码中仅用于分类；候选 ETF 仍来自实时 ETF 列表扫描。
+
+### 🆕 通达信（备选）
+- **协议实现**：基于 [tdx-go](ref/tdx-go) 实现的 TCP 协议客户端
+- **服务器直连**：直接连接通达信行情服务器（端口 7709），不受 HTTP API 限流影响
+- **使用方法**：添加 `--data-source tdx` 参数
+- **详细文档**：[通达信使用指南](docs/TDX_USAGE.md) | [集成文档](docs/TDX_INTEGRATION.md)
+
+**使用示例**：
+```bash
+# 使用通达信数据源训练
+python -m hp_ml.train --data-source tdx --start 20200101
+
+# 测试通达信连接
+python -m hp_ml.tdx_client
+
+# 运行完整测试
+python scripts/test_tdx_client.py
+```
+
+**数据源对比**：
+| 特性 | 东方财富 | 通达信 |
+|------|---------|--------|
+| 协议 | HTTP API | TCP 协议 |
+| 稳定性 | 可能限流 | 更稳定 |
+| 速度 | 中等 | 较快 |
+| 复权 | 支持 | 原始数据 |
+
+### 指数族定义
+代码中仅用于分类；候选 ETF 仍来自实时 ETF 列表扫描。
 
 
 ### 无第三方依赖备用训练

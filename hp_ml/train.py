@@ -10,6 +10,7 @@ import pandas as pd
 
 from .config import MODELS_DIR, PROCESSED_DIR, REPORTS_DIR
 from .data_sources import fetch_many_histories, today_yyyymmdd
+from .tdx_data_source import fetch_etf_batch_tdx
 from .features import build_feature_panel
 from .model import fit_and_evaluate, predict_latest
 from .reporting import make_training_summary, write_json
@@ -29,6 +30,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--include-style", action="store_true", help="Include style/theme ETFs that contain broad-index names.")
     parser.add_argument("--force", action="store_true", help="Refresh spot and history caches.")
     parser.add_argument("--adjust", default="qfq", choices=["qfq", "hfq", "none", "raw"], help="Eastmoney K-line adjustment.")
+    parser.add_argument("--data-source", default="eastmoney", choices=["eastmoney", "tdx"], help="Data source: eastmoney (东方财富) or tdx (通达信).")
     parser.add_argument("--model-out", default=str(MODELS_DIR / "csi_broad_etf_model.joblib"), help="Model artifact path.")
     return parser
 
@@ -47,7 +49,30 @@ def main(argv: list[str] | None = None) -> None:
     universe.to_csv(universe_path, index=False)
 
     codes = universe["code"].astype(str).str.zfill(6).tolist()
-    histories = fetch_many_histories(codes, start=args.start, end=args.end, adjust=args.adjust, force=args.force)
+
+    # 根据数据源选择拉取方式
+    if args.data_source == "tdx":
+        print(f"使用通达信数据源拉取 {len(codes)} 只 ETF...")
+        # 添加交易所前缀（通达信需要）
+        codes_with_prefix = []
+        for code in codes:
+            if code.startswith(("510", "511", "512", "513", "515", "516", "517", "560", "561", "562", "563", "588", "589")):
+                codes_with_prefix.append(f"sh{code}")
+            else:
+                codes_with_prefix.append(f"sz{code}")
+
+        histories = fetch_etf_batch_tdx(
+            codes_with_prefix,
+            start_date=args.start,
+            end_date=args.end,
+            cache=not args.force,
+        )
+        # 转换回原始代码格式
+        histories = {code[2:]: df for code, df in histories.items()}
+    else:
+        print(f"使用东方财富数据源拉取 {len(codes)} 只 ETF...")
+        histories = fetch_many_histories(codes, start=args.start, end=args.end, adjust=args.adjust, force=args.force)
+
     if not histories:
         raise RuntimeError("No ETF histories fetched; cannot train model")
 
