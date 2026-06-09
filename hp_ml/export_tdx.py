@@ -399,23 +399,134 @@ def export_formula_files(
 def main(argv: list[str] | None = None) -> None:
     args = build_parser().parse_args(argv)
     artifact = load_artifact(Path(args.model))
-    spec = linear_spec_from_artifact(artifact)
-    paths = export_formula_files(
-        spec,
-        out=Path(args.out),
-        formula_name=args.formula_name,
-        family_id=args.family_id,
-        all_families=args.all_families,
-        signal_threshold=args.signal_threshold,
-        min_abs_coef=max(args.min_abs_coef, 0.0),
-        encoding=args.encoding,
-    )
 
-    for path in paths:
-        print(f"通达信公式已导出：{path}")
-    if spec.family_ids and not args.family_id and not args.all_families:
-        print("提示：模型包含 family_* 特征，本次未指定 --family-id，公式中这些特征均为 0。")
-        print("      可用 --family-id CSI_300 生成单指数族公式，或 --all-families 批量导出。")
+    # 尝试使用统一导出器
+    try:
+        from .tdx_exporters import UnifiedTDXExporter
+
+        unified_exporter = UnifiedTDXExporter()
+
+        # 检测模型类型
+        model = artifact.get("model")
+        if model is not None:
+            model_type_name = type(model).__name__
+            if hasattr(model, "named_steps"):
+                inner_model = model.named_steps.get("model") or model.named_steps.get("estimator")
+                if inner_model:
+                    model_type_name = type(inner_model).__name__
+
+            print(f"检测到模型类型：{model_type_name}")
+
+        # 如果需要导出所有家族
+        if args.all_families:
+            # 先用线性导出获取 family 列表
+            try:
+                spec = linear_spec_from_artifact(artifact)
+                family_ids = spec.family_ids
+            except Exception:
+                # 如果不是线性模型，尝试从 feature_cols 提取
+                feature_cols = artifact.get("feature_cols", [])
+                family_ids = sorted(col.removeprefix("family_") for col in feature_cols if col.startswith("family_"))
+
+            if not family_ids:
+                print("错误：模型没有 family_* 特征，无法使用 --all-families")
+                return
+
+            paths: list[Path] = []
+            for fam in family_ids:
+                result = unified_exporter.export(
+                    artifact,
+                    formula_name=f"{args.formula_name}_{fam}",
+                    family_id=fam,
+                    signal_threshold=args.signal_threshold,
+                    min_abs_coef=max(args.min_abs_coef, 0.0),
+                )
+
+                if result.export_method == "rejected":
+                    print(f"\n{fam} - 导出失败：")
+                    for warning in result.warnings:
+                        print(f"  {warning}")
+                    continue
+
+                # 写入文件
+                out_path = Path(args.out)
+                if out_path.suffix:
+                    target = out_path.with_name(f"{out_path.stem}_{_safe_filename(fam)}{out_path.suffix}")
+                else:
+                    target = out_path / f"{_safe_filename(args.formula_name)}_{_safe_filename(fam)}.tdx"
+
+                target = write_formula(target, result.formula_text, args.encoding)
+                paths.append(target)
+
+                print(f"\n{fam} - 导出成功 ({result.export_method}, 预估精度：{result.accuracy_estimate or 'N/A'})")
+                if result.warnings:
+                    for warning in result.warnings:
+                        print(f"  {warning}")
+
+            if paths:
+                print(f"\n通达信公式已导出到：")
+                for path in paths:
+                    print(f"  {path}")
+            return
+
+        # 单个 family 或无 family 导出
+        result = unified_exporter.export(
+            artifact,
+            formula_name=args.formula_name,
+            family_id=args.family_id,
+            signal_threshold=args.signal_threshold,
+            min_abs_coef=max(args.min_abs_coef, 0.0),
+        )
+
+        if result.export_method == "rejected":
+            print("导出失败：")
+            for warning in result.warnings:
+                print(f"  {warning}")
+            return
+
+        # 写入文件
+        out_path = Path(args.out)
+        out_path = write_formula(out_path, result.formula_text, args.encoding)
+
+        print(f"通达信公式已导出：{out_path}")
+        print(f"导出方式：{result.export_method}")
+        print(f"模型类型：{result.model_type}")
+        if result.accuracy_estimate is not None:
+            print(f"预估精度：{result.accuracy_estimate:.1%}")
+
+        if result.warnings:
+            print("\n注意事项：")
+            for warning in result.warnings:
+                print(f"  {warning}")
+
+        # 提示 family 选项
+        feature_cols = artifact.get("feature_cols", [])
+        family_features = [col for col in feature_cols if col.startswith("family_")]
+        if family_features and not args.family_id:
+            family_ids = sorted(col.removeprefix("family_") for col in family_features)
+            print("\n提示：模型包含 family_* 特征，本次未指定 --family-id，公式中这些特征均为 0。")
+            print(f"      可用 --family-id {family_ids[0]} 生成单指数族公式，或 --all-families 批量导出。")
+
+    except ImportError:
+        # 回退到原有的线性模型导出逻辑
+        print("使用传统线性模型导出...")
+        spec = linear_spec_from_artifact(artifact)
+        paths = export_formula_files(
+            spec,
+            out=Path(args.out),
+            formula_name=args.formula_name,
+            family_id=args.family_id,
+            all_families=args.all_families,
+            signal_threshold=args.signal_threshold,
+            min_abs_coef=max(args.min_abs_coef, 0.0),
+            encoding=args.encoding,
+        )
+
+        for path in paths:
+            print(f"通达信公式已导出：{path}")
+        if spec.family_ids and not args.family_id and not args.all_families:
+            print("提示：模型包含 family_* 特征，本次未指定 --family-id，公式中这些特征均为 0。")
+            print("      可用 --family-id CSI_300 生成单指数族公式，或 --all-families 批量导出。")
 
 
 if __name__ == "__main__":

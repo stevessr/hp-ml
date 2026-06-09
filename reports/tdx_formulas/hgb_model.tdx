@@ -2,11 +2,11 @@
 {本公式使用 Ridge 回归拟合树模型输出作为近似}
 {预估精度约 70-80%，仅供参考}
 {警告：模型无 feature_importances 且无训练数据，使用均匀权重，精度可能很低}
-{HPML 宽基 ETF_CSI_800 [近似-均匀权重] - hp-ml 通达信公式导出}
-{生成时间：2026-06-09T15:06:07}
+{HGB宽基ETF [近似-均匀权重] - hp-ml 通达信公式导出}
+{生成时间：2026-06-09T15:05:59}
 {模型：HistGradientBoostingRegressor_approximate_均匀权重; 目标：预测未来5日收益; 源模型时间：2026-06-05T08:45:40}
 {说明：仅线性/Ridge 模型可精确展开; 输出仅作量化研究，不构成投资建议。}
-{指数族：CSI_800; 可用：CSI_1000, CSI_2000, CSI_300, CSI_500, CSI_800, CSI_A100, CSI_A50, CSI_A500}
+{指数族：未指定，全部 family 常量为 0; 可用：CSI_1000, CSI_2000, CSI_300, CSI_500, CSI_800, CSI_A100, CSI_A50, CSI_A500}
 {近似：TURN 使用 VOL/CAPITAL*100; DAYS 使用 BARSCOUNT(CLOSE)-1 近似原始自然日特征。}
 
 R1:=CLOSE/REF(CLOSE,1)-1; {1 日收益}
@@ -32,14 +32,14 @@ LS20:=AMOUNT/MAX(MA(AMOUNT,20),0.000001)-1; {20 日成交额冲击}
 MSIN:=SIN(2*3.1415926*MONTH/12); {月份 sin 周期}
 MCOS:=COS(2*3.1415926*MONTH/12); {月份 cos 周期}
 DAYS:=BARSCOUNT(CLOSE)-1; {上市以来交易日数近似}
-FAM1:=0; {family_CSI_1000 常量, family_id=CSI_800}
-FAM2:=0; {family_CSI_2000 常量, family_id=CSI_800}
-FAM3:=0; {family_CSI_300 常量, family_id=CSI_800}
-FAM4:=0; {family_CSI_500 常量, family_id=CSI_800}
-FAM5:=1; {family_CSI_800 常量, family_id=CSI_800}
-FAM6:=0; {family_CSI_A100 常量, family_id=CSI_800}
-FAM7:=0; {family_CSI_A50 常量, family_id=CSI_800}
-FAM8:=0; {family_CSI_A500 常量, family_id=CSI_800}
+FAM1:=0; {family_CSI_1000 常量, family_id=none}
+FAM2:=0; {family_CSI_2000 常量, family_id=none}
+FAM3:=0; {family_CSI_300 常量, family_id=none}
+FAM4:=0; {family_CSI_500 常量, family_id=none}
+FAM5:=0; {family_CSI_800 常量, family_id=none}
+FAM6:=0; {family_CSI_A100 常量, family_id=none}
+FAM7:=0; {family_CSI_A50 常量, family_id=none}
+FAM8:=0; {family_CSI_A500 常量, family_id=none}
 
 S0:=0; {截距}
 S1:=S0+(0.0322580645)*((R1)-(0))/(1); {ret_1}

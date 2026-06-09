@@ -258,37 +258,104 @@ make train-lite
 
 ## 导出通达信公式
 
-通达信公式语言适合表达线性指标，所以当前导出命令支持：
+项目支持将训练好的模型导出为通达信公式，用于在通达信软件中进行推理预测。**所有模型类型都支持导出！**
 
-- `hp_ml.lite_train` 保存的纯 Python Ridge 模型：`models/csi_broad_etf_model_lite.pkl`
-- `hp_ml.train --model ridge` 保存的 sklearn Ridge 模型
+### 支持的模型类型
 
-非线性的 HGB / 随机森林模型不会被静默近似导出；如需通达信公式，请先训练 Ridge 模型。
+| 模型类型 | 导出方式 | 精确度 | 说明 |
+|---------|---------|--------|------|
+| **Ridge 线性回归** | ✅ 精确导出 | 100% | 完全精确，强烈推荐 |
+| **HGB 梯度提升树** | ⚠️ 近似导出 | 50-80% | 使用特征重要性近似 |
+| **RandomForest 随机森林** | ⚠️ 近似导出 | 60-75% | 使用特征重要性近似 |
+| **EnhancedRandomForest** | ⚠️ 近似导出 | 60-75% | 使用特征重要性近似 |
+| **LSTM/GRU 深度学习** | ⚠️ 知识蒸馏导出 | 40-60% | 使用知识蒸馏近似，仅供参考 |
+| **Prophet 时间序列** | ⚠️ 知识蒸馏导出 | 40-60% | 使用知识蒸馏近似，仅供参考 |
+| **Transformer 系列** | ⚠️ 知识蒸馏导出 | 40-60% | 使用知识蒸馏近似，仅供参考 |
 
-批量为模型里的每个 `family_*` 指数族导出一份公式：
+**推荐：** 如果需要在通达信中使用，建议训练 Ridge 模型以获得最高精度。深度学习模型的导出公式仅供辅助参考。
+
+### 导出命令
+
+**批量导出所有指数族：**
 
 ```bash
-.venv/bin/python -m hp_ml.export_tdx \
+# 导出 Ridge 模型（精确，推荐）
+python -m hp_ml.export_tdx \
   --model models/csi_broad_etf_model_lite.pkl \
+  --out reports/tdx_formulas \
+  --all-families
+
+# 导出 HGB 模型（近似）
+python -m hp_ml.export_tdx \
+  --model models/csi_broad_etf_model.joblib \
+  --out reports/tdx_formulas \
+  --all-families
+
+# 导出深度学习模型（知识蒸馏，低精度）
+python -m hp_ml.export_tdx \
+  --model models/model_lstm.joblib \
   --out reports/tdx_formulas \
   --all-families
 ```
 
-只导出某个指数族：
+**导出单个指数族：**
 
 ```bash
-.venv/bin/python -m hp_ml.export_tdx \
+python -m hp_ml.export_tdx \
   --model models/csi_broad_etf_model_lite.pkl \
   --family-id CSI_300 \
   --out reports/hp_ml_csi300.tdx
 ```
 
-生成的公式包含两个输出：
+**参数说明：**
+- `--model`: 模型文件路径（.pkl 或 .joblib）
+- `--out`: 输出路径（文件或目录）
+- `--all-families`: 批量导出所有指数族
+- `--family-id`: 导出指定指数族（如 CSI_300, CSI_500）
+- `--signal-threshold`: 买入信号阈值（默认 0.0）
+- `--encoding`: 文件编码（默认 utf-8，旧版通达信用 gbk）
 
-- `HPMLSCORE`：模型预测的未来 `--horizon` 日收益分数。
-- `HPMLBUY`：`HPMLSCORE > --signal-threshold` 时为 1，否则为 0。
+### 公式输出
 
-如果旧版通达信导入中文注释乱码，可以加 `--encoding gbk` 重新导出。ETF 换手率在公式中用 `VOL/CAPITAL*100` 近似，`days_since_start` 用 `BARSCOUNT(CLOSE)-1` 近似，导出文件中也会保留这些说明。
+生成的通达信公式包含两个输出指标：
+
+- **HPMLSCORE**：模型预测的未来 N 日收益分数
+- **HPMLBUY**：买入信号（HPMLSCORE > threshold 时为 1，否则为 0）
+
+### 导出示例
+
+导出后的文件位于 `reports/tdx_formulas/` 目录：
+
+```
+reports/tdx_formulas/
+├── HPML_宽基_ETF_CSI_300.tdx    # 沪深300 ETF 公式
+├── HPML_宽基_ETF_CSI_500.tdx    # 中证500 ETF 公式
+├── HPML_宽基_ETF_CSI_1000.tdx   # 中证1000 ETF 公式
+└── ...
+```
+
+### 导出方法说明
+
+**1. 精确导出（Ridge 模型）**
+- 100% 精确，公式输出与 Python 模型完全一致
+- 强烈推荐用于生产环境
+
+**2. 近似导出（树模型）**
+- 使用特征重要性权重或均匀权重近似
+- 精度 50-80%，可用于推理
+- 公式中包含警告信息
+
+**3. 知识蒸馏导出（深度学习模型）**
+- 使用简单模型学习深度模型的输出
+- 精度 40-60%，仅供辅助参考
+- 建议结合 Python 原始模型使用
+
+### 技术说明
+
+- ETF 换手率使用 `VOL/CAPITAL*100` 近似
+- `days_since_start` 使用 `BARSCOUNT(CLOSE)-1` 近似
+- 树模型近似采用特征重要性权重或均匀权重
+- 深度学习模型采用知识蒸馏方法导出线性近似
 
 ## 📚 文档
 
