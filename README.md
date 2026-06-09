@@ -26,7 +26,7 @@ python -m hp_ml
 ```
 
 **CLI 功能**：
-- ✨ 可视化菜单选择模型类型（Ridge、HGB、RF、Prophet、LSTM等）
+- ✨ 可视化菜单选择模型类型（Ridge、HGB、RF、LSTM、GRU、Transformer 等 13 种模型）
 - 🎯 选择操作：训练、导出通达信、回测、模型对比、完整流程
 - ⚙️ 交互式配置参数（数据源、日期范围、预测周期等）
 - 📊 自动生成报告和图表

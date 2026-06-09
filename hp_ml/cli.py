@@ -66,6 +66,42 @@ MODEL_CONFIGS = {
         "module": "multi_model",
         "export_support": "知识蒸馏",
     },
+    "GRU 深度学习": {
+        "key": "gru",
+        "description": "GRU 深度学习模型，比 LSTM 更快",
+        "module": "multi_model",
+        "export_support": "知识蒸馏",
+    },
+    "双向 LSTM": {
+        "key": "bilstm",
+        "description": "双向 LSTM，捕捉前后时序依赖",
+        "module": "multi_model",
+        "export_support": "知识蒸馏",
+    },
+    "注意力 LSTM": {
+        "key": "attention_lstm",
+        "description": "带注意力机制的 LSTM",
+        "module": "multi_model",
+        "export_support": "知识蒸馏",
+    },
+    "多头注意力 LSTM": {
+        "key": "multihead_attention",
+        "description": "多头注意力机制 LSTM",
+        "module": "multi_model",
+        "export_support": "知识蒸馏",
+    },
+    "Transformer LSTM 混合": {
+        "key": "lstm_transformer",
+        "description": "LSTM + Transformer 混合架构",
+        "module": "multi_model",
+        "export_support": "知识蒸馏",
+    },
+    "Transformer XL": {
+        "key": "transformer_xl",
+        "description": "扩展 Transformer 模型",
+        "module": "multi_model",
+        "export_support": "知识蒸馏",
+    },
     "多模型对比": {
         "key": "multi",
         "description": "训练多个模型并生成对比报告",
@@ -282,13 +318,28 @@ def execute_training(model_config: dict, params: dict):
     print(f"🎯 开始训练：{model_config['key'].upper()} 模型")
     print("="*60 + "\n")
 
+    # 扩展模型列表（需要使用 multi_model_train）
+    extended_models = [
+        'enhanced_rf', 'prophet', 'lstm', 'gru', 'bilstm',
+        'attention_lstm', 'multihead_attention', 'lstm_transformer',
+        'transformer_xl', 'memory_transformer', 'gru_transformer'
+    ]
+
     if model_config['key'] == 'multi':
         # 多模型训练
         from .multi_model_train import main as train_main
 
+        # 所有可用模型列表
+        all_models = [
+            "ridge", "hgb", "rf", "enhanced_rf",
+            "prophet", "lstm", "gru", "bilstm",
+            "attention_lstm", "multihead_attention",
+            "lstm_transformer", "transformer_xl"
+        ]
+
         models_to_train = questionary.checkbox(
-            "选择要训练的模型（空格选择，Enter确认）：",
-            choices=["ridge", "hgb", "rf", "enhanced_rf", "prophet", "lstm"],
+            "选择要训练的模型（空格选择，Enter 确认）：",
+            choices=all_models,
             style=custom_style,
         ).ask()
 
@@ -304,8 +355,20 @@ def execute_training(model_config: dict, params: dict):
         ]
 
         train_main(argv)
+    elif model_config['key'] in extended_models:
+        # 扩展模型使用 multi_model_train（单个模型）
+        from .multi_model_train import main as train_main
+
+        argv = [
+            "--start", params["start"],
+            "--horizon", str(params["horizon"]),
+            "--max-etfs-per-index", str(params["max_etfs_per_index"]),
+            "--models", model_config['key'],
+        ]
+
+        train_main(argv)
     else:
-        # 单模型训练
+        # 基础模型使用 train（ridge, hgb, rf）
         from .train import main as train_main
 
         argv = [
