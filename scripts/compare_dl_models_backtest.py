@@ -152,25 +152,37 @@ def train_and_evaluate_model(
     print(f"{'='*80}")
 
     try:
-        # 构建模型
-        model = make_extended_model(
-            model_name,
-            seq_length=args.seq_length,
-            learning_rate=0.001,
-            epochs=args.epochs,
-            batch_size=args.batch_size,
-            dropout=0.3,
-            units=64,
-            num_heads=4,
-            ff_dim=128,
-            num_transformer_blocks=2,
-            early_stopping_patience=10,
-        )
+        # 构建模型参数（根据模型类型）
+        model_kwargs = {
+            "seq_length": args.seq_length,
+            "learning_rate": 0.001,
+            "epochs": args.epochs,
+            "batch_size": args.batch_size,
+            "dropout": 0.3,
+            "early_stopping_patience": 10,
+        }
 
-        # 训练
-        X_train = train_df[feature_cols]
+        # 根据模型类型添加特定参数
+        if model_name in ["lstm", "bilstm", "gru_transformer"]:
+            model_kwargs["units"] = 64
+
+        if model_name in ["attention_lstm", "self_attention_lstm", "hierarchical_attention_lstm"]:
+            model_kwargs["units"] = 64
+
+        if model_name in ["multihead_attention_lstm", "lstm_transformer", "transformer_xl", "memory_transformer"]:
+            model_kwargs["num_heads"] = 4
+            model_kwargs["ff_dim"] = 128
+            model_kwargs["num_transformer_blocks"] = 2
+
+        # 构建模型
+        model = make_extended_model(model_name, **model_kwargs)
+
+        # 准备训练数据（深度学习模型需要完整的 DataFrame，包含 code 和 date 列）
+        # 确保包含必要的列
+        required_cols = feature_cols + ['code', 'date']
+        X_train = train_df[[c for c in required_cols if c in train_df.columns]]
         y_train = train_df[target_col]
-        X_test = test_df[feature_cols]
+        X_test = test_df[[c for c in required_cols if c in test_df.columns]]
         y_test = test_df[target_col]
 
         print(f"训练集：{len(X_train)} 样本")
@@ -247,6 +259,11 @@ def create_comparison_visualizations(results: list[dict], output_dir: Path):
 
     successful_results = [r for r in results if r["success"]]
 
+    if not successful_results:
+        print("✗ 没有成功训练的模型，跳过可视化")
+        plt.close()
+        return
+
     # MAE 对比
     models = [r["model_name"] for r in successful_results]
     maes = [r["metrics"]["mae"] for r in successful_results]
@@ -299,6 +316,10 @@ def generate_comparison_report(results: list[dict], output_dir: Path, args):
     print(f"\n📝 生成对比报告...")
 
     successful_results = [r for r in results if r["success"]]
+
+    if not successful_results:
+        print("✗ 没有成功训练的模型，无法生成报告")
+        return
 
     # 创建对比表格
     comparison_data = []
