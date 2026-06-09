@@ -196,7 +196,11 @@ def train_and_evaluate_model(
         test_pred = model.predict(X_test)
 
         # 评估
-        test_metrics = evaluate_predictions(y_test.values, test_pred)
+        test_metrics = {
+            'mae': float(np.mean(np.abs(y_test.values - test_pred))),
+            'rmse': float(np.sqrt(np.mean((y_test.values - test_pred) ** 2))),
+            'direction_accuracy': float(np.mean((y_test.values > 0) == (test_pred > 0))),
+        }
 
         print(f"\n测试集指标：")
         print(f"  MAE: {test_metrics['mae']:.4f}")
