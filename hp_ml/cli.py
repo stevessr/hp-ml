@@ -1,6 +1,7 @@
 """交互式 CLI：模型训练、导出、回测、对比的统一入口"""
 from __future__ import annotations
 
+import json
 import sys
 from pathlib import Path
 from typing import Any
@@ -26,6 +27,31 @@ custom_style = Style([
     ('instruction', ''),
     ('text', ''),
 ])
+
+
+# 配置文件路径
+CLI_CONFIG_FILE = Path.home() / ".hp_ml_cli_config.json"
+
+
+def load_last_config() -> dict:
+    """加载上次的配置"""
+    if CLI_CONFIG_FILE.exists():
+        try:
+            with open(CLI_CONFIG_FILE, 'r', encoding='utf-8') as f:
+                return json.load(f)
+        except Exception:
+            pass
+    return {}
+
+
+def save_config(config: dict):
+    """保存配置"""
+    try:
+        with open(CLI_CONFIG_FILE, 'w', encoding='utf-8') as f:
+            json.dump(config, f, indent=2, ensure_ascii=False)
+    except Exception as e:
+        print(f"⚠️ 保存配置失败：{e}")
+
 
 
 # 模型配置
@@ -194,7 +220,7 @@ def select_model() -> list[dict[str, Any]]:
     ]
 
     answers = questionary.checkbox(
-        "请选择模型类型（空格多选，Enter确认）：",
+        "请选择模型类型（空格多选，Enter 确认）：",
         choices=choices,
         style=custom_style,
     ).ask()
@@ -237,37 +263,42 @@ def get_training_params() -> dict[str, Any]:
     """获取训练参数"""
     print("\n⚙️  配置训练参数（按 Enter 使用默认值）\n")
 
+    # 加载上次的配置
+    last_config = load_last_config()
+    training_defaults = last_config.get("training", {})
+
     start_date = questionary.text(
         "历史数据起始日期 (YYYYMMDD)：",
-        default="20180101",
+        default=training_defaults.get("start", "20180101"),
         style=custom_style,
     ).ask()
 
     horizon = questionary.text(
         "预测未来 N 个交易日收益：",
-        default="5",
+        default=str(training_defaults.get("horizon", 5)),
         style=custom_style,
     ).ask()
 
     max_etfs = questionary.text(
         "每个指数族保留前 N 只 ETF：",
-        default="3",
+        default=str(training_defaults.get("max_etfs_per_index", 3)),
         style=custom_style,
     ).ask()
 
     test_days = questionary.text(
         "测试集交易日数：",
-        default="252",
+        default=str(training_defaults.get("test_days", 252)),
         style=custom_style,
     ).ask()
 
     data_source = questionary.select(
         "数据源：",
         choices=["东方财富 (默认)", "通达信 (更稳定)"],
+        default="通达信 (更稳定)" if training_defaults.get("data_source") == "tdx" else "东方财富 (默认)",
         style=custom_style,
     ).ask()
 
-    return {
+    params = {
         "start": start_date,
         "horizon": int(horizon),
         "max_etfs_per_index": int(max_etfs),
@@ -275,12 +306,24 @@ def get_training_params() -> dict[str, Any]:
         "data_source": "tdx" if "通达信" in data_source else "eastmoney",
     }
 
+    # 保存配置
+    config = load_last_config()
+    config["training"] = params
+    save_config(config)
+    print(f"\n💾 已保存配置到：{CLI_CONFIG_FILE}")
+
+    return params
+
 
 def get_export_params() -> dict[str, Any]:
     """获取导出参数"""
     print("\n📤 配置导出参数\n")
 
     from .config import MODELS_DIR
+
+    # 加载上次的配置
+    last_config = load_last_config()
+    export_defaults = last_config.get("export", {})
 
     # 列出可用模型
     model_files = list(MODELS_DIR.glob("*.pkl")) + list(MODELS_DIR.glob("*.joblib"))
@@ -300,6 +343,7 @@ def get_export_params() -> dict[str, Any]:
     export_mode = questionary.select(
         "导出模式：",
         choices=["所有指数族（批量导出）", "单个指数族"],
+        default="所有指数族（批量导出）" if export_defaults.get("all_families", True) else "单个指数族",
         style=custom_style,
     ).ask()
 
@@ -308,43 +352,66 @@ def get_export_params() -> dict[str, Any]:
         family_id = questionary.select(
             "选择指数族：",
             choices=["CSI_300", "CSI_500", "CSI_1000", "CSI_2000", "CSI_800", "CSI_A500"],
+            default=export_defaults.get("family_id", "CSI_300"),
             style=custom_style,
         ).ask()
 
-    return {
+    params = {
         "model": str(MODELS_DIR / model_file),
         "all_families": "所有" in export_mode,
         "family_id": family_id,
     }
+
+    # 保存配置
+    config = load_last_config()
+    config["export"] = {
+        "model_file": model_file,
+        "all_families": params["all_families"],
+        "family_id": family_id,
+    }
+    save_config(config)
+
+    return params
 
 
 def get_backtest_params() -> dict[str, Any]:
     """获取回测参数"""
     print("\n📊 配置回测参数\n")
 
+    # 加载上次的配置
+    last_config = load_last_config()
+    backtest_defaults = last_config.get("backtest", {})
+
     top_k = questionary.text(
         "每次买入前 K 只 ETF：",
-        default="3",
+        default=str(backtest_defaults.get("top_k", 3)),
         style=custom_style,
     ).ask()
 
     min_pred = questionary.text(
         "买入预测收益阈值：",
-        default="0.0",
+        default=str(backtest_defaults.get("min_pred", 0.0)),
         style=custom_style,
     ).ask()
 
     transaction_cost = questionary.text(
         "交易成本（完整买卖，bps）：",
-        default="10",
+        default=str(int(backtest_defaults.get("transaction_cost", 0.001) * 10000)),
         style=custom_style,
     ).ask()
 
-    return {
+    params = {
         "top_k": int(top_k),
         "min_pred": float(min_pred),
         "transaction_cost": float(transaction_cost) / 10000,
     }
+
+    # 保存配置
+    config = load_last_config()
+    config["backtest"] = params
+    save_config(config)
+
+    return params
 
 
 def execute_training(model_config: dict, params: dict):
