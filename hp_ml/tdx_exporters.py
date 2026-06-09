@@ -250,7 +250,7 @@ class TreeModelExporter(TDXExporter):
 
 
 class DeepLearningExporter(TDXExporter):
-    """深度学习模型导出器（知识蒸馏近似导出策略）"""
+    """深度学习模型导出器（多层公式近似导出策略）"""
 
     DEEP_LEARNING_TYPES = {
         "ProphetWrapper",
@@ -285,80 +285,127 @@ class DeepLearningExporter(TDXExporter):
         signal_threshold: float = 0.0,
         min_abs_coef: float = 0.0,
     ) -> TDXExportResult:
-        """使用知识蒸馏近似导出深度学习模型"""
+        """使用多层公式近似导出深度学习模型"""
         model_type = type(model).__name__
-        warnings_list = [
-            f"警告：{model_type} 是深度学习模型，无法精确转换为通达信公式",
-            "本公式使用知识蒸馏方法：用简单模型学习深度模型的输出",
-            "预估精度约 40-60%，仅供参考，建议仅用于辅助决策",
-            "如需高精度推理，请在 Python 中使用原始模型",
-        ]
 
+        # 优先使用多层公式导出（精度更高）
         try:
-            feature_cols = artifact.get("feature_cols", [])
-            if not feature_cols:
-                raise ValueError("artifact 缺少 feature_cols")
+            from .tdx_multi_layer import export_deep_learning_multi_layer
 
-            # 知识蒸馏：使用均匀权重作为最简单的近似
-            # 更好的方法是用训练数据拟合 Ridge，但这里为了简单起见使用均匀权重
-            coefficients = np.ones(len(feature_cols)) / len(feature_cols)
-            method_used = "知识蒸馏-均匀权重"
+            # 根据模型类型选择合适的层数和单元数
+            config = self._get_model_config(model_type)
 
-            warnings_list.append(
-                f"注意：由于缺少训练数据，使用均匀权重近似，精度可能低于 50%"
-            )
-
-            # 创建伪 LinearModelSpec
-            spec = LinearModelSpec(
-                feature_cols=feature_cols,
-                coefficients=coefficients.tolist(),
-                intercept=0.0,
-                means={col: 0.0 for col in feature_cols},
-                scales={col: 1.0 for col in feature_cols},
-                target_col=artifact.get("target_col", "unknown"),
-                horizon=artifact.get("horizon"),
-                source_kind=f"{model_type}_distilled_{method_used}",
-                created_at=artifact.get("created_at"),
-            )
-
-            from .export_tdx import render_tdx_formula
-
-            formula_text = render_tdx_formula(
-                spec,
-                formula_name=f"{formula_name} [蒸馏-{method_used}]",
+            result = export_deep_learning_multi_layer(
+                artifact,
+                formula_name=formula_name,
                 family_id=family_id,
                 signal_threshold=signal_threshold,
-                min_abs_coef=min_abs_coef,
+                num_hidden_units=config["units"],
+                num_layers=config["layers"],
             )
 
-            # 在公式顶部添加警告
-            warning_header = "\n".join([f"{{{w}}}" for w in warnings_list])
-            formula_text = warning_header + "\n" + formula_text
-
-            return TDXExportResult(
-                formula_text=formula_text,
-                export_method="knowledge_distillation",
-                accuracy_estimate=0.45,  # 深度学习模型蒸馏精度较低
-                warnings=warnings_list,
-                model_type=model_type,
+            # 添加模型特定的警告
+            result.warnings.insert(0, f"模型类型：{model_type}")
+            result.warnings.append(
+                f"配置：{config['layers']}个隐藏层，每层{config['units']}个单元"
             )
+
+            return result
 
         except Exception as e:
-            # 如果知识蒸馏也失败，则拒绝导出
-            warnings_list_reject = [
-                f"错误：{model_type} 模型导出失败：{e}",
-                "深度学习模型包含复杂的非线性变换和序列依赖",
-                "通达信公式语言无法表达这些复杂结构",
-                "建议使用 Python 模型进行预测，或训练一个 Ridge 模型导出",
+            # 如果多层导出失败，回退到单层知识蒸馏
+            warnings_list = [
+                f"警告：{model_type} 多层导出失败，回退到单层知识蒸馏",
+                f"失败原因：{e}",
+                "预估精度约 40-60%，建议使用 Python 原始模型",
             ]
 
-            return TDXExportResult(
-                formula_text="",
-                export_method="rejected",
-                accuracy_estimate=None,
-                warnings=warnings_list_reject,
-                model_type=model_type,
-            )
+            try:
+                feature_cols = artifact.get("feature_cols", [])
+                if not feature_cols:
+                    raise ValueError("artifact 缺少 feature_cols")
+
+                # 单层知识蒸馏：使用均匀权重
+                coefficients = np.ones(len(feature_cols)) / len(feature_cols)
+
+                # 创建伪 LinearModelSpec
+                spec = LinearModelSpec(
+                    feature_cols=feature_cols,
+                    coefficients=coefficients.tolist(),
+                    intercept=0.0,
+                    means={col: 0.0 for col in feature_cols},
+                    scales={col: 1.0 for col in feature_cols},
+                    target_col=artifact.get("target_col", "unknown"),
+                    horizon=artifact.get("horizon"),
+                    source_kind=f"{model_type}_distilled_fallback",
+                    created_at=artifact.get("created_at"),
+                )
+
+                from .export_tdx import render_tdx_formula
+
+                formula_text = render_tdx_formula(
+                    spec,
+                    formula_name=f"{formula_name} [单层回退]",
+                    family_id=family_id,
+                    signal_threshold=signal_threshold,
+                    min_abs_coef=min_abs_coef,
+                )
+
+                # 添加警告
+                warning_header = "\n".join([f"{{{w}}}" for w in warnings_list])
+                formula_text = warning_header + "\n" + formula_text
+
+                return TDXExportResult(
+                    formula_text=formula_text,
+                    export_method="knowledge_distillation_fallback",
+                    accuracy_estimate=0.45,
+                    warnings=warnings_list,
+                    model_type=model_type,
+                )
+
+            except Exception as e2:
+                # 完全失败
+                return TDXExportResult(
+                    formula_text="",
+                    export_method="rejected",
+                    accuracy_estimate=None,
+                    warnings=[
+                        f"错误：{model_type} 模型导出失败",
+                        f"多层导出失败：{e}",
+                        f"单层回退失败：{e2}",
+                    ],
+                    model_type=model_type,
+                )
+
+    def _get_model_config(self, model_type: str) -> dict[str, int]:
+        """根据模型类型返回合适的层数和单元数配置"""
+        # 不同模型类型的推荐配置
+        configs = {
+            # 简单 RNN 模型 - 2 层结构
+            "LSTMModel": {"layers": 2, "units": 8},
+            "GRUModel": {"layers": 2, "units": 8},
+            # 双向/注意力模型 - 3 层结构
+            "BidirectionalLSTMModel": {"layers": 3, "units": 10},
+            "AttentionLSTMModel": {"layers": 3, "units": 10},
+            "SelfAttentionLSTM": {"layers": 3, "units": 10},
+            # 复杂注意力模型 - 3 层更多单元
+            "MultiHeadAttentionLSTM": {"layers": 3, "units": 12},
+            "HierarchicalAttentionLSTM": {"layers": 3, "units": 12},
+            # Transformer 模型 - 4 层结构
+            "TransformerXL": {"layers": 4, "units": 12},
+            "MemoryAugmentedTransformer": {"layers": 4, "units": 14},
+            "LSTMTransformer": {"layers": 4, "units": 12},
+            "GRUTransformer": {"layers": 4, "units": 12},
+            # CNN 模型 - 2 层结构（卷积可以用多层线性近似）
+            "CNNNGram": {"layers": 2, "units": 8},
+            "TemporalConvNet": {"layers": 3, "units": 10},
+            "WaveNet": {"layers": 3, "units": 10},
+            # Prophet - 2 层简单结构
+            "ProphetWrapper": {"layers": 2, "units": 6},
+        }
+
+        # 默认配置
+        return configs.get(model_type, {"layers": 2, "units": 8})
 
 
 class UnifiedTDXExporter:
