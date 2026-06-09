@@ -126,6 +126,12 @@ def prepare_data(args) -> tuple[pd.DataFrame, list[str], str]:
 
     # 3. 构建特征面板
     print(f"\n🔧 构建特征面板...")
+
+    # 为每个历史数据添加 code 列（如果没有的话）
+    for code, df in histories.items():
+        if 'code' not in df.columns:
+            df['code'] = code
+
     panel, feature_cols, target_col = build_feature_panel(
         histories,
         universe=universe,

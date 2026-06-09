@@ -68,7 +68,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--batch-size", type=int, default=32, help="批次大小")
 
     # 回测参数
-    parser.add_argument("--top-k", type=int, default=3, help="每次选择前K只ETF")
+    parser.add_argument("--top-k", type=int, default=3, help="每次选择前 K 只 ETF")
     parser.add_argument("--transaction-cost", type=float, default=0.001, help="交易成本")
 
     # 输出参数
@@ -119,6 +119,12 @@ def prepare_data(args) -> tuple[pd.DataFrame, list[str], str, pd.DataFrame]:
 
     # 3. 构建特征面板
     print(f"\n🔧 构建特征面板...")
+
+    # 为每个历史数据添加 code 列（如果没有的话）
+    for code, df in histories.items():
+        if 'code' not in df.columns:
+            df['code'] = code
+
     panel, feature_cols, target_col = build_feature_panel(
         histories,
         universe=universe,
@@ -386,9 +392,9 @@ def generate_comparison_report(results: list[dict], output_dir: Path, args):
 
 - **MAE**：平均绝对误差，越小越好
 - **RMSE**：均方根误差，越小越好
-- **方向准确率**：预测涨跌方向的准确率，>50%表示优于随机
+- **方向准确率**：预测涨跌方向的准确率，>50% 表示优于随机
 - **年化收益率**：回测期间的年化投资收益
-- **夏普比率**：风险调整后收益，>1为良好，>2为优秀
+- **夏普比率**：风险调整后收益，>1 为良好，>2 为优秀
 - **最大回撤**：资金曲线的最大回撤幅度
 - **胜率**：盈利交易占比
 

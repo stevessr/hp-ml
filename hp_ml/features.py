@@ -98,10 +98,17 @@ def build_feature_panel(histories: dict[str, pd.DataFrame], universe: pd.DataFra
         if hist.empty:
             continue
         code = str(code).zfill(6)
+
+        # 确保历史数据有 code 列
+        hist_copy = hist.copy()
+        if 'code' not in hist_copy.columns:
+            hist_copy['code'] = code
+
         family_id = meta.loc[meta["code"] == code, "family_id"]
         name = meta.loc[meta["code"] == code, "name"]
         family_id_value = str(family_id.iloc[0]) if not family_id.empty else "UNKNOWN"
-        frame = add_time_series_features(hist, horizon=horizon)
+        frame = add_time_series_features(hist_copy, horizon=horizon)
+        frame["code"] = code  # 确保 code 列存在
         frame["family_id"] = family_id_value
         frame["name"] = str(name.iloc[0]) if not name.empty else code
         for fam in family_ids:

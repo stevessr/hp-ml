@@ -1,5 +1,8 @@
 PY ?= .venv/bin/python
 PIP ?= .venv/bin/pip
+BEGIN_DATE ?= 20180101
+HORIZON ?= 5
+TEST_DAYS ?= 252
 
 .PHONY: setup discover train train-lite train-multi train-advanced auto-evolve test-prediction-report quick quick-lite clean
 
@@ -44,10 +47,36 @@ export-tdx:
 	$(PY) -m hp_ml.export_tdx --model models/csi_broad_etf_model_lite.pkl --out reports/tdx_formulas --all-families
 
 quick:
-	$(PY) -m hp_ml.train --start 20230101 --max-etfs-per-index 2 --horizon 5 --test-days 120
+	$(PY) -m hp_ml.train --start $(BEGIN_DATE) --max-etfs-per-index 2 --horizon 5 --test-days 120
 
 quick-lite:
-	$(PY) -m hp_ml.lite_train --start 20230101 --max-etfs-per-index 2 --horizon 5 --test-days 120
+	$(PY) -m hp_ml.lite_train --start $(BEGIN_DATE) --max-etfs-per-index 2 --horizon 5 --test-days 120
 
 clean:
 	rm -rf data/processed/*.csv models/*.joblib reports/*.json reports/*.md reports/latest_predictions.csv
+
+# ============================================================================
+# 通达信数据源 + 深度学习模型
+# ============================================================================
+
+train-tdx:  ## 使用通达信数据源训练传统模型（Ridge/HGB/RF）
+	$(PY) -m hp_ml.train --data-source tdx --start 20200101 --horizon 5 --model hgb
+
+train-dl-tdx:  ## 使用通达信数据源训练深度学习模型（LSTM等）
+	$(PY) scripts/train_dl_models_tdx.py --start $(BEGIN_DATE) --models lstm attention_lstm lstm_transformer --epochs 50
+
+quick-compare-dl:  ## 快速对比深度学习模型效果和收益率（15-25分钟）
+	$(PY) scripts/quick_compare_dl_models.py
+
+compare-dl:  ## 完整对比所有深度学习模型（2-3小时）
+	$(PY) scripts/compare_dl_models_backtest.py \
+		--models lstm bilstm attention_lstm multihead_attention_lstm \
+		         self_attention_lstm hierarchical_attention_lstm \
+		         transformer_xl memory_transformer gru_transformer lstm_transformer \
+		--start $(BEGIN_DATE) --epochs 50
+
+test-tdx:  ## 测试通达信数据源连接
+	$(PY) scripts/test_tdx_client.py
+
+demo-tdx:  ## 通达信数据源演示
+	$(PY) scripts/demo_tdx_training.py
