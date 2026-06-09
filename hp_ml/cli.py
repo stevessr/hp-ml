@@ -186,25 +186,30 @@ def print_banner():
     print(banner)
 
 
-def select_model() -> dict[str, Any]:
-    """选择模型类型"""
+def select_model() -> list[dict[str, Any]]:
+    """选择模型类型（支持多选）"""
     choices = [
         f"{name} - {config['description']}"
         for name, config in MODEL_CONFIGS.items()
     ]
 
-    answer = questionary.select(
-        "请选择模型类型：",
+    answers = questionary.checkbox(
+        "请选择模型类型（空格多选，Enter确认）：",
         choices=choices,
         style=custom_style,
     ).ask()
 
-    if answer is None:
+    if not answers:
+        print("❌ 未选择任何模型")
         sys.exit(0)
 
-    # 提取模型名称
-    model_name = answer.split(" - ")[0]
-    return MODEL_CONFIGS[model_name]
+    # 提取模型配置
+    selected_models = []
+    for answer in answers:
+        model_name = answer.split(" - ")[0]
+        selected_models.append(MODEL_CONFIGS[model_name])
+
+    return selected_models
 
 
 def select_operation() -> dict[str, Any]:
@@ -588,18 +593,29 @@ def main():
     try:
         print_banner()
 
-        # 选择模型
-        model_config = select_model()
-        print(f"\n✓ 已选择：{model_config['key'].upper()} - {model_config['description']}")
+        # 选择模型（支持多选）
+        model_configs = select_model()
+
+        # 显示已选择的模型
+        print(f"\n✓ 已选择 {len(model_configs)} 个模型：")
+        for config in model_configs:
+            print(f"  - {config['key'].upper()}: {config['description']}")
 
         # 选择操作
         operation_config = select_operation()
-        print(f"✓ 已选择：{operation_config['key']} - {operation_config['description']}\n")
+        print(f"\n✓ 已选择操作：{operation_config['key']} - {operation_config['description']}\n")
 
         # 执行操作
         if operation_config['key'] == 'train':
             params = get_training_params()
-            execute_training(model_config, params)
+
+            # 如果选择了多个模型，逐个训练
+            for i, model_config in enumerate(model_configs, 1):
+                if len(model_configs) > 1:
+                    print(f"\n{'='*60}")
+                    print(f"训练模型 {i}/{len(model_configs)}: {model_config['key'].upper()}")
+                    print(f"{'='*60}")
+                execute_training(model_config, params)
 
         elif operation_config['key'] == 'export':
             params = get_export_params()
@@ -613,7 +629,48 @@ def main():
             execute_compare()
 
         elif operation_config['key'] == 'full':
-            execute_full_workflow(model_config)
+            # 完整流程：如果多个模型，询问是逐个执行还是批量训练后对比
+            if len(model_configs) > 1:
+                workflow_choice = questionary.select(
+                    "多模型完整流程选项：",
+                    choices=[
+                        "批量训练所有模型 → 统一回测对比 → 选择最佳模型导出",
+                        "逐个执行完整流程（训练→回测→导出）",
+                    ],
+                    style=custom_style,
+                ).ask()
+
+                if "批量训练" in workflow_choice:
+                    # 批量训练模式
+                    params = get_training_params()
+
+                    # 训练所有模型
+                    for i, model_config in enumerate(model_configs, 1):
+                        print(f"\n{'='*60}")
+                        print(f"训练模型 {i}/{len(model_configs)}: {model_config['key'].upper()}")
+                        print(f"{'='*60}")
+                        execute_training(model_config, params)
+
+                    # 统一回测和对比
+                    if questionary.confirm("是否继续回测所有模型？", default=True, style=custom_style).ask():
+                        backtest_params = get_backtest_params()
+                        execute_backtest(backtest_params)
+                        execute_compare()
+
+                    # 导出最佳模型
+                    if questionary.confirm("是否导出模型到通达信？", default=True, style=custom_style).ask():
+                        export_params = get_export_params()
+                        execute_export(export_params)
+                else:
+                    # 逐个执行完整流程
+                    for i, model_config in enumerate(model_configs, 1):
+                        print(f"\n{'='*60}")
+                        print(f"模型 {i}/{len(model_configs)}: {model_config['key'].upper()} 完整流程")
+                        print(f"{'='*60}")
+                        execute_full_workflow(model_config)
+            else:
+                # 单个模型，直接执行完整流程
+                execute_full_workflow(model_configs[0])
 
         print("\n" + "="*60)
         print("🎉 操作完成！感谢使用 HP-ML CLI")

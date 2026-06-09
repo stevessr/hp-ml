@@ -27,6 +27,16 @@ except ImportError:
     TF_AVAILABLE = False
 
 
+# 导入 Transformer++ 系列新模型（延迟导入避免循环依赖）
+def _get_transformer_plus_models():
+    """延迟导入 Transformer++ 系列模型"""
+    try:
+        from .models_transformer_plus import TransformerPlusPlus, RetNetModel, MambaSSM
+        return TransformerPlusPlus, RetNetModel, MambaSSM
+    except ImportError:
+        return None, None, None
+
+
 class ProphetWrapper:
     """Prophet 模型包装器，适配 sklearn 接口"""
 
@@ -2492,5 +2502,23 @@ def make_extended_model(
 
     if model_type in {"enhanced_rf", "rf_enhanced"}:
         return EnhancedRandomForest(random_state=random_state, **kwargs)
+
+    # Transformer++ 系列新模型
+    TransformerPlusPlus, RetNetModel, MambaSSM = _get_transformer_plus_models()
+
+    if model_type in {"transformer_plus", "transformer++", "transformer_pp", "transformerpp"}:
+        if TransformerPlusPlus is None:
+            raise ImportError("Transformer++ 模型未安装")
+        return TransformerPlusPlus(**kwargs)
+
+    if model_type in {"retnet", "retentive_network", "ret_net"}:
+        if RetNetModel is None:
+            raise ImportError("RetNet 模型未安装")
+        return RetNetModel(**kwargs)
+
+    if model_type in {"mamba", "mamba_ssm", "mambassm"}:
+        if MambaSSM is None:
+            raise ImportError("Mamba 模型未安装")
+        return MambaSSM(**kwargs)
 
     raise ValueError(f"不支持的模型类型：{model_type}")

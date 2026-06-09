@@ -28,6 +28,7 @@ python -m hp_ml
 
 **CLI 功能**：
 - ✨ 可视化菜单选择模型类型（Ridge、HGB、RF、LSTM、GRU、Transformer 等 18+ 种模型）
+- 🔥 **支持多选模型**: 使用空格键同时选择多个模型进行批量训练和对比
 - 🚀 新增 GRU Attention 变种：双向 GRU、注意力 GRU、多头注意力 GRU、分层注意力 GRU、GRU-Transformer
 - 🎯 选择操作：训练、导出通达信、回测、模型对比、完整流程
 - ⚙️ 交互式配置参数（数据源、日期范围、预测周期等）

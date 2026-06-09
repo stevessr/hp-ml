@@ -76,7 +76,14 @@ def train_single_model(
         "hierarchical_attention", "hierarchical_lstm", "lstm_transformer", "transformer_lstm",
         "hybrid_transformer", "transformer_xl", "transformerxl", "memory_transformer",
         "memory_augmented_transformer", "gru_transformer", "transformer_gru",
-        "cnn_ngram", "ngram_cnn", "cnn", "tcn", "temporal_conv_net", "wavenet", "wave_net"
+        "cnn_ngram", "ngram_cnn", "cnn", "tcn", "temporal_conv_net", "wavenet", "wave_net",
+        # Transformer++ 系列新模型
+        "transformer_plus", "transformer++", "transformer_pp", "transformerpp",
+        "retnet", "retentive_network", "ret_net",
+        "mamba", "mamba_ssm", "mambassm",
+        # GRU 变种
+        "bigru", "bidirectional_gru", "attention_gru", "gru_attention",
+        "multihead_attention_gru", "multihead_gru", "hierarchical_attention_gru", "hierarchical_gru"
     ]
 
     needs_code_date = model_type.lower() in deep_learning_models

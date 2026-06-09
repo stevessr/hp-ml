@@ -17,3 +17,4 @@ reports/charts/example_*.svg
 data/raw/history
 reports
 models
+data/processed/training_panel.csv
