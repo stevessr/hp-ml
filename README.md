@@ -3,12 +3,36 @@
 这个项目把”自动搜索 → 挖掘候选 ETF → 拉取历史行情 → 特征工程 → 训练模型 → 输出排序报告”串成一条可运行流水线，重点覆盖中证/沪深宽基指数 ETF（沪深 300、中证 500、中证 1000、中证 2000、中证 800、中证 A500、中证 A50、中证 A100，以及中证 200/700/全指/流通/A 股等有 ETF 时自动纳入的宽基族）。
 
 **🆕 新增功能**：
+- **🎯 交互式 CLI**：可视化菜单系统，一键选择模型类型、训练、导出、回测、对比（推荐使用）
 - **通达信数据源支持**：可选择使用通达信服务器直接拉取数据，作为东方财富API的可靠备选方案
 - **多模型训练与对比**：支持Prophet、LSTM、增强随机森林等，完整的数据划分管道，统一回测框架，自动生成可视化报告。详见 [多模型文档](docs/MULTI_MODEL.md)
 
 > 说明：输出仅用于量化研究和模型验证，不构成投资建议。
 
 ## 快速开始
+
+### 🎯 方式一：交互式 CLI（推荐，新手友好）
+
+```bash
+# 依赖安装
+make setup
+
+# 启动交互式 CLI
+make cli
+# 或
+python -m hp_ml.cli
+# 或
+python -m hp_ml
+```
+
+**CLI 功能**：
+- ✨ 可视化菜单选择模型类型（Ridge、HGB、RF、Prophet、LSTM等）
+- 🎯 选择操作：训练、导出通达信、回测、模型对比、完整流程
+- ⚙️ 交互式配置参数（数据源、日期范围、预测周期等）
+- 📊 自动生成报告和图表
+- 🚀 支持一键完整流程：训练→回测→导出→对比
+
+### 📝 方式二：命令行模式（高级用户）
 
 ```bash
 # 依赖安装
@@ -393,10 +417,11 @@ reports/tdx_formulas/
 
 ## 📚 文档
 
+- [交互式 CLI 指南](docs/CLI_GUIDE.md) - 可视化菜单系统使用指南 ⭐️ 新增
 - [快速入门](docs/QUICKSTART.md) - 5 分钟快速上手
 - [多模型训练](docs/MULTI_MODEL.md) - 6 种模型对比训练
 - [高级功能](docs/ADVANCED_FEATURES.md) - 超参数优化、集成学习、AI 辅助
-- [预测报告](docs/PREDICTION_REPORT.md) - 预测 vs 实际对比可视化 ⭐️ 新增
+- [预测报告](docs/PREDICTION_REPORT.md) - 预测 vs 实际对比可视化
 - [算法公式](docs/FORMULAS.md) - 数学公式和技术细节
 - [功能总结](docs/SUMMARY.md) - 功能特性对比表
 
@@ -411,11 +436,12 @@ reports/tdx_formulas/
 - ✅ 回测框架
 
 ### 高级功能（v3.0+）
+- ✅ 交互式 CLI（可视化菜单系统）⭐️ 新增
 - ✅ 自动超参数调优（Optuna）
 - ✅ 模型集成学习（Stacking/Blending）
 - ✅ 技术指标特征学习（50+ 指标）
 - ✅ AI 辅助模型进化（Claude API + Claude Code）
-- ✅ 预测报告生成（预测 vs 实际对比）⭐️
+- ✅ 预测报告生成（预测 vs 实际对比）
 
 ### 可视化和报告
 - ✅ 自动生成图表和 Markdown 报告
@@ -427,6 +453,9 @@ reports/tdx_formulas/
 ## 🚀 快速命令
 
 ```bash
+# 交互式 CLI（推荐）
+make cli                # 启动交互式 CLI 菜单系统 ⭐️
+
 # 基础训练
 make train              # 单模型训练
 make train-multi        # 多模型对比训练
@@ -438,5 +467,9 @@ make auto-evolve        # AI 自主进化优化
 # 测试和演示
 make test-prediction-report  # 测试预测报告生成
 make test-multi              # 测试多模型功能
+
+# CLI 演示脚本（非交互式环境）
+python examples/demo_cli_usage.py train     # 演示训练
+python examples/demo_cli_usage.py full      # 演示完整流程
 ```
 
