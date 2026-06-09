@@ -315,8 +315,16 @@ def get_training_params() -> dict[str, Any]:
     return params
 
 
-def get_export_params() -> dict[str, Any]:
-    """获取导出参数"""
+def get_export_params(selected_models: list[dict] = None) -> dict[str, Any] | list[dict[str, Any]]:
+    """获取导出参数
+
+    Args:
+        selected_models: 用户第一步选择的模型配置列表，如果提供则自动匹配对应的模型文件
+
+    Returns:
+        单个模型：返回 dict
+        多个模型：返回 list[dict]
+    """
     print("\n📤 配置导出参数\n")
 
     from .config import MODELS_DIR
@@ -333,13 +341,48 @@ def get_export_params() -> dict[str, Any]:
         print("请先运行训练操作")
         sys.exit(1)
 
-    model_choices = [str(f.name) for f in model_files]
-    model_file = questionary.select(
-        "选择要导出的模型：",
-        choices=model_choices,
-        style=custom_style,
-    ).ask()
+    # 如果用户在第一步选择了模型，尝试自动匹配
+    matched_files = []
+    if selected_models:
+        print(f"根据您选择的 {len(selected_models)} 个模型类型，查找对应的模型文件...\n")
 
+        for model_config in selected_models:
+            model_key = model_config['key'].lower()
+            # 查找匹配的模型文件
+            found = False
+            for model_file in model_files:
+                file_name = model_file.stem.lower()
+                # 匹配规则：文件名包含模型key
+                if model_key in file_name or file_name.replace("model_", "") == model_key:
+                    matched_files.append({
+                        "model_config": model_config,
+                        "model_file": model_file,
+                    })
+                    print(f"✓ {model_config['key'].upper()} → {model_file.name}")
+                    found = True
+                    break
+
+            if not found:
+                print(f"⚠️  {model_config['key'].upper()} → 未找到对应的模型文件")
+
+    # 如果没有匹配到任何文件，或者没有提供 selected_models，让用户手动选择
+    if not matched_files:
+        if selected_models:
+            print("\n未找到匹配的模型文件，请手动选择：\n")
+
+        model_choices = [str(f.name) for f in model_files]
+        model_file = questionary.select(
+            "选择要导出的模型：",
+            choices=model_choices,
+            style=custom_style,
+        ).ask()
+
+        matched_files = [{
+            "model_config": None,
+            "model_file": MODELS_DIR / model_file,
+        }]
+
+    # 导出模式配置（对所有模型统一配置）
     export_mode = questionary.select(
         "导出模式：",
         choices=["所有指数族（批量导出）", "单个指数族"],
@@ -356,22 +399,27 @@ def get_export_params() -> dict[str, Any]:
             style=custom_style,
         ).ask()
 
-    params = {
-        "model": str(MODELS_DIR / model_file),
-        "all_families": "所有" in export_mode,
-        "family_id": family_id,
-    }
+    # 为每个匹配的模型生成导出参数
+    all_params = []
+    for matched in matched_files:
+        params = {
+            "model": str(matched["model_file"]),
+            "all_families": "所有" in export_mode,
+            "family_id": family_id,
+        }
+        all_params.append(params)
 
     # 保存配置
     config = load_last_config()
     config["export"] = {
-        "model_file": model_file,
-        "all_families": params["all_families"],
+        "model_file": matched_files[0]["model_file"].name if matched_files else None,
+        "all_families": "所有" in export_mode,
         "family_id": family_id,
     }
     save_config(config)
 
-    return params
+    # 如果只有一个模型，返回单个 dict；否则返回 list
+    return all_params[0] if len(all_params) == 1 else all_params
 
 
 def get_backtest_params() -> dict[str, Any]:
@@ -521,7 +569,7 @@ def execute_export(params: dict):
     print("\n✅ 导出完成！")
 
 
-def execute_backtest(params: dict):
+def execute_backtest(params: dict, model_configs: list[dict] = None):
     """执行回测"""
     print("\n" + "="*60)
     print("📊 开始回测评估")
@@ -539,6 +587,21 @@ def execute_backtest(params: dict):
         print("请先运行训练操作")
         return
 
+    # 如果用户选择了特定模型，只显示这些模型的预测文件
+    if model_configs:
+        selected_model_keys = [config['key'].lower() for config in model_configs]
+        filtered_files = []
+        for f in pred_files:
+            file_model = f.stem.replace("predictions_", "").lower()
+            if file_model in selected_model_keys:
+                filtered_files.append(f)
+
+        if filtered_files:
+            pred_files = filtered_files
+            print(f"✓ 根据您选择的 {len(model_configs)} 个模型，筛选出 {len(pred_files)} 个预测文件\n")
+        else:
+            print(f"⚠️ 未找到所选模型的预测文件，显示所有预测文件\n")
+
     pred_choices = [f.name for f in pred_files]
     pred_file = questionary.select(
         "选择预测文件：",
@@ -552,12 +615,13 @@ def execute_backtest(params: dict):
     pred_col = "prediction" if "prediction" in predictions.columns else "pred"
     target_col = None
     for col in predictions.columns:
-        if "forward_return" in col or "target" in col:
+        if "forward_return" in col or "target" in col or "fwd_ret" in col:
             target_col = col
             break
 
     if target_col is None:
         print("❌ 未找到目标列")
+        print(f"可用的列：{predictions.columns.tolist()}")
         return
 
     metrics, trades = backtest_strategy(
@@ -583,7 +647,7 @@ def execute_backtest(params: dict):
     print(f"\n💾 回测明细已保存：{backtest_result_path}")
 
 
-def execute_compare():
+def execute_compare(model_configs: list[dict] = None):
     """执行模型对比"""
     print("\n" + "="*60)
     print("⚖️  开始模型对比")
@@ -601,6 +665,24 @@ def execute_compare():
         print("请先训练多个模型")
         return
 
+    # 如果用户选择了特定模型，只对比这些模型
+    if model_configs:
+        selected_model_keys = [config['key'].lower() for config in model_configs]
+        filtered_files = []
+        for f in pred_files:
+            file_model = f.stem.replace("predictions_", "").lower()
+            if file_model in selected_model_keys:
+                filtered_files.append(f)
+
+        if len(filtered_files) >= 2:
+            pred_files = filtered_files
+            print(f"✓ 根据您选择的 {len(model_configs)} 个模型，对比其中 {len(pred_files)} 个已训练的模型\n")
+        elif len(filtered_files) == 1:
+            print(f"⚠️ 仅找到 1 个所选模型的预测文件，需要至少 2 个才能对比")
+            print(f"将对比所有可用的 {len(pred_files)} 个模型\n")
+        else:
+            print(f"⚠️ 未找到所选模型的预测文件，对比所有 {len(pred_files)} 个模型\n")
+
     # 加载所有预测
     all_predictions = {}
     target_col = None
@@ -611,7 +693,7 @@ def execute_compare():
 
         if target_col is None:
             for col in df.columns:
-                if "forward_return" in col or "target" in col:
+                if "forward_return" in col or "target" in col or "fwd_ret" in col:
                     target_col = col
                     break
 
@@ -619,6 +701,7 @@ def execute_compare():
 
     if not all_predictions or target_col is None:
         print("❌ 加载预测文件失败")
+        print(f"可用的列：{df.columns.tolist() if len(all_predictions) > 0 else '无'}")
         return
 
     # 对比
@@ -652,16 +735,20 @@ def execute_full_workflow(model_config: dict):
     # 2. 回测
     if questionary.confirm("是否继续回测？", default=True, style=custom_style).ask():
         backtest_params = get_backtest_params()
-        execute_backtest(backtest_params)
+        execute_backtest(backtest_params, [model_config])
 
     # 3. 导出
     if questionary.confirm("是否导出到通达信？", default=True, style=custom_style).ask():
-        export_params = get_export_params()
-        execute_export(export_params)
+        export_params = get_export_params([model_config])
+        if isinstance(export_params, list):
+            for param in export_params:
+                execute_export(param)
+        else:
+            execute_export(export_params)
 
     # 4. 对比
     if questionary.confirm("是否进行模型对比？", default=False, style=custom_style).ask():
-        execute_compare()
+        execute_compare([model_config])
 
     print("\n✅ 完整流程执行完毕！")
 
@@ -712,15 +799,23 @@ def main():
                 execute_training(model_configs[0], params)
 
         elif operation_config['key'] == 'export':
-            params = get_export_params()
-            execute_export(params)
+            params = get_export_params(model_configs)
+            # 如果返回多个模型的参数，逐个导出
+            if isinstance(params, list):
+                for i, param in enumerate(params, 1):
+                    print(f"\n{'='*60}")
+                    print(f"导出模型 {i}/{len(params)}")
+                    print(f"{'='*60}")
+                    execute_export(param)
+            else:
+                execute_export(params)
 
         elif operation_config['key'] == 'backtest':
             params = get_backtest_params()
-            execute_backtest(params)
+            execute_backtest(params, model_configs)
 
         elif operation_config['key'] == 'compare':
-            execute_compare()
+            execute_compare(model_configs)
 
         elif operation_config['key'] == 'full':
             # 完整流程：如果多个模型，询问是逐个执行还是批量训练后对比
@@ -748,13 +843,20 @@ def main():
                     # 统一回测和对比
                     if questionary.confirm("是否继续回测所有模型？", default=True, style=custom_style).ask():
                         backtest_params = get_backtest_params()
-                        execute_backtest(backtest_params)
-                        execute_compare()
+                        execute_backtest(backtest_params, model_configs)
+                        execute_compare(model_configs)
 
                     # 导出最佳模型
                     if questionary.confirm("是否导出模型到通达信？", default=True, style=custom_style).ask():
-                        export_params = get_export_params()
-                        execute_export(export_params)
+                        export_params = get_export_params(model_configs)
+                        if isinstance(export_params, list):
+                            for i, param in enumerate(export_params, 1):
+                                print(f"\n{'='*60}")
+                                print(f"导出模型 {i}/{len(export_params)}")
+                                print(f"{'='*60}")
+                                execute_export(param)
+                        else:
+                            execute_export(export_params)
                 else:
                     # 逐个执行完整流程
                     for i, model_config in enumerate(model_configs, 1):
