@@ -100,7 +100,7 @@ class ProphetWrapper:
 
     def predict(self, X: pd.DataFrame) -> np.ndarray:
         """预测未来收益"""
-        df = X.copy()
+        df = X.copy().reset_index(drop=True)
         predictions = np.zeros(len(df))
 
         if "code" not in df.columns or "date" not in df.columns:
