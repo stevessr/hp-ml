@@ -69,8 +69,11 @@ def train_single_model(
     else:
         model = make_extended_model(model_type=model_type, random_state=random_state)
 
-    # 深度学习模型需要 code 和 date 列用于序列构建
-    deep_learning_models = [
+    # 深度学习模型和 Prophet 需要 code 和 date 列用于序列构建
+    models_needing_code_date = [
+        # Prophet 时间序列模型
+        "prophet",
+        # 深度学习模型
         "lstm", "gru", "bilstm", "bidirectional_lstm", "attention_lstm", "lstm_attention",
         "multihead_attention", "multihead_lstm", "self_attention", "self_attention_lstm",
         "hierarchical_attention", "hierarchical_lstm", "lstm_transformer", "transformer_lstm",
@@ -86,7 +89,7 @@ def train_single_model(
         "multihead_attention_gru", "multihead_gru", "hierarchical_attention_gru", "hierarchical_gru"
     ]
 
-    needs_code_date = model_type.lower() in deep_learning_models
+    needs_code_date = model_type.lower() in models_needing_code_date
 
     # 训练
     if needs_code_date:
