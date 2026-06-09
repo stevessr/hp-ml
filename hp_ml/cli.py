@@ -442,15 +442,26 @@ def execute_training(model_config: dict, params: dict):
             "lstm_transformer", "gru_transformer", "transformer_xl"
         ]
 
+        # 加载上次选择的模型
+        last_config = load_last_config()
+        last_selected = last_config.get("multi_models", ["ridge", "hgb"])
+
         models_to_train = questionary.checkbox(
             "选择要训练的模型（空格选择，Enter 确认）：",
             choices=all_models,
+            default=last_selected,
             style=custom_style,
         ).ask()
 
         if not models_to_train:
             print("❌ 未选择任何模型")
             return
+
+        # 保存模型选择
+        config = load_last_config()
+        config["multi_models"] = models_to_train
+        save_config(config)
+        print(f"\n💾 已保存模型选择到：{CLI_CONFIG_FILE}")
 
         argv = [
             "--start", params["start"],
@@ -676,13 +687,29 @@ def main():
         if operation_config['key'] == 'train':
             params = get_training_params()
 
-            # 如果选择了多个模型，逐个训练
-            for i, model_config in enumerate(model_configs, 1):
-                if len(model_configs) > 1:
-                    print(f"\n{'='*60}")
-                    print(f"训练模型 {i}/{len(model_configs)}: {model_config['key'].upper()}")
-                    print(f"{'='*60}")
-                execute_training(model_config, params)
+            # 如果选择了多个模型，使用批量训练（避免重复获取数据）
+            if len(model_configs) > 1:
+                print(f"\n{'='*60}")
+                print(f"🎯 批量训练 {len(model_configs)} 个模型（共享数据，避免重复获取）")
+                print(f"{'='*60}\n")
+
+                # 提取所有模型的 key
+                model_keys = [config['key'] for config in model_configs]
+
+                # 使用 multi_model_train 进行批量训练
+                from .multi_model_train import main as train_main
+
+                argv = [
+                    "--start", params["start"],
+                    "--horizon", str(params["horizon"]),
+                    "--max-etfs-per-index", str(params["max_etfs_per_index"]),
+                    "--models", *model_keys,
+                ]
+
+                train_main(argv)
+            else:
+                # 单个模型训练
+                execute_training(model_configs[0], params)
 
         elif operation_config['key'] == 'export':
             params = get_export_params()
