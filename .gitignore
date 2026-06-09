@@ -16,3 +16,4 @@ reports/charts/example_*.svg
 *.backup
 data/raw/history
 reports
+models

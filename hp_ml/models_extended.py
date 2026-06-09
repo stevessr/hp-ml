@@ -162,7 +162,7 @@ class LSTMModel:
         feature_cols = [col for col in X.columns if col not in ["code", "date", "name", "family_id", "is_trainable"]]
         self.feature_names_ = feature_cols
 
-        df_train = X.copy()
+        df_train = X[["code", "date"] + feature_cols].copy()
         df_train["target"] = y.values
 
         X_seq, y_seq = prepare_lstm_sequences(df_train, feature_cols, "target", self.seq_length)
@@ -196,7 +196,7 @@ class LSTMModel:
 
         from .data_pipeline import prepare_lstm_sequences
 
-        df_pred = X.copy()
+        df_pred = X[["code", "date"] + self.feature_names_].copy()
         df_pred["target"] = 0.0
 
         try:
@@ -262,7 +262,7 @@ class GRUModel:
         feature_cols = [col for col in X.columns if col not in ["code", "date", "name", "family_id", "is_trainable"]]
         self.feature_names_ = feature_cols
 
-        df_train = X.copy()
+        df_train = X[["code", "date"] + feature_cols].copy()
         df_train["target"] = y.values
 
         X_seq, y_seq = prepare_lstm_sequences(df_train, feature_cols, "target", self.seq_length)
@@ -294,7 +294,7 @@ class GRUModel:
 
         from .data_pipeline import prepare_lstm_sequences
 
-        df_pred = X.copy()
+        df_pred = X[["code", "date"] + self.feature_names_].copy()
         df_pred["target"] = 0.0
 
         try:
@@ -365,7 +365,7 @@ class BidirectionalLSTMModel:
         feature_cols = [col for col in X.columns if col not in ["code", "date", "name", "family_id", "is_trainable"]]
         self.feature_names_ = feature_cols
 
-        df_train = X.copy()
+        df_train = X[["code", "date"] + feature_cols].copy()
         df_train["target"] = y.values
 
         X_seq, y_seq = prepare_lstm_sequences(df_train, feature_cols, "target", self.seq_length)
@@ -397,7 +397,7 @@ class BidirectionalLSTMModel:
 
         from .data_pipeline import prepare_lstm_sequences
 
-        df_pred = X.copy()
+        df_pred = X[["code", "date"] + self.feature_names_].copy()
         df_pred["target"] = 0.0
 
         try:
@@ -478,7 +478,7 @@ class AttentionLSTMModel:
         feature_cols = [col for col in X.columns if col not in ["code", "date", "name", "family_id", "is_trainable"]]
         self.feature_names_ = feature_cols
 
-        df_train = X.copy()
+        df_train = X[["code", "date"] + feature_cols].copy()
         df_train["target"] = y.values
 
         X_seq, y_seq = prepare_lstm_sequences(df_train, feature_cols, "target", self.seq_length)
@@ -510,7 +510,7 @@ class AttentionLSTMModel:
 
         from .data_pipeline import prepare_lstm_sequences
 
-        df_pred = X.copy()
+        df_pred = X[["code", "date"] + self.feature_names_].copy()
         df_pred["target"] = 0.0
 
         try:
@@ -595,7 +595,7 @@ class MultiHeadAttentionLSTM:
         feature_cols = [col for col in X.columns if col not in ["code", "date", "name", "family_id", "is_trainable"]]
         self.feature_names_ = feature_cols
 
-        df_train = X.copy()
+        df_train = X[["code", "date"] + feature_cols].copy()
         df_train["target"] = y.values
 
         X_seq, y_seq = prepare_lstm_sequences(df_train, feature_cols, "target", self.seq_length)
@@ -627,7 +627,7 @@ class MultiHeadAttentionLSTM:
 
         from .data_pipeline import prepare_lstm_sequences
 
-        df_pred = X.copy()
+        df_pred = X[["code", "date"] + self.feature_names_].copy()
         df_pred["target"] = 0.0
 
         try:
@@ -723,7 +723,7 @@ class SelfAttentionLSTM:
         feature_cols = [col for col in X.columns if col not in ["code", "date", "name", "family_id", "is_trainable"]]
         self.feature_names_ = feature_cols
 
-        df_train = X.copy()
+        df_train = X[["code", "date"] + feature_cols].copy()
         df_train["target"] = y.values
 
         X_seq, y_seq = prepare_lstm_sequences(df_train, feature_cols, "target", self.seq_length)
@@ -755,7 +755,7 @@ class SelfAttentionLSTM:
 
         from .data_pipeline import prepare_lstm_sequences
 
-        df_pred = X.copy()
+        df_pred = X[["code", "date"] + self.feature_names_].copy()
         df_pred["target"] = 0.0
 
         try:
@@ -851,7 +851,7 @@ class HierarchicalAttentionLSTM:
         feature_cols = [col for col in X.columns if col not in ["code", "date", "name", "family_id", "is_trainable"]]
         self.feature_names_ = feature_cols
 
-        df_train = X.copy()
+        df_train = X[["code", "date"] + feature_cols].copy()
         df_train["target"] = y.values
 
         X_seq, y_seq = prepare_lstm_sequences(df_train, feature_cols, "target", self.seq_length)
@@ -883,7 +883,7 @@ class HierarchicalAttentionLSTM:
 
         from .data_pipeline import prepare_lstm_sequences
 
-        df_pred = X.copy()
+        df_pred = X[["code", "date"] + self.feature_names_].copy()
         df_pred["target"] = 0.0
 
         try:
@@ -975,7 +975,7 @@ class CNNNGram:
         feature_cols = [col for col in X.columns if col not in ["code", "date", "name", "family_id", "is_trainable"]]
         self.feature_names_ = feature_cols
 
-        df_train = X.copy()
+        df_train = X[["code", "date"] + feature_cols].copy()
         df_train["target"] = y.values
 
         X_seq, y_seq = prepare_lstm_sequences(df_train, feature_cols, "target", self.seq_length)
@@ -1007,7 +1007,7 @@ class CNNNGram:
 
         from .data_pipeline import prepare_lstm_sequences
 
-        df_pred = X.copy()
+        df_pred = X[["code", "date"] + self.feature_names_].copy()
         df_pred["target"] = 0.0
 
         try:
@@ -1105,7 +1105,7 @@ class TemporalConvNet:
         feature_cols = [col for col in X.columns if col not in ["code", "date", "name", "family_id", "is_trainable"]]
         self.feature_names_ = feature_cols
 
-        df_train = X.copy()
+        df_train = X[["code", "date"] + feature_cols].copy()
         df_train["target"] = y.values
 
         X_seq, y_seq = prepare_lstm_sequences(df_train, feature_cols, "target", self.seq_length)
@@ -1137,7 +1137,7 @@ class TemporalConvNet:
 
         from .data_pipeline import prepare_lstm_sequences
 
-        df_pred = X.copy()
+        df_pred = X[["code", "date"] + self.feature_names_].copy()
         df_pred["target"] = 0.0
 
         try:
@@ -1258,7 +1258,7 @@ class WaveNet:
         feature_cols = [col for col in X.columns if col not in ["code", "date", "name", "family_id", "is_trainable"]]
         self.feature_names_ = feature_cols
 
-        df_train = X.copy()
+        df_train = X[["code", "date"] + feature_cols].copy()
         df_train["target"] = y.values
 
         X_seq, y_seq = prepare_lstm_sequences(df_train, feature_cols, "target", self.seq_length)
@@ -1290,7 +1290,7 @@ class WaveNet:
 
         from .data_pipeline import prepare_lstm_sequences
 
-        df_pred = X.copy()
+        df_pred = X[["code", "date"] + self.feature_names_].copy()
         df_pred["target"] = 0.0
 
         try:
@@ -1392,7 +1392,7 @@ class TransformerXL:
         feature_cols = [col for col in X.columns if col not in ["code", "date", "name", "family_id", "is_trainable"]]
         self.feature_names_ = feature_cols
 
-        df_train = X.copy()
+        df_train = X[["code", "date"] + feature_cols].copy()
         df_train["target"] = y.values
 
         X_seq, y_seq = prepare_lstm_sequences(df_train, feature_cols, "target", self.seq_length)
@@ -1424,7 +1424,7 @@ class TransformerXL:
 
         from .data_pipeline import prepare_lstm_sequences
 
-        df_pred = X.copy()
+        df_pred = X[["code", "date"] + self.feature_names_].copy()
         df_pred["target"] = 0.0
 
         try:
@@ -1535,7 +1535,7 @@ class MemoryAugmentedTransformer:
         feature_cols = [col for col in X.columns if col not in ["code", "date", "name", "family_id", "is_trainable"]]
         self.feature_names_ = feature_cols
 
-        df_train = X.copy()
+        df_train = X[["code", "date"] + feature_cols].copy()
         df_train["target"] = y.values
 
         X_seq, y_seq = prepare_lstm_sequences(df_train, feature_cols, "target", self.seq_length)
@@ -1562,6 +1562,440 @@ class MemoryAugmentedTransformer:
 
     def predict(self, X: pd.DataFrame) -> np.ndarray:
         """预测"""
+        if self.model_ is None:
+            raise RuntimeError("模型未训练")
+
+        from .data_pipeline import prepare_lstm_sequences
+
+        df_pred = X[["code", "date"] + self.feature_names_].copy()
+        df_pred["target"] = 0.0
+
+        try:
+            X_seq, _ = prepare_lstm_sequences(df_pred, self.feature_names_, "target", self.seq_length)
+        except ValueError:
+            return np.zeros(len(X))
+
+        X_seq_scaled = self.scaler_.transform(X_seq.reshape(-1, X_seq.shape[-1])).reshape(X_seq.shape)
+        predictions = self.model_.predict(X_seq_scaled, verbose=0).flatten()
+
+        full_predictions = np.zeros(len(X))
+        full_predictions[-len(predictions):] = predictions
+
+        return full_predictions
+
+
+class AttentionGRUModel:
+    """带注意力机制的 GRU 模型"""
+
+    def __init__(
+        self,
+        seq_length: int = 20,
+        units: int = 64,
+        dropout: float = 0.2,
+        learning_rate: float = 0.001,
+        epochs: int = 50,
+        batch_size: int = 32,
+        early_stopping_patience: int = 10,
+    ):
+        if not TF_AVAILABLE:
+            raise ImportError("TensorFlow 未安装，请运行：pip install tensorflow")
+
+        self.seq_length = seq_length
+        self.units = units
+        self.dropout = dropout
+        self.learning_rate = learning_rate
+        self.epochs = epochs
+        self.batch_size = batch_size
+        self.early_stopping_patience = early_stopping_patience
+        self.model_: Any = None
+        self.scaler_ = StandardScaler()
+        self.feature_names_: list[str] = []
+
+    def _build_model(self, input_shape: tuple[int, int]) -> keras.Model:
+        """构建带注意力机制的 GRU 模型"""
+        inputs = keras.layers.Input(shape=input_shape)
+
+        gru_out = keras.layers.GRU(self.units, return_sequences=True)(inputs)
+        gru_out = keras.layers.Dropout(self.dropout)(gru_out)
+
+        attention = keras.layers.Dense(1, activation="tanh")(gru_out)
+        attention = keras.layers.Flatten()(attention)
+        attention = keras.layers.Activation("softmax")(attention)
+        attention = keras.layers.RepeatVector(self.units)(attention)
+        attention = keras.layers.Permute([2, 1])(attention)
+
+        attended = keras.layers.multiply([gru_out, attention])
+        attended = keras.layers.Lambda(lambda x: keras.backend.sum(x, axis=1))(attended)
+
+        dense = keras.layers.Dense(32, activation="relu")(attended)
+        dense = keras.layers.Dropout(self.dropout)(dense)
+        outputs = keras.layers.Dense(1)(dense)
+
+        model = keras.Model(inputs=inputs, outputs=outputs)
+        optimizer = keras.optimizers.Adam(learning_rate=self.learning_rate)
+        model.compile(optimizer=optimizer, loss="mse", metrics=["mae"])
+        return model
+
+    def fit(self, X: pd.DataFrame, y: pd.Series) -> AttentionGRUModel:
+        from .data_pipeline import prepare_lstm_sequences
+
+        feature_cols = [col for col in X.columns if col not in ["code", "date", "name", "family_id", "is_trainable"]]
+        self.feature_names_ = feature_cols
+
+        df_train = X.copy()
+        df_train["target"] = y.values
+
+        X_seq, y_seq = prepare_lstm_sequences(df_train, feature_cols, "target", self.seq_length)
+        X_seq_scaled = self.scaler_.fit_transform(X_seq.reshape(-1, X_seq.shape[-1])).reshape(X_seq.shape)
+
+        self.model_ = self._build_model((self.seq_length, len(feature_cols)))
+
+        early_stop = keras.callbacks.EarlyStopping(
+            monitor="val_loss",
+            patience=self.early_stopping_patience,
+            restore_best_weights=True
+        )
+
+        self.model_.fit(
+            X_seq_scaled, y_seq,
+            epochs=self.epochs,
+            batch_size=self.batch_size,
+            validation_split=0.2,
+            callbacks=[early_stop],
+            verbose=0
+        )
+
+        return self
+
+    def predict(self, X: pd.DataFrame) -> np.ndarray:
+        if self.model_ is None:
+            raise RuntimeError("模型未训练")
+
+        from .data_pipeline import prepare_lstm_sequences
+
+        df_pred = X.copy()
+        df_pred["target"] = 0.0
+
+        try:
+            X_seq, _ = prepare_lstm_sequences(df_pred, self.feature_names_, "target", self.seq_length)
+        except ValueError:
+            return np.zeros(len(X))
+
+        X_seq_scaled = self.scaler_.transform(X_seq.reshape(-1, X_seq.shape[-1])).reshape(X_seq.shape)
+        predictions = self.model_.predict(X_seq_scaled, verbose=0).flatten()
+
+        full_predictions = np.zeros(len(X))
+        full_predictions[-len(predictions):] = predictions
+
+        return full_predictions
+
+
+class MultiHeadAttentionGRU:
+    """多头注意力 GRU 模型"""
+
+    def __init__(
+        self,
+        seq_length: int = 20,
+        units: int = 64,
+        num_heads: int = 4,
+        dropout: float = 0.2,
+        learning_rate: float = 0.001,
+        epochs: int = 50,
+        batch_size: int = 32,
+        early_stopping_patience: int = 10,
+    ):
+        if not TF_AVAILABLE:
+            raise ImportError("TensorFlow 未安装，请运行：pip install tensorflow")
+
+        self.seq_length = seq_length
+        self.units = units
+        self.num_heads = num_heads
+        self.dropout = dropout
+        self.learning_rate = learning_rate
+        self.epochs = epochs
+        self.batch_size = batch_size
+        self.early_stopping_patience = early_stopping_patience
+        self.model_: Any = None
+        self.scaler_ = StandardScaler()
+        self.feature_names_: list[str] = []
+
+    def _build_model(self, input_shape: tuple[int, int]) -> keras.Model:
+        inputs = keras.layers.Input(shape=input_shape)
+
+        gru_out = keras.layers.GRU(self.units, return_sequences=True)(inputs)
+        gru_out = keras.layers.Dropout(self.dropout)(gru_out)
+
+        attention_out = keras.layers.MultiHeadAttention(
+            num_heads=self.num_heads,
+            key_dim=self.units // self.num_heads,
+            dropout=self.dropout
+        )(gru_out, gru_out)
+
+        attention_out = keras.layers.Add()([gru_out, attention_out])
+        attention_out = keras.layers.LayerNormalization()(attention_out)
+
+        pooled = keras.layers.GlobalAveragePooling1D()(attention_out)
+
+        dense = keras.layers.Dense(32, activation="relu")(pooled)
+        dense = keras.layers.Dropout(self.dropout)(dense)
+        outputs = keras.layers.Dense(1)(dense)
+
+        model = keras.Model(inputs=inputs, outputs=outputs)
+        optimizer = keras.optimizers.Adam(learning_rate=self.learning_rate)
+        model.compile(optimizer=optimizer, loss="mse", metrics=["mae"])
+        return model
+
+    def fit(self, X: pd.DataFrame, y: pd.Series) -> MultiHeadAttentionGRU:
+        from .data_pipeline import prepare_lstm_sequences
+
+        feature_cols = [col for col in X.columns if col not in ["code", "date", "name", "family_id", "is_trainable"]]
+        self.feature_names_ = feature_cols
+
+        df_train = X.copy()
+        df_train["target"] = y.values
+
+        X_seq, y_seq = prepare_lstm_sequences(df_train, feature_cols, "target", self.seq_length)
+        X_seq_scaled = self.scaler_.fit_transform(X_seq.reshape(-1, X_seq.shape[-1])).reshape(X_seq.shape)
+
+        self.model_ = self._build_model((self.seq_length, len(feature_cols)))
+
+        early_stop = keras.callbacks.EarlyStopping(
+            monitor="val_loss",
+            patience=self.early_stopping_patience,
+            restore_best_weights=True
+        )
+
+        self.model_.fit(
+            X_seq_scaled, y_seq,
+            epochs=self.epochs,
+            batch_size=self.batch_size,
+            validation_split=0.2,
+            callbacks=[early_stop],
+            verbose=0
+        )
+
+        return self
+
+    def predict(self, X: pd.DataFrame) -> np.ndarray:
+        if self.model_ is None:
+            raise RuntimeError("模型未训练")
+
+        from .data_pipeline import prepare_lstm_sequences
+
+        df_pred = X.copy()
+        df_pred["target"] = 0.0
+
+        try:
+            X_seq, _ = prepare_lstm_sequences(df_pred, self.feature_names_, "target", self.seq_length)
+        except ValueError:
+            return np.zeros(len(X))
+
+        X_seq_scaled = self.scaler_.transform(X_seq.reshape(-1, X_seq.shape[-1])).reshape(X_seq.shape)
+        predictions = self.model_.predict(X_seq_scaled, verbose=0).flatten()
+
+        full_predictions = np.zeros(len(X))
+        full_predictions[-len(predictions):] = predictions
+
+        return full_predictions
+
+
+class BidirectionalGRUModel:
+    """双向 GRU 模型"""
+
+    def __init__(
+        self,
+        seq_length: int = 20,
+        units: int = 64,
+        dropout: float = 0.2,
+        learning_rate: float = 0.001,
+        epochs: int = 50,
+        batch_size: int = 32,
+        early_stopping_patience: int = 10,
+    ):
+        if not TF_AVAILABLE:
+            raise ImportError("TensorFlow 未安装，请运行：pip install tensorflow")
+
+        self.seq_length = seq_length
+        self.units = units
+        self.dropout = dropout
+        self.learning_rate = learning_rate
+        self.epochs = epochs
+        self.batch_size = batch_size
+        self.early_stopping_patience = early_stopping_patience
+        self.model_: Any = None
+        self.scaler_ = StandardScaler()
+        self.feature_names_: list[str] = []
+
+    def _build_model(self, input_shape: tuple[int, int]) -> keras.Model:
+        model = keras.Sequential([
+            keras.layers.Bidirectional(
+                keras.layers.GRU(self.units, return_sequences=True),
+                input_shape=input_shape
+            ),
+            keras.layers.Dropout(self.dropout),
+            keras.layers.Bidirectional(
+                keras.layers.GRU(self.units // 2, return_sequences=False)
+            ),
+            keras.layers.Dropout(self.dropout),
+            keras.layers.Dense(32, activation="relu"),
+            keras.layers.Dense(1)
+        ])
+
+        optimizer = keras.optimizers.Adam(learning_rate=self.learning_rate)
+        model.compile(optimizer=optimizer, loss="mse", metrics=["mae"])
+        return model
+
+    def fit(self, X: pd.DataFrame, y: pd.Series) -> BidirectionalGRUModel:
+        from .data_pipeline import prepare_lstm_sequences
+
+        feature_cols = [col for col in X.columns if col not in ["code", "date", "name", "family_id", "is_trainable"]]
+        self.feature_names_ = feature_cols
+
+        df_train = X.copy()
+        df_train["target"] = y.values
+
+        X_seq, y_seq = prepare_lstm_sequences(df_train, feature_cols, "target", self.seq_length)
+        X_seq_scaled = self.scaler_.fit_transform(X_seq.reshape(-1, X_seq.shape[-1])).reshape(X_seq.shape)
+
+        self.model_ = self._build_model((self.seq_length, len(feature_cols)))
+
+        early_stop = keras.callbacks.EarlyStopping(
+            monitor="val_loss",
+            patience=self.early_stopping_patience,
+            restore_best_weights=True
+        )
+
+        self.model_.fit(
+            X_seq_scaled, y_seq,
+            epochs=self.epochs,
+            batch_size=self.batch_size,
+            validation_split=0.2,
+            callbacks=[early_stop],
+            verbose=0
+        )
+
+        return self
+
+    def predict(self, X: pd.DataFrame) -> np.ndarray:
+        if self.model_ is None:
+            raise RuntimeError("模型未训练")
+
+        from .data_pipeline import prepare_lstm_sequences
+
+        df_pred = X.copy()
+        df_pred["target"] = 0.0
+
+        try:
+            X_seq, _ = prepare_lstm_sequences(df_pred, self.feature_names_, "target", self.seq_length)
+        except ValueError:
+            return np.zeros(len(X))
+
+        X_seq_scaled = self.scaler_.transform(X_seq.reshape(-1, X_seq.shape[-1])).reshape(X_seq.shape)
+        predictions = self.model_.predict(X_seq_scaled, verbose=0).flatten()
+
+        full_predictions = np.zeros(len(X))
+        full_predictions[-len(predictions):] = predictions
+
+        return full_predictions
+
+
+class HierarchicalAttentionGRU:
+    """分层注意力 GRU 模型（多尺度注意力）"""
+
+    def __init__(
+        self,
+        seq_length: int = 20,
+        units: int = 64,
+        dropout: float = 0.2,
+        learning_rate: float = 0.001,
+        epochs: int = 50,
+        batch_size: int = 32,
+        early_stopping_patience: int = 10,
+    ):
+        if not TF_AVAILABLE:
+            raise ImportError("TensorFlow 未安装，请运行：pip install tensorflow")
+
+        self.seq_length = seq_length
+        self.units = units
+        self.dropout = dropout
+        self.learning_rate = learning_rate
+        self.epochs = epochs
+        self.batch_size = batch_size
+        self.early_stopping_patience = early_stopping_patience
+        self.model_: Any = None
+        self.scaler_ = StandardScaler()
+        self.feature_names_: list[str] = []
+
+    def _build_model(self, input_shape: tuple[int, int]) -> keras.Model:
+        inputs = keras.layers.Input(shape=input_shape)
+
+        gru1 = keras.layers.GRU(self.units, return_sequences=True)(inputs)
+        gru1 = keras.layers.Dropout(self.dropout)(gru1)
+
+        local_attention = keras.layers.Dense(1, activation="tanh")(gru1)
+        local_attention = keras.layers.Flatten()(local_attention)
+        local_attention = keras.layers.Activation("softmax")(local_attention)
+        local_attention = keras.layers.RepeatVector(self.units)(local_attention)
+        local_attention = keras.layers.Permute([2, 1])(local_attention)
+
+        local_context = keras.layers.multiply([gru1, local_attention])
+        local_context = keras.layers.Lambda(lambda x: keras.backend.sum(x, axis=1))(local_context)
+
+        gru2 = keras.layers.GRU(self.units, return_sequences=True)(gru1)
+        gru2 = keras.layers.Dropout(self.dropout)(gru2)
+
+        global_attention = keras.layers.Dense(1, activation="tanh")(gru2)
+        global_attention = keras.layers.Flatten()(global_attention)
+        global_attention = keras.layers.Activation("softmax")(global_attention)
+        global_attention = keras.layers.RepeatVector(self.units)(global_attention)
+        global_attention = keras.layers.Permute([2, 1])(global_attention)
+
+        global_context = keras.layers.multiply([gru2, global_attention])
+        global_context = keras.layers.Lambda(lambda x: keras.backend.sum(x, axis=1))(global_context)
+
+        combined = keras.layers.Concatenate()([local_context, global_context])
+        combined = keras.layers.Dense(self.units, activation="relu")(combined)
+        combined = keras.layers.Dropout(self.dropout)(combined)
+
+        outputs = keras.layers.Dense(1)(combined)
+
+        model = keras.Model(inputs=inputs, outputs=outputs)
+        optimizer = keras.optimizers.Adam(learning_rate=self.learning_rate)
+        model.compile(optimizer=optimizer, loss="mse", metrics=["mae"])
+        return model
+
+    def fit(self, X: pd.DataFrame, y: pd.Series) -> HierarchicalAttentionGRU:
+        from .data_pipeline import prepare_lstm_sequences
+
+        feature_cols = [col for col in X.columns if col not in ["code", "date", "name", "family_id", "is_trainable"]]
+        self.feature_names_ = feature_cols
+
+        df_train = X.copy()
+        df_train["target"] = y.values
+
+        X_seq, y_seq = prepare_lstm_sequences(df_train, feature_cols, "target", self.seq_length)
+        X_seq_scaled = self.scaler_.fit_transform(X_seq.reshape(-1, X_seq.shape[-1])).reshape(X_seq.shape)
+
+        self.model_ = self._build_model((self.seq_length, len(feature_cols)))
+
+        early_stop = keras.callbacks.EarlyStopping(
+            monitor="val_loss",
+            patience=self.early_stopping_patience,
+            restore_best_weights=True
+        )
+
+        self.model_.fit(
+            X_seq_scaled, y_seq,
+            epochs=self.epochs,
+            batch_size=self.batch_size,
+            validation_split=0.2,
+            callbacks=[early_stop],
+            verbose=0
+        )
+
+        return self
+
+    def predict(self, X: pd.DataFrame) -> np.ndarray:
         if self.model_ is None:
             raise RuntimeError("模型未训练")
 
@@ -1684,7 +2118,7 @@ class GRUTransformer:
         feature_cols = [col for col in X.columns if col not in ["code", "date", "name", "family_id", "is_trainable"]]
         self.feature_names_ = feature_cols
 
-        df_train = X.copy()
+        df_train = X[["code", "date"] + feature_cols].copy()
         df_train["target"] = y.values
 
         X_seq, y_seq = prepare_lstm_sequences(df_train, feature_cols, "target", self.seq_length)
@@ -1723,7 +2157,7 @@ class GRUTransformer:
 
         from .data_pipeline import prepare_lstm_sequences
 
-        df_pred = X.copy()
+        df_pred = X[["code", "date"] + self.feature_names_].copy()
         df_pred["target"] = 0.0
 
         try:
@@ -1860,7 +2294,7 @@ class LSTMTransformer:
         feature_cols = [col for col in X.columns if col not in ["code", "date", "name", "family_id", "is_trainable"]]
         self.feature_names_ = feature_cols
 
-        df_train = X.copy()
+        df_train = X[["code", "date"] + feature_cols].copy()
         df_train["target"] = y.values
 
         X_seq, y_seq = prepare_lstm_sequences(df_train, feature_cols, "target", self.seq_length)
@@ -1899,7 +2333,7 @@ class LSTMTransformer:
 
         from .data_pipeline import prepare_lstm_sequences
 
-        df_pred = X.copy()
+        df_pred = X[["code", "date"] + self.feature_names_].copy()
         df_pred["target"] = 0.0
 
         try:
@@ -2007,6 +2441,18 @@ def make_extended_model(
 
     if model_type == "gru":
         return GRUModel(**kwargs)
+
+    if model_type in {"bigru", "bidirectional_gru"}:
+        return BidirectionalGRUModel(**kwargs)
+
+    if model_type in {"attention_gru", "gru_attention"}:
+        return AttentionGRUModel(**kwargs)
+
+    if model_type in {"multihead_attention_gru", "multihead_gru"}:
+        return MultiHeadAttentionGRU(**kwargs)
+
+    if model_type in {"hierarchical_attention_gru", "hierarchical_gru"}:
+        return HierarchicalAttentionGRU(**kwargs)
 
     if model_type in {"bilstm", "bidirectional_lstm"}:
         return BidirectionalLSTMModel(**kwargs)

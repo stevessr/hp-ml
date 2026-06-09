@@ -69,14 +69,34 @@ def train_single_model(
     else:
         model = make_extended_model(model_type=model_type, random_state=random_state)
 
+    # 深度学习模型需要 code 和 date 列用于序列构建
+    deep_learning_models = [
+        "lstm", "gru", "bilstm", "bidirectional_lstm", "attention_lstm", "lstm_attention",
+        "multihead_attention", "multihead_lstm", "self_attention", "self_attention_lstm",
+        "hierarchical_attention", "hierarchical_lstm", "lstm_transformer", "transformer_lstm",
+        "hybrid_transformer", "transformer_xl", "transformerxl", "memory_transformer",
+        "memory_augmented_transformer", "gru_transformer", "transformer_gru",
+        "cnn_ngram", "ngram_cnn", "cnn", "tcn", "temporal_conv_net", "wavenet", "wave_net"
+    ]
+
+    needs_code_date = model_type.lower() in deep_learning_models
+
     # 训练
-    x_train = split_data.train[feature_cols]
+    if needs_code_date:
+        # 深度学习模型需要完整数据框（包含 code 和 date）
+        x_train = split_data.train[["code", "date"] + feature_cols]
+    else:
+        x_train = split_data.train[feature_cols]
+
     y_train = split_data.train[target_col].astype(float)
     model.fit(x_train, y_train)
 
     # 预测
     test_predictions = split_data.test.copy()
-    test_predictions["prediction"] = model.predict(test_predictions[feature_cols])
+    if needs_code_date:
+        test_predictions["prediction"] = model.predict(test_predictions[["code", "date"] + feature_cols])
+    else:
+        test_predictions["prediction"] = model.predict(test_predictions[feature_cols])
 
     # 评估
     metrics = evaluate_predictions(test_predictions, pred_col="prediction", target_col=target_col)

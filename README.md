@@ -4,8 +4,9 @@
 
 **🆕 新增功能**：
 - **🎯 交互式 CLI**：可视化菜单系统，一键选择模型类型、训练、导出、回测、对比（推荐使用）
+- **🚀 GRU Attention 变种**：新增 5 个 GRU 深度学习模型（双向、注意力、多头注意力、分层注意力、GRU-Transformer），训练速度比 LSTM 快 20-30%，参数量少 25-30%
 - **通达信数据源支持**：可选择使用通达信服务器直接拉取数据，作为东方财富API的可靠备选方案
-- **多模型训练与对比**：支持Prophet、LSTM、增强随机森林等，完整的数据划分管道，统一回测框架，自动生成可视化报告。详见 [多模型文档](docs/MULTI_MODEL.md)
+- **多模型训练与对比**：支持Prophet、LSTM、GRU、增强随机森林等，完整的数据划分管道，统一回测框架，自动生成可视化报告。详见 [多模型文档](docs/MULTI_MODEL.md)
 
 > 说明：输出仅用于量化研究和模型验证，不构成投资建议。
 
@@ -26,7 +27,8 @@ python -m hp_ml
 ```
 
 **CLI 功能**：
-- ✨ 可视化菜单选择模型类型（Ridge、HGB、RF、LSTM、GRU、Transformer 等 13 种模型）
+- ✨ 可视化菜单选择模型类型（Ridge、HGB、RF、LSTM、GRU、Transformer 等 18+ 种模型）
+- 🚀 新增 GRU Attention 变种：双向 GRU、注意力 GRU、多头注意力 GRU、分层注意力 GRU、GRU-Transformer
 - 🎯 选择操作：训练、导出通达信、回测、模型对比、完整流程
 - ⚙️ 交互式配置参数（数据源、日期范围、预测周期等）
 - 📊 自动生成报告和图表
@@ -297,6 +299,72 @@ python scripts/test_tdx_client.py
 | 稳定性 | 可能限流 | 更稳定 |
 | 速度 | 中等 | 较快 |
 | 复权 | 支持 | 原始数据 |
+
+## 深度学习模型
+
+项目支持多种深度学习模型，包括 LSTM、GRU 及其各种 Attention 变种。详细文档：[GRU_ATTENTION_MODELS.md](GRU_ATTENTION_MODELS.md)
+
+### 可用模型
+
+#### 基础序列模型
+- **LSTM**: 长短期记忆网络，适合时序预测
+- **GRU**: 门控循环单元，比 LSTM 更快更轻量
+- **双向 LSTM**: 捕捉双向时序依赖
+- **双向 GRU**: GRU 的双向版本，训练速度快
+
+#### Attention 变种
+- **注意力 LSTM**: 单头注意力机制
+- **注意力 GRU**: 更高效的 GRU 注意力版本 ⭐推荐
+- **多头注意力 LSTM**: 多头注意力，更强表达能力
+- **多头注意力 GRU**: GRU 版本，训练更快 ⭐推荐
+- **分层注意力 GRU**: 双层注意力，捕捉多尺度模式 ⭐推荐
+
+#### 混合架构
+- **LSTM-Transformer**: LSTM + Transformer 混合
+- **GRU-Transformer**: GRU + Transformer 混合，更高效 ⭐推荐
+- **Transformer XL**: 扩展 Transformer 模型
+
+### GRU vs LSTM
+
+| 特性 | GRU | LSTM |
+|------|-----|------|
+| 训练速度 | 快 20-30% | 基准 |
+| 参数量 | 少 25-30% | 基准 |
+| 内存占用 | 更低 | 基准 |
+| 小数据集 | 更不易过拟合 | 容易过拟合 |
+| 长序列 | 适中 | 更强 |
+| 推荐场景 | 快速迭代、生产部署 | 极长序列 |
+
+**推荐**: 优先使用 GRU 变种，特别是注意力 GRU、多头注意力 GRU 和 GRU-Transformer
+
+### 使用示例
+
+通过 CLI:
+```bash
+python -m hp_ml.cli
+# 选择 "注意力 GRU" 或 "多头注意力 GRU"
+```
+
+通过代码:
+```python
+from hp_ml.models_extended import make_extended_model
+
+# 创建注意力 GRU
+model = make_extended_model("attention_gru", seq_length=20, units=64)
+
+# 训练
+model.fit(X_train, y_train)
+
+# 预测
+predictions = model.predict(X_test)
+```
+
+### 快速开始
+
+运行示例:
+```bash
+python examples/gru_attention_quickstart.py
+```
 
 ### 指数族定义
 代码中仅用于分类；候选 ETF 仍来自实时 ETF 列表扫描。

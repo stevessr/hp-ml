@@ -78,9 +78,21 @@ MODEL_CONFIGS = {
         "module": "multi_model",
         "export_support": "知识蒸馏",
     },
+    "双向 GRU": {
+        "key": "bigru",
+        "description": "双向 GRU，捕捉前后时序依赖",
+        "module": "multi_model",
+        "export_support": "知识蒸馏",
+    },
     "注意力 LSTM": {
         "key": "attention_lstm",
         "description": "带注意力机制的 LSTM",
+        "module": "multi_model",
+        "export_support": "知识蒸馏",
+    },
+    "注意力 GRU": {
+        "key": "attention_gru",
+        "description": "带注意力机制的 GRU，更高效",
         "module": "multi_model",
         "export_support": "知识蒸馏",
     },
@@ -90,9 +102,27 @@ MODEL_CONFIGS = {
         "module": "multi_model",
         "export_support": "知识蒸馏",
     },
+    "多头注意力 GRU": {
+        "key": "multihead_attention_gru",
+        "description": "多头注意力机制 GRU，更高效",
+        "module": "multi_model",
+        "export_support": "知识蒸馏",
+    },
+    "分层注意力 GRU": {
+        "key": "hierarchical_attention_gru",
+        "description": "分层注意力 GRU，捕捉多尺度模式",
+        "module": "multi_model",
+        "export_support": "知识蒸馏",
+    },
     "Transformer LSTM 混合": {
         "key": "lstm_transformer",
         "description": "LSTM + Transformer 混合架构",
+        "module": "multi_model",
+        "export_support": "知识蒸馏",
+    },
+    "Transformer GRU 混合": {
+        "key": "gru_transformer",
+        "description": "GRU + Transformer 混合架构，更高效",
         "module": "multi_model",
         "export_support": "知识蒸馏",
     },
@@ -148,7 +178,7 @@ def print_banner():
 ║                                                           ║
 ║        HP-ML 交互式 CLI - ETF 量化训练工具                ║
 ║                                                           ║
-║  支持模型：Ridge, HGB, RF, Prophet, LSTM                  ║
+║  支持模型：Ridge, HGB, RF, Prophet, LSTM, GRU + Attention║
 ║  功能：训练 | 导出通达信 | 回测 | 对比                    ║
 ║                                                           ║
 ╚═══════════════════════════════════════════════════════════╝
@@ -320,9 +350,10 @@ def execute_training(model_config: dict, params: dict):
 
     # 扩展模型列表（需要使用 multi_model_train）
     extended_models = [
-        'enhanced_rf', 'prophet', 'lstm', 'gru', 'bilstm',
-        'attention_lstm', 'multihead_attention', 'lstm_transformer',
-        'transformer_xl', 'memory_transformer', 'gru_transformer'
+        'enhanced_rf', 'prophet', 'lstm', 'gru', 'bilstm', 'bigru',
+        'attention_lstm', 'attention_gru', 'multihead_attention', 'multihead_attention_gru',
+        'hierarchical_attention_gru', 'lstm_transformer', 'gru_transformer',
+        'transformer_xl', 'memory_transformer'
     ]
 
     if model_config['key'] == 'multi':
@@ -332,9 +363,11 @@ def execute_training(model_config: dict, params: dict):
         # 所有可用模型列表
         all_models = [
             "ridge", "hgb", "rf", "enhanced_rf",
-            "prophet", "lstm", "gru", "bilstm",
-            "attention_lstm", "multihead_attention",
-            "lstm_transformer", "transformer_xl"
+            "prophet", "lstm", "gru", "bilstm", "bigru",
+            "attention_lstm", "attention_gru",
+            "multihead_attention", "multihead_attention_gru",
+            "hierarchical_attention_gru",
+            "lstm_transformer", "gru_transformer", "transformer_xl"
         ]
 
         models_to_train = questionary.checkbox(
