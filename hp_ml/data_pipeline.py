@@ -40,7 +40,7 @@ def time_series_split(
         DataSplit: 划分后的数据集
     """
     if abs(train_ratio + val_ratio + test_ratio - 1.0) > 1e-6:
-        raise ValueError(f"比例之和必须为1，当前为 {train_ratio + val_ratio + test_ratio}")
+        raise ValueError(f"比例之和必须为 1，当前为 {train_ratio + val_ratio + test_ratio}")
 
     trainable = panel[panel["is_trainable"] & panel[target_col].notna()].copy()
     if trainable.empty:
@@ -48,7 +48,7 @@ def time_series_split(
 
     dates = pd.Series(pd.to_datetime(trainable["date"].unique())).sort_values().reset_index(drop=True)
     if len(dates) < 30:
-        raise RuntimeError(f"可用日期太少，无法划分: {len(dates)} 天")
+        raise RuntimeError(f"可用日期太少，无法划分：{len(dates)} 天")
 
     n_dates = len(dates)
     train_end_idx = int(n_dates * train_ratio)
@@ -142,7 +142,7 @@ def prepare_lstm_sequences(
         seq_length: 序列长度
 
     Returns:
-        (X, y): X 的形状为 (样本数, seq_length, 特征数)，y 的形状为 (样本数,)
+        (X, y): X 的形状为 (样本数，seq_length, 特征数)，y 的形状为 (样本数，)
     """
     X_list = []
     y_list = []

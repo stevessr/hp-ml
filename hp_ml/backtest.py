@@ -34,7 +34,7 @@ def calculate_drawdown(equity_curve: pd.Series) -> tuple[float, pd.Series]:
         equity_curve: 权益曲线
 
     Returns:
-        (最大回撤, 回撤序列)
+        (最大回撤，回撤序列)
     """
     cummax = equity_curve.cummax()
     drawdown = (equity_curve - cummax) / cummax
@@ -110,7 +110,7 @@ def backtest_strategy(
         transaction_cost: 交易成本（双边）
 
     Returns:
-        (回测指标, 每日收益详情)
+        (回测指标，每日收益详情)
     """
     if predictions_df.empty:
         raise ValueError("预测数据为空")
@@ -118,7 +118,7 @@ def backtest_strategy(
     required_cols = ["date", "code", pred_col, target_col]
     missing = [c for c in required_cols if c not in predictions_df.columns]
     if missing:
-        raise ValueError(f"缺少必需列: {missing}")
+        raise ValueError(f"缺少必需列：{missing}")
 
     daily_returns = []
     trade_details = []
@@ -226,7 +226,7 @@ def compare_models_backtest(
     对比多个模型的回测结果
 
     Args:
-        model_predictions: {模型名称: 预测数据框} 字典
+        model_predictions: {模型名称：预测数据框} 字典
         target_col: 实际收益列名
         **backtest_kwargs: 传递给 backtest_strategy 的参数
 
@@ -256,7 +256,7 @@ def compare_models_backtest(
                 "total_trades": metrics.total_trades,
             })
         except Exception as e:
-            print(f"模型 {model_name} 回测失败: {e}")
+            print(f"模型 {model_name} 回测失败：{e}")
             continue
 
     if not results:

@@ -7,7 +7,7 @@
 - [688531 日联科技](05_688531_日联科技_shareholder_composition.md)
 - [600183 生益科技](06_600183_生益科技_shareholder_composition.md)
 - [300408 三环集团](07_300408_三环集团_shareholder_composition.md)
-- [000725 京东方A](08_000725_京东方A_shareholder_composition.md)
+- [000725 京东方 A](08_000725_京东方A_shareholder_composition.md)
 - [603800 洪田股份](09_603800_洪田股份_shareholder_composition.md)
 - [600487 亨通光电](10_600487_亨通光电_shareholder_composition.md)
 - [300308 中际旭创](11_300308_中际旭创_shareholder_composition.md)

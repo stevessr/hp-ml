@@ -56,14 +56,14 @@ full_panel['Market_Mean_Next'] = full_panel.groupby(full_panel.index)['Next_Retu
 full_panel['Target'] = (full_panel['Next_Return'] > full_panel['Market_Mean_Next']).astype(int)
 full_panel = full_panel.dropna()
 
-# 4. 划分 2025 年底之前为训练集，2026年为纯净盲测集
+# 4. 划分 2025 年底之前为训练集，2026 年为纯净盲测集
 CUTOFF_DATE = pd.to_datetime('2025-12-31')
 panel_train = full_panel[full_panel.index <= CUTOFF_DATE]
 panel_test = full_panel[full_panel.index > CUTOFF_DATE]
 
 print(f"📊 截面多因子大面板构建完毕！")
-print(f" ├─ 🏛️ 历史训练集规模: {len(panel_train)} 行特征样本")
-print(f" └─ 🎯 2026纯净盲测空间: {len(panel_test)} 行资产样本")
+print(f" ├─ 🏛️ 历史训练集规模：{len(panel_train)} 行特征样本")
+print(f" └─ 🎯 2026 纯净盲测空间：{len(panel_test)} 行资产样本")
 
 # 5. 训练通用横向截面 Alpha 分类器
 print("🤖 正在利用全历史截面样本训练通用 Alpha 决策树...")
@@ -94,7 +94,7 @@ for date in test_dates:
     # 🏎️ 终极配置核心：无视绝对概率偏误，每日强行锁定跑赢胜率最高的 Top 2 成分股满仓
     top_2_assets = day_results.sort_values(by='Alpha_Score', ascending=False).head(2)
     
-    # 等权重（各50%）计算策略今日收益
+    # 等权重（各 50%）计算策略今日收益
     strat_day_ret = top_2_assets['Daily_Return'].mean()
     portfolio_returns.append(strat_day_ret)
 
@@ -123,14 +123,14 @@ print("👑 绝地反击：《全要素通用面板 Alpha 排序轮动组合》�
 print("===============================================================================================")
 print(f"{'策略组合模式':<25}{'总收益率':<12}{'年化收益':<12}{'年化波动':<12}{'夏普比率':<12}{'最大回撤':<12}")
 print("-"*95)
-print(f"{'传统等权被动资配(2026基准)':<20}{b_tot:>10.2%}{b_ann:>12.2%}{b_vol:>12.2%}{b_sha:>12.2f}{b_dd:>12.2%}")
+print(f"{'传统等权被动资配 (2026 基准)':<20}{b_tot:>10.2%}{b_ann:>12.2%}{b_vol:>12.2%}{b_sha:>12.2f}{b_dd:>12.2%}")
 print(f"{'🔥 ML 截面阿尔法 Top-2 动态增强':<16}{s_tot:>10.2%}{s_ann:>12.2%}{s_vol:>12.2%}{s_sha:>12.2f}{s_dd:>12.2%}")
 print("===============================================================================================")
 
 importances = universal_ranker.feature_importances_
-print("🧠 通用截面排序大模型多多因子贡献度分析:")
+print("🧠 通用截面排序大模型多多因子贡献度分析：")
 for feat, imp in zip(features, importances):
-    print(f" ├─ 特征名称: {feat:<12} | 截面树分裂贡献度: {imp:.4f}")
+    print(f" ├─ 特征名称：{feat:<12} | 截面树分裂贡献度：{imp:.4f}")
 
 perf_df.to_csv(os.path.join(reports_dir, "ml_ultimate_rank_report.csv"))
 print(f"\n💾 截面排序轮动终极回测明细已导出至 reports/ml_ultimate_rank_report.csv\n")

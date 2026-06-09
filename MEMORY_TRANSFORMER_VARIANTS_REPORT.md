@@ -18,10 +18,10 @@
 - **核心思想**: LSTM 编码器 + Transformer 自注意力 + 注意力池化
 - **记忆机制**: LSTM 的门控记忆 + Transformer 的全局注意力
 - **参数配置**: 
-  - LSTM 单元数: 64
-  - 注意力头数: 4
-  - Transformer 块数: 2
-  - 序列长度: 20
+  - LSTM 单元数：64
+  - 注意力头数：4
+  - Transformer 块数：2
+  - 序列长度：20
 
 #### 2. GRU-Transformer（轻量混合架构）
 - **核心思想**: GRU 编码器替代 LSTM，减少参数

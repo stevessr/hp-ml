@@ -27,18 +27,18 @@ def test_all_chart_types():
             title="测试横向柱状图",
             subtitle="正负值混合测试",
             rows=[
-                ("项目A", 0.15),
-                ("项目B", -0.08),
-                ("项目C", 0.22),
-                ("项目D", -0.05),
-                ("项目E", 0.18),
+                ("项目 A", 0.15),
+                ("项目 B", -0.08),
+                ("项目 C", 0.22),
+                ("项目 D", -0.05),
+                ("项目 E", 0.18),
             ],
             value_kind="pct",
         )
         print("✓ 横向柱状图测试通过")
         tests_passed += 1
     except Exception as e:
-        print(f"✗ 横向柱状图测试失败: {e}")
+        print(f"✗ 横向柱状图测试失败：{e}")
         tests_failed += 1
 
     # Test 2: 纵向柱状图
@@ -59,7 +59,7 @@ def test_all_chart_types():
         print("✓ 纵向柱状图测试通过")
         tests_passed += 1
     except Exception as e:
-        print(f"✗ 纵向柱状图测试失败: {e}")
+        print(f"✗ 纵向柱状图测试失败：{e}")
         tests_failed += 1
 
     # Test 3: 饼图
@@ -79,7 +79,7 @@ def test_all_chart_types():
         print("✓ 饼图测试通过")
         tests_passed += 1
     except Exception as e:
-        print(f"✗ 饼图测试失败: {e}")
+        print(f"✗ 饼图测试失败：{e}")
         tests_failed += 1
 
     # Test 4: 折线图
@@ -89,13 +89,13 @@ def test_all_chart_types():
             title="测试折线图",
             subtitle="多系列曲线测试",
             series={
-                "系列A": [
+                "系列 A": [
                     ("2020-Q1", 0.05),
                     ("2020-Q2", 0.08),
                     ("2020-Q3", 0.12),
                     ("2020-Q4", 0.10),
                 ],
-                "系列B": [
+                "系列 B": [
                     ("2020-Q1", 0.03),
                     ("2020-Q2", 0.06),
                     ("2020-Q3", 0.09),
@@ -107,7 +107,7 @@ def test_all_chart_types():
         print("✓ 折线图测试通过")
         tests_passed += 1
     except Exception as e:
-        print(f"✗ 折线图测试失败: {e}")
+        print(f"✗ 折线图测试失败：{e}")
         tests_failed += 1
 
     # Test 5: 边界情况 - 空数据
@@ -122,7 +122,7 @@ def test_all_chart_types():
         print("✓ 空数据处理测试通过")
         tests_passed += 1
     except Exception as e:
-        print(f"✗ 空数据处理测试失败: {e}")
+        print(f"✗ 空数据处理测试失败：{e}")
         tests_failed += 1
 
     # Test 6: 边界情况 - 单个数据点
@@ -137,13 +137,13 @@ def test_all_chart_types():
         print("✓ 单点数据测试通过")
         tests_passed += 1
     except Exception as e:
-        print(f"✗ 单点数据测试失败: {e}")
+        print(f"✗ 单点数据测试失败：{e}")
         tests_failed += 1
 
     # 输出总结
     print("\n" + "=" * 50)
-    print(f"测试完成: {tests_passed} 通过, {tests_failed} 失败")
-    print(f"测试文件保存在: {test_dir}")
+    print(f"测试完成：{tests_passed} 通过，{tests_failed} 失败")
+    print(f"测试文件保存在：{test_dir}")
     print("=" * 50)
 
     return tests_failed == 0

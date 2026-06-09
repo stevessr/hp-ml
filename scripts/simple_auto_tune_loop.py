@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""简化版自动化测试循环 - 使用现有ETF预测数据
+"""简化版自动化测试循环 - 使用现有 ETF 预测数据
 
-直接使用已有的ETF预测，只循环测试不同的策略配置
+直接使用已有的 ETF 预测，只循环测试不同的策略配置
 """
 from __future__ import annotations
 
@@ -37,17 +37,17 @@ def main() -> int:
     print("\n" + "="*80)
     print("🎯 简化版自动测试循环")
     print("="*80)
-    print(f"📅 回测期间: {args.start} ~ {args.end}")
-    print(f"🎚️  最小超额收益: {args.min_excess:.2%}")
-    print(f"🔬 最多模型配置: {args.max_model_configs}")
+    print(f"📅 回测期间：{args.start} ~ {args.end}")
+    print(f"🎚️  最小超额收益：{args.min_excess:.2%}")
+    print(f"🔬 最多模型配置：{args.max_model_configs}")
     print("="*80 + "\n")
 
     # 检查必需的数据
-    data_dir = ROOT / "data" / "topic2_broad_base"  # 使用topic2目录，包含正确格式的daily.csv文件
+    data_dir = ROOT / "data" / "topic2_broad_base"  # 使用 topic2 目录，包含正确格式的 daily.csv 文件
     sentiment_path = ROOT / "data" / "alternative_data" / "google_trends_sentiment.csv"
 
     if not data_dir.exists():
-        print(f"❌ 数据目录不存在: {data_dir}")
+        print(f"❌ 数据目录不存在：{data_dir}")
         print(f"   尝试查找其他位置...")
         # 尝试其他可能的位置
         alt_dirs = [
@@ -57,13 +57,13 @@ def main() -> int:
         for alt_dir in alt_dirs:
             if alt_dir.exists():
                 data_dir = alt_dir
-                print(f"✅ 找到数据目录: {data_dir}")
+                print(f"✅ 找到数据目录：{data_dir}")
                 break
         else:
             return 1
 
     if not sentiment_path.exists():
-        print(f"❌ 情绪数据不存在: {sentiment_path}")
+        print(f"❌ 情绪数据不存在：{sentiment_path}")
         print(f"   尝试查找其他位置...")
         # 尝试其他可能的位置
         alt_sentiment = [
@@ -73,13 +73,13 @@ def main() -> int:
         for alt_sent in alt_sentiment:
             if alt_sent.exists():
                 sentiment_path = alt_sent
-                print(f"✅ 找到情绪数据: {sentiment_path}")
+                print(f"✅ 找到情绪数据：{sentiment_path}")
                 break
         else:
             return 1
 
-    print(f"✅ 数据目录: {data_dir}")
-    print(f"✅ 情绪数据: {sentiment_path}\n")
+    print(f"✅ 数据目录：{data_dir}")
+    print(f"✅ 情绪数据：{sentiment_path}\n")
 
     try:
         print("🚀 开始自动调优...\n")
@@ -96,12 +96,12 @@ def main() -> int:
 
         print("\n" + "="*80)
         if result.success:
-            print("🎊 成功！找到跑赢baseline的策略！")
+            print("🎊 成功！找到跑赢 baseline 的策略！")
         else:
-            print("😔 未找到跑赢baseline的策略")
+            print("😔 未找到跑赢 baseline 的策略")
         print("="*80)
 
-        print(f"\n📊 最佳策略指标:")
+        print(f"\n📊 最佳策略指标：")
         for key, value in result.metrics.items():
             if isinstance(value, float):
                 print(f"  {key}: {value:.4f}")
@@ -124,10 +124,10 @@ def main() -> int:
             sentiment_path=sentiment_path,
         )
 
-        print(f"\n💾 输出文件:")
-        print(f"  日度收益: {daily_out}")
-        print(f"  所有试验: {trials_out}")
-        print(f"  摘要: {summary_out}\n")
+        print(f"\n💾 输出文件：")
+        print(f"  日度收益：{daily_out}")
+        print(f"  所有试验：{trials_out}")
+        print(f"  摘要：{summary_out}\n")
 
         # 检查最终性能
         if daily_out.exists():
@@ -138,18 +138,18 @@ def main() -> int:
                 benchmark_cum = float(last.get("Benchmark", 0))
                 excess = strategy_cum - benchmark_cum
 
-                print(f"🏁 最终结果:")
-                print(f"  策略累计收益: {strategy_cum:.4%}")
-                print(f"  基准累计收益: {benchmark_cum:.4%}")
-                print(f"  超额收益: {excess:.4%}")
-                print(f"  {'✅ 跑赢baseline!' if excess >= args.min_excess else '❌ 未跑赢baseline'}\n")
+                print(f"🏁 最终结果：")
+                print(f"  策略累计收益：{strategy_cum:.4%}")
+                print(f"  基准累计收益：{benchmark_cum:.4%}")
+                print(f"  超额收益：{excess:.4%}")
+                print(f"  {'✅ 跑赢 baseline!' if excess >= args.min_excess else '❌ 未跑赢 baseline'}\n")
 
                 return 0 if excess >= args.min_excess else 1
 
         return 0 if result.success else 1
 
     except Exception as exc:
-        print(f"\n❌ 错误: {exc}")
+        print(f"\n❌ 错误：{exc}")
         import traceback
         traceback.print_exc()
         return 1

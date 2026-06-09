@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""增强的时间序列交叉验证 - 用于验证高级模型是否达到80%准确度"""
+"""增强的时间序列交叉验证 - 用于验证高级模型是否达到 80% 准确度"""
 from __future__ import annotations
 
 import argparse
@@ -105,7 +105,7 @@ def evaluate_split(
             y_pred_train = model.predict(X_train)
             y_pred_test = model.predict(X_test)
     except Exception as e:
-        return {"error": f"预测失败: {e}"}
+        return {"error": f"预测失败：{e}"}
 
     # 计算指标
     train_accuracy = np.mean((y_train >= 0) == (y_pred_train >= 0))
@@ -153,14 +153,14 @@ def run_enhanced_cv(
     with open(model_path, 'rb') as f:
         model_package = pickle.load(f)
 
-    print(f"  ✓ 模型类型: {model_package['model_type']}")
-    print(f"  ✓ 特征数量: {len(model_package['feature_cols'])}")
+    print(f"  ✓ 模型类型：{model_package['model_type']}")
+    print(f"  ✓ 特征数量：{len(model_package['feature_cols'])}")
 
     print("\n📊 加载数据...")
     panel_df = pd.read_csv(panel_path)
     panel_df = panel_df[panel_df[target_col].notna()]
-    print(f"  ✓ 数据行数: {len(panel_df)}")
-    print(f"  ✓ 日期范围: {panel_df['date'].min()} ~ {panel_df['date'].max()}")
+    print(f"  ✓ 数据行数：{len(panel_df)}")
+    print(f"  ✓ 日期范围：{panel_df['date'].min()} ~ {panel_df['date'].max()}")
 
     print(f"\n⏱️ 生成 {n_splits} 个时间切分...")
     splits = generate_time_splits(panel_df, n_splits)
@@ -187,7 +187,7 @@ def run_enhanced_cv(
         if "error" not in result:
             result['split_idx'] = split_idx
             results.append(result)
-            print(f"  ✓ 测试准确率: {result['test_accuracy']:.4f} ({result['test_accuracy']*100:.2f}%)")
+            print(f"  ✓ 测试准确率：{result['test_accuracy']:.4f} ({result['test_accuracy']*100:.2f}%)")
         else:
             print(f"  ✗ {result['error']}")
 
@@ -221,17 +221,17 @@ def main() -> int:
     print("\n" + "="*80)
     print("🎯 增强的时间序列交叉验证")
     print("="*80)
-    print(f"📦 模型: {args.model}")
-    print(f"📁 数据: {args.panel}")
-    print(f"🔢 切分数: {args.n_splits}")
+    print(f"📦 模型：{args.model}")
+    print(f"📁 数据：{args.panel}")
+    print(f"🔢 切分数：{args.n_splits}")
     print("="*80 + "\n")
 
     if not args.model.exists():
-        print(f"❌ 模型文件不存在: {args.model}")
+        print(f"❌ 模型文件不存在：{args.model}")
         return 1
 
     if not args.panel.exists():
-        print(f"❌ 数据文件不存在: {args.panel}")
+        print(f"❌ 数据文件不存在：{args.panel}")
         return 1
 
     try:
@@ -252,33 +252,33 @@ def main() -> int:
         with open(args.output, 'w', encoding='utf-8') as f:
             json.dump(output_data, f, indent=2, ensure_ascii=False)
 
-        print(f"💾 结果已保存: {args.output}")
+        print(f"💾 结果已保存：{args.output}")
 
         # 显示汇总
         print("\n" + "="*80)
         print("📊 交叉验证结果")
         print("="*80)
-        print(f"\n模型类型: {summary['model_type']}")
-        print(f"切分数量: {summary['n_splits']}")
-        print(f"\n测试集准确率:")
-        print(f"  均值: {summary['mean_test_accuracy']:.4f} ({summary['mean_test_accuracy']*100:.2f}%)")
-        print(f"  标准差: {summary['std_test_accuracy']:.4f}")
-        print(f"  最小值: {summary['min_test_accuracy']:.4f} ({summary['min_test_accuracy']*100:.2f}%)")
-        print(f"  最大值: {summary['max_test_accuracy']:.4f} ({summary['max_test_accuracy']*100:.2f}%)")
-        print(f"  中位数: {summary['median_test_accuracy']:.4f} ({summary['median_test_accuracy']*100:.2f}%)")
+        print(f"\n模型类型：{summary['model_type']}")
+        print(f"切分数量：{summary['n_splits']}")
+        print(f"\n测试集准确率：")
+        print(f"  均值：{summary['mean_test_accuracy']:.4f} ({summary['mean_test_accuracy']*100:.2f}%)")
+        print(f"  标准差：{summary['std_test_accuracy']:.4f}")
+        print(f"  最小值：{summary['min_test_accuracy']:.4f} ({summary['min_test_accuracy']*100:.2f}%)")
+        print(f"  最大值：{summary['max_test_accuracy']:.4f} ({summary['max_test_accuracy']*100:.2f}%)")
+        print(f"  中位数：{summary['median_test_accuracy']:.4f} ({summary['median_test_accuracy']*100:.2f}%)")
 
         if summary['target_achieved']:
             print(f"\n🎉 ✅ 目标达成！平均准确率 >= 80%")
         else:
             gap = 0.80 - summary['mean_test_accuracy']
-            print(f"\n⚠️ 未达标：距离80%目标还差 {gap*100:.2f}%")
+            print(f"\n⚠️ 未达标：距离 80% 目标还差 {gap*100:.2f}%")
 
         print("="*80 + "\n")
 
         return 0 if summary['target_achieved'] else 1
 
     except Exception as e:
-        print(f"\n❌ 错误: {e}")
+        print(f"\n❌ 错误：{e}")
         import traceback
         traceback.print_exc()
         return 1

@@ -14,9 +14,9 @@ from hp_ml.stock_deep_dive import (
 def test_select_etf_signals_keeps_positive_and_top_ranked_rows():
     predictions = pd.DataFrame(
         [
-            {"code": "510500", "name": "中证500ETF", "family_id": "CSI_500", "pred_fwd_ret_5": 0.01, "pred_score_rank": 2},
-            {"code": "510300", "name": "沪深300ETF", "family_id": "CSI_300", "pred_fwd_ret_5": -0.02, "pred_score_rank": 1},
-            {"code": "512100", "name": "中证1000ETF", "family_id": "CSI_1000", "pred_fwd_ret_5": -0.03, "pred_score_rank": 3},
+            {"code": "510500", "name": "中证 500ETF", "family_id": "CSI_500", "pred_fwd_ret_5": 0.01, "pred_score_rank": 2},
+            {"code": "510300", "name": "沪深 300ETF", "family_id": "CSI_300", "pred_fwd_ret_5": -0.02, "pred_score_rank": 1},
+            {"code": "512100", "name": "中证 1000ETF", "family_id": "CSI_1000", "pred_fwd_ret_5": -0.03, "pred_score_rank": 3},
         ]
     )
 
@@ -80,7 +80,7 @@ def test_writes_per_company_shareholder_composition_report(tmp_path):
                 "stock_name": "东方财富",
                 "family_ids": "CSI_300",
                 "source_etf_codes": "510300",
-                "source_etf_names": "沪深300ETF",
+                "source_etf_names": "沪深 300ETF",
                 "mechanism_tags": "成交额放大;机构股东参与",
                 "industry": "证券",
                 "region": "上海市",

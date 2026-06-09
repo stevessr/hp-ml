@@ -68,7 +68,7 @@ Input → 多个块(Block):
 **关键特性**:
 - 门控激活单元
 - 深度膨胀卷积
-- Skip连接汇聚多层信息
+- Skip 连接汇聚多层信息
 - 源自语音生成
 
 ---
@@ -137,7 +137,7 @@ Input → 多个块(Block):
 - TCN: #4
 - WaveNet: #5
 
-**结论**: N-Gram 卷积架构在短序列（20步）金融数据上表现卓越
+**结论**: N-Gram 卷积架构在短序列（20 步）金融数据上表现卓越
 
 ### 4. 不同架构对比
 
@@ -314,7 +314,7 @@ gated = Multiply()([tanh_out, sigmoid_out])
 
 ### 性能统计总表
 
-| 指标 | N-Gram CNN | Memory Transformer | Baseline | 提升(vs Baseline) |
+| 指标 | N-Gram CNN | Memory Transformer | Baseline | 提升 (vs Baseline) |
 |------|-----------|-------------------|----------|-------------------|
 | 准确率 | 67.86% | 67.78% | 53.56% | +26.7% |
 | Spearman IC | 0.3014 | 0.4000 | 0.0359 | +739% |

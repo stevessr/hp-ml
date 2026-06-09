@@ -264,7 +264,7 @@ def main() -> int:
     args = parser.parse_args()
 
     if not args.panel.exists():
-        print(f"❌ 训练面板文件不存在: {args.panel}")
+        print(f"❌ 训练面板文件不存在：{args.panel}")
         return 1
 
     summary = run_ensemble(args.panel, args.target, args.valid_ratio, args.output_dir)

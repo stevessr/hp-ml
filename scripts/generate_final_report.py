@@ -136,7 +136,7 @@ def create_final_comparison(df, output_dir):
 
     output_path = output_dir / "final_all_models_comparison.svg"
     plt.savefig(output_path, dpi=300, bbox_inches='tight')
-    print(f"📊 最终综合对比图已保存: {output_path}")
+    print(f"📊 最终综合对比图已保存：{output_path}")
 
     plt.close()
 
@@ -154,7 +154,7 @@ def print_final_summary(df):
         emoji = "🏆" if i == 1 else "🥈" if i == 2 else "🥉" if i == 3 else "  "
         cat_badge = "[NG]" if row.category == "N-Gram CNN" else "[MT]" if row.category == "Memory Transformer" else "[BL]"
         print(f"{emoji} {i:2d}. {cat_badge} {row.model.upper():25s} - "
-              f"准确率: {row.test_directional_accuracy:.4f}, "
+              f"准确率：{row.test_directional_accuracy:.4f}, "
               f"IC: {row.test_spearman_ic:.4f}, "
               f"RMSE: {row.test_rmse:.6f}")
 
@@ -167,11 +167,11 @@ def print_final_summary(df):
         cat_df = df_sorted[df_sorted['category'] == category]
         if len(cat_df) > 0:
             print(f"\n{category}:")
-            print(f"  模型数量: {len(cat_df)}")
-            print(f"  平均准确率: {cat_df['test_directional_accuracy'].mean():.4f}")
+            print(f"  模型数量：{len(cat_df)}")
+            print(f"  平均准确率：{cat_df['test_directional_accuracy'].mean():.4f}")
             print(f"  平均 IC: {cat_df['test_spearman_ic'].mean():.4f}")
             print(f"  平均 RMSE: {cat_df['test_rmse'].mean():.6f}")
-            print(f"  最佳模型: {cat_df.iloc[0]['model'].upper()} ({cat_df.iloc[0]['test_directional_accuracy']:.4f})")
+            print(f"  最佳模型：{cat_df.iloc[0]['model'].upper()} ({cat_df.iloc[0]['test_directional_accuracy']:.4f})")
 
     # Top 5 统计
     print("\n" + "="*80)
@@ -183,7 +183,7 @@ def print_final_summary(df):
     mt_in_top5 = len(top5[top5['category'] == 'Memory Transformer'])
     bl_in_top5 = len(top5[top5['category'] == 'Baseline RNN'])
 
-    print(f"\nTop 5 构成:")
+    print(f"\nTop 5 构成：")
     print(f"  N-Gram CNN: {ng_in_top5} 个")
     print(f"  Memory Transformer: {mt_in_top5} 个")
     print(f"  Baseline RNN: {bl_in_top5} 个")
@@ -215,7 +215,7 @@ def main():
     output_path = REPORTS_DIR / "final_all_models_comparison.csv"
     df_sorted = df.sort_values('test_directional_accuracy', ascending=False)
     df_sorted.to_csv(output_path, index=False)
-    print(f"\n💾 最终对比表格已保存: {output_path}")
+    print(f"\n💾 最终对比表格已保存：{output_path}")
 
     print("\n✅ 最终综合报告生成完成！")
     return 0

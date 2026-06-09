@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """在扩展特征数据上测试模型
 
-验证新特征是否能突破68.08%天花板
+验证新特征是否能突破 68.08% 天花板
 """
 from __future__ import annotations
 
@@ -17,7 +17,7 @@ sys.path.insert(0, str(ROOT))
 
 from hp_ml.config import PROCESSED_DIR, REPORTS_DIR
 
-# 导入多尺度LSTM（我们最好的模型）
+# 导入多尺度 LSTM（我们最好的模型）
 from scripts.test_innovative_architectures import MultiScaleLSTM
 
 
@@ -36,7 +36,7 @@ def main() -> int:
     feature_cols = [c for c in df.columns if c not in exclude_cols
                    and not c.startswith('fwd_')]
 
-    print(f"特征数: {len(feature_cols)} (原38 → 现{len(feature_cols)})")
+    print(f"特征数：{len(feature_cols)} (原 38 → 现{len(feature_cols)})")
 
     # 切分数据
     df = df.sort_values("date")
@@ -48,14 +48,14 @@ def main() -> int:
     train_df = trainable[trainable["date"] < split_date].copy()
     test_df = trainable[trainable["date"] >= split_date].copy()
 
-    print(f"训练集: {len(train_df)} 行")
-    print(f"测试集: {len(test_df)} 行\n")
+    print(f"训练集：{len(train_df)} 行")
+    print(f"测试集：{len(test_df)} 行\n")
 
     results = []
 
-    # 测试多尺度LSTM（之前最好的模型）
+    # 测试多尺度 LSTM（之前最好的模型）
     print("="*80)
-    print("🔧 训练多尺度LSTM (67特征)...")
+    print("🔧 训练多尺度 LSTM (67 特征)...")
     print("="*80)
 
     model = MultiScaleLSTM(
@@ -75,7 +75,7 @@ def main() -> int:
     ic = float(spearmanr(pred, actual)[0])
     rmse = float(np.sqrt(np.mean((pred - actual) ** 2)))
 
-    print(f"  准确率: {acc:.4f}")
+    print(f"  准确率：{acc:.4f}")
     print(f"  IC: {ic:.4f}")
     print(f"  RMSE: {rmse:.6f}\n")
 
@@ -98,33 +98,33 @@ def main() -> int:
     print("📊 结果对比")
     print("="*80 + "\n")
 
-    print("基线对比:")
-    print(f"  多尺度LSTM (38特征): 68.08%, IC: 0.3976\n")
+    print("基线对比：")
+    print(f"  多尺度 LSTM (38 特征): 68.08%, IC: 0.3976\n")
 
-    print("扩展特征:")
+    print("扩展特征：")
     for idx, row in results_df.iterrows():
         print(f"{idx+1}. {row['model']}")
-        print(f"   特征数: {row['num_features']}")
-        print(f"   准确率: {row['accuracy']:.4f}")
+        print(f"   特征数：{row['num_features']}")
+        print(f"   准确率：{row['accuracy']:.4f}")
         print(f"   IC: {row['ic']:.4f}\n")
 
     best_acc = results_df['accuracy'].max()
-    print(f"💡 最佳准确率: {best_acc:.4f}")
+    print(f"💡 最佳准确率：{best_acc:.4f}")
 
     if best_acc > 0.6808:
         improvement = (best_acc - 0.6808) * 100
-        print(f"💡 超越基线: +{improvement:.2f}%")
+        print(f"💡 超越基线：+{improvement:.2f}%")
         print(f"\n✅ 特征扩展成功！突破天花板！")
     elif best_acc > 0.6750:
         diff = (best_acc - 0.6808) * 100
-        print(f"💡 接近基线: {diff:+.2f}%")
+        print(f"💡 接近基线：{diff:+.2f}%")
         print(f"\n⚠️ 接近但未突破 (68.08%)")
     else:
         diff = (best_acc - 0.6808) * 100
-        print(f"💡 低于基线: {diff:+.2f}%")
+        print(f"💡 低于基线：{diff:+.2f}%")
         print(f"\n⚠️ 新特征未带来提升")
 
-    print(f"\n💾 结果已保存: {output_dir}/results.csv\n")
+    print(f"\n💾 结果已保存：{output_dir}/results.csv\n")
 
     return 0
 

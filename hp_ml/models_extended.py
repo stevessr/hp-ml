@@ -40,7 +40,7 @@ class ProphetWrapper:
         yearly_seasonality: bool = True,
     ):
         if not PROPHET_AVAILABLE:
-            raise ImportError("Prophet 未安装，请运行: pip install prophet")
+            raise ImportError("Prophet 未安装，请运行：pip install prophet")
 
         self.seasonality_mode = seasonality_mode
         self.changepoint_prior_scale = changepoint_prior_scale
@@ -127,7 +127,7 @@ class LSTMModel:
         early_stopping_patience: int = 10,
     ):
         if not TF_AVAILABLE:
-            raise ImportError("TensorFlow 未安装，请运行: pip install tensorflow")
+            raise ImportError("TensorFlow 未安装，请运行：pip install tensorflow")
 
         self.seq_length = seq_length
         self.units = units
@@ -227,7 +227,7 @@ class GRUModel:
         early_stopping_patience: int = 10,
     ):
         if not TF_AVAILABLE:
-            raise ImportError("TensorFlow 未安装，请运行: pip install tensorflow")
+            raise ImportError("TensorFlow 未安装，请运行：pip install tensorflow")
 
         self.seq_length = seq_length
         self.units = units
@@ -325,7 +325,7 @@ class BidirectionalLSTMModel:
         early_stopping_patience: int = 10,
     ):
         if not TF_AVAILABLE:
-            raise ImportError("TensorFlow 未安装，请运行: pip install tensorflow")
+            raise ImportError("TensorFlow 未安装，请运行：pip install tensorflow")
 
         self.seq_length = seq_length
         self.units = units
@@ -428,7 +428,7 @@ class AttentionLSTMModel:
         early_stopping_patience: int = 10,
     ):
         if not TF_AVAILABLE:
-            raise ImportError("TensorFlow 未安装，请运行: pip install tensorflow")
+            raise ImportError("TensorFlow 未安装，请运行：pip install tensorflow")
 
         self.seq_length = seq_length
         self.units = units
@@ -542,7 +542,7 @@ class MultiHeadAttentionLSTM:
         early_stopping_patience: int = 10,
     ):
         if not TF_AVAILABLE:
-            raise ImportError("TensorFlow 未安装，请运行: pip install tensorflow")
+            raise ImportError("TensorFlow 未安装，请运行：pip install tensorflow")
 
         self.seq_length = seq_length
         self.units = units
@@ -660,7 +660,7 @@ class SelfAttentionLSTM:
         early_stopping_patience: int = 10,
     ):
         if not TF_AVAILABLE:
-            raise ImportError("TensorFlow 未安装，请运行: pip install tensorflow")
+            raise ImportError("TensorFlow 未安装，请运行：pip install tensorflow")
 
         self.seq_length = seq_length
         self.units = units
@@ -786,7 +786,7 @@ class HierarchicalAttentionLSTM:
         early_stopping_patience: int = 10,
     ):
         if not TF_AVAILABLE:
-            raise ImportError("TensorFlow 未安装，请运行: pip install tensorflow")
+            raise ImportError("TensorFlow 未安装，请运行：pip install tensorflow")
 
         self.seq_length = seq_length
         self.units = units
@@ -915,7 +915,7 @@ class CNNNGram:
         early_stopping_patience: int = 10,
     ):
         if not TF_AVAILABLE:
-            raise ImportError("TensorFlow 未安装，请运行: pip install tensorflow")
+            raise ImportError("TensorFlow 未安装，请运行：pip install tensorflow")
 
         self.seq_length = seq_length
         self.filters = filters
@@ -1041,7 +1041,7 @@ class TemporalConvNet:
         early_stopping_patience: int = 10,
     ):
         if not TF_AVAILABLE:
-            raise ImportError("TensorFlow 未安装，请运行: pip install tensorflow")
+            raise ImportError("TensorFlow 未安装，请运行：pip install tensorflow")
 
         self.seq_length = seq_length
         self.num_filters = num_filters
@@ -1171,7 +1171,7 @@ class WaveNet:
         early_stopping_patience: int = 10,
     ):
         if not TF_AVAILABLE:
-            raise ImportError("TensorFlow 未安装，请运行: pip install tensorflow")
+            raise ImportError("TensorFlow 未安装，请运行：pip install tensorflow")
 
         self.seq_length = seq_length
         self.num_filters = num_filters
@@ -1325,7 +1325,7 @@ class TransformerXL:
         early_stopping_patience: int = 10,
     ):
         if not TF_AVAILABLE:
-            raise ImportError("TensorFlow 未安装，请运行: pip install tensorflow")
+            raise ImportError("TensorFlow 未安装，请运行：pip install tensorflow")
 
         self.seq_length = seq_length
         self.d_model = d_model
@@ -1459,7 +1459,7 @@ class MemoryAugmentedTransformer:
         early_stopping_patience: int = 10,
     ):
         if not TF_AVAILABLE:
-            raise ImportError("TensorFlow 未安装，请运行: pip install tensorflow")
+            raise ImportError("TensorFlow 未安装，请运行：pip install tensorflow")
 
         self.seq_length = seq_length
         self.d_model = d_model
@@ -1484,8 +1484,8 @@ class MemoryAugmentedTransformer:
         x = keras.layers.Dense(self.d_model)(inputs)
         x = keras.layers.LayerNormalization(epsilon=1e-6)(x)
 
-        # 使用固定记忆模拟（简化实现，避免动态batch问题）
-        # 在实际应用中，可以用自定义Layer包装记忆逻辑
+        # 使用固定记忆模拟（简化实现，避免动态 batch 问题）
+        # 在实际应用中，可以用自定义 Layer 包装记忆逻辑
 
         # Transformer 层（简化版，只用自注意力）
         for _ in range(self.num_layers):
@@ -1601,7 +1601,7 @@ class GRUTransformer:
         early_stopping_patience: int = 10,
     ):
         if not TF_AVAILABLE:
-            raise ImportError("TensorFlow 未安装，请运行: pip install tensorflow")
+            raise ImportError("TensorFlow 未安装，请运行：pip install tensorflow")
 
         self.seq_length = seq_length
         self.gru_units = gru_units
@@ -1757,7 +1757,7 @@ class LSTMTransformer:
         early_stopping_patience: int = 10,
     ):
         if not TF_AVAILABLE:
-            raise ImportError("TensorFlow 未安装，请运行: pip install tensorflow")
+            raise ImportError("TensorFlow 未安装，请运行：pip install tensorflow")
 
         self.seq_length = seq_length
         self.lstm_units = lstm_units
@@ -2047,4 +2047,4 @@ def make_extended_model(
     if model_type in {"enhanced_rf", "rf_enhanced"}:
         return EnhancedRandomForest(random_state=random_state, **kwargs)
 
-    raise ValueError(f"不支持的模型类型: {model_type}")
+    raise ValueError(f"不支持的模型类型：{model_type}")

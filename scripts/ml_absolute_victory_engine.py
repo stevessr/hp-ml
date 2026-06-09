@@ -7,12 +7,12 @@ from sklearn.preprocessing import StandardScaler
 # ==================================================================================
 # 🎛️ 终极生产线参数面板 (彻底干掉高频摩擦内鬼)
 # ==================================================================================
-TRAIN_LOOKBACK_DAYS = 730   # 1. 机器学习滚动训练的历史回溯窗口 (2年)
-TECH_MA_WINDOW = 20         # 2. 本地技术面SMA均线的滤波窗口
-SENT_MA_WINDOW = 20         # 3. 搜索引擎舆情Z-Score计算窗口
+TRAIN_LOOKBACK_DAYS = 730   # 1. 机器学习滚动训练的历史回溯窗口 (2 年)
+TECH_MA_WINDOW = 20         # 2. 本地技术面 SMA 均线的滤波窗口
+SENT_MA_WINDOW = 20         # 3. 搜索引擎舆情 Z-Score 计算窗口
 SENT_BREAK_THRESHOLD = 1.6  # 4. 极致放宽舆情过热熔断门槛
-FEE_RATE = 0.0010           # 5. 显式调仓双边总摩擦费率 (千分之1滑点，实盘严苛扣费)
-TOP_K_ASSETS = 3            # 6. 每日截面精选多头成分数 (平分100%资金池)
+FEE_RATE = 0.0010           # 5. 显式调仓双边总摩擦费率 (千分之 1 滑点，实盘严苛扣费)
+TOP_K_ASSETS = 3            # 6. 每日截面精选多头成分数 (平分 100% 资金池)
 
 # 路径设置
 data_dir = "data/topic2_broad_base"
@@ -110,7 +110,7 @@ for i in range(len(test_months)-1):
         for idx, row in day_data.reset_index().iterrows():
             code = row['Asset_Code']
             day_probs[code] = probs[idx]
-            day_sent_z = float(row['Raw_Sentiment_Z']) # 全局共享的舆情Z值
+            day_sent_z = float(row['Raw_Sentiment_Z']) # 全局共享的舆情 Z 值
             
         # 🎯 核心分配逻辑：目标离散资金矩阵初始化
         target_weights = {code: 0.0 for code in all_codes}
@@ -119,7 +119,7 @@ for i in range(len(test_months)-1):
         if day_sent_z > SENT_BREAK_THRESHOLD:
             pass 
         else:
-            # 规则二：对当前市场中所有存活的ETF按AI看多胜率由大到小横向截面死磕排序
+            # 规则二：对当前市场中所有存活的 ETF 按 AI 看多胜率由大到小横向截面死磕排序
             sorted_assets = sorted(day_probs.items(), key=lambda x: x[1], reverse=True)
             
             # 筛选出前 K 个拥有最高 Alpha 置信度的种子选手
@@ -167,7 +167,7 @@ regimes = {
 }
 
 print("\n" + "="*112)
-print("👑 绝对大满贯战报：《中证全量9只宽基通用面板 HGB 决策树》离散 Top-K 确定性持仓组合终极全摩擦实证")
+print("👑 绝对大满贯战报：《中证全量 9 只宽基通用面板 HGB 决策树》离散 Top-K 确定性持仓组合终极全摩擦实证")
 print("================================================================================================================")
 print(f"{'测试历史区间/市场机制':<32}{'模式':<10}{'总收益率':<10}{'年化收益':<10}{'年化波动':<10}{'夏普比率':<10}{'最大回撤':<10}")
 print("-"*112)
@@ -197,4 +197,4 @@ print("=========================================================================
 
 output_path = os.path.join(reports_dir, "ml_absolute_victory_report.csv")
 perf_df.to_csv(output_path)
-print(f"💾 彻底干掉调仓内鬼、全时段降维碾压的超神时序矩阵已成功导出至: {output_path}\n")
+print(f"💾 彻底干掉调仓内鬼、全时段降维碾压的超神时序矩阵已成功导出至：{output_path}\n")

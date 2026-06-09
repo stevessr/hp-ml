@@ -114,16 +114,16 @@ def main(argv: list[str] | None = None) -> None:
             print(f"  新增 {len(new_features)} 个技术指标特征")
 
         except Exception as e:
-            print(f"  技术指标生成失败: {e}")
+            print(f"  技术指标生成失败：{e}")
 
-    print(f"  特征面板: {len(panel)} 行, {len(feature_cols)} 个特征")
+    print(f"  特征面板：{len(panel)} 行，{len(feature_cols)} 个特征")
 
     # ========== 步骤 4: 数据划分 ==========
     print("\n[4/8] 划分训练集/验证集/测试集...")
     split = time_series_split(panel, target_col=target_col)
-    print(f"  训练集: {len(split.train)} 行")
-    print(f"  验证集: {len(split.val)} 行")
-    print(f"  测试集: {len(split.test)} 行")
+    print(f"  训练集：{len(split.train)} 行")
+    print(f"  验证集：{len(split.val)} 行")
+    print(f"  测试集：{len(split.test)} 行")
 
     # ========== 步骤 5: 特征选择 ==========
     selected_features = feature_cols
@@ -143,10 +143,10 @@ def main(argv: list[str] | None = None) -> None:
 
             print(f"  选择了 {len(selected_features)} 个特征")
             importance_df = selector.get_feature_importance()
-            print(f"  Top 5 特征: {', '.join(importance_df.head(5)['feature'].tolist())}")
+            print(f"  Top 5 特征：{', '.join(importance_df.head(5)['feature'].tolist())}")
 
         except Exception as e:
-            print(f"  特征选择失败: {e}")
+            print(f"  特征选择失败：{e}")
             selected_features = feature_cols
     else:
         print("\n[5/8] 使用所有特征")
@@ -174,7 +174,7 @@ def main(argv: list[str] | None = None) -> None:
                 y_train = split.train[target_col]
 
                 best_params = tuner.optimize(X_train, y_train)
-                print(f"    最佳参数: {best_params}")
+                print(f"    最佳参数：{best_params}")
 
                 # 使用最佳参数创建模型
                 from sklearn.ensemble import HistGradientBoostingRegressor, RandomForestRegressor
@@ -190,7 +190,7 @@ def main(argv: list[str] | None = None) -> None:
                     model = make_model(model_type)
 
             except Exception as e:
-                print(f"    超参数优化失败: {e}，使用默认参数")
+                print(f"    超参数优化失败：{e}，使用默认参数")
                 model = make_model(model_type)
         else:
             model = make_model(model_type)
@@ -237,7 +237,7 @@ def main(argv: list[str] | None = None) -> None:
             print(f"  ✓ 集成模型训练完成")
 
         except Exception as e:
-            print(f"  集成模型失败: {e}")
+            print(f"  集成模型失败：{e}")
     else:
         print("\n[7/8] 跳过集成学习")
 
@@ -252,7 +252,7 @@ def main(argv: list[str] | None = None) -> None:
             # 分析性能
             from .model import evaluate_predictions
 
-            for model_name, predictions in list(all_predictions.items())[:3]:  # 只分析前3个
+            for model_name, predictions in list(all_predictions.items())[:3]:  # 只分析前 3 个
                 print(f"  分析 {model_name} 模型...")
                 metrics = evaluate_predictions(predictions, "prediction", target_col)
 
@@ -262,7 +262,7 @@ def main(argv: list[str] | None = None) -> None:
                 )
 
                 ai_insights[model_name] = insights
-                print(f"    诊断: {insights.get('diagnosis', 'N/A')[:100]}...")
+                print(f"    诊断：{insights.get('diagnosis', 'N/A')[:100]}...")
 
             # 特征建议
             print("  获取特征建议...")
@@ -275,7 +275,7 @@ def main(argv: list[str] | None = None) -> None:
             ai_insights["feature_suggestions"] = feature_suggestions
 
         except Exception as e:
-            print(f"  AI 辅助分析失败: {e}")
+            print(f"  AI 辅助分析失败：{e}")
     else:
         print("\n[8/8] 跳过 AI 辅助分析")
 
@@ -347,17 +347,17 @@ def main(argv: list[str] | None = None) -> None:
             )
             print(f"    ✓ {report_files.get('report', 'N/A').name}")
         except Exception as e:
-            print(f"    ✗ 失败: {e}")
+            print(f"    ✗ 失败：{e}")
 
     print("\n" + "=" * 80)
     print("训练完成！")
-    print(f"最佳模型: {summary['best_model']}")
-    print(f"报告保存至: {REPORTS_DIR}")
-    print(f"预测报告保存至: {prediction_reports_dir}")
+    print(f"最佳模型：{summary['best_model']}")
+    print(f"报告保存至：{REPORTS_DIR}")
+    print(f"预测报告保存至：{prediction_reports_dir}")
     print("=" * 80)
 
     # 显示回测结果
-    print("\n回测结果排名:")
+    print("\n回测结果排名：")
     print(backtest_comparison[["model", "annualized_return", "sharpe_ratio", "max_drawdown"]].to_string(index=False))
 
 

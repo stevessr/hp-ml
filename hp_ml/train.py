@@ -107,10 +107,10 @@ def main(argv: list[str] | None = None) -> None:
     )
 
     print(json.dumps(metrics_payload, ensure_ascii=False, indent=2, default=str))
-    print(f"\n模型已保存: {model_out}")
-    print(f"候选池: {universe_path}")
-    print(f"最新预测: {predictions_path}")
-    print(f"报告: {REPORTS_DIR / 'training_summary.md'}")
+    print(f"\n模型已保存：{model_out}")
+    print(f"候选池：{universe_path}")
+    print(f"最新预测：{predictions_path}")
+    print(f"报告：{REPORTS_DIR / 'training_summary.md'}")
 
 
 if __name__ == "__main__":

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """扩展特征工程 - 引入更多可收集的技术特征
 
-新增特征类别:
+新增特征类别：
 1. 高级技术指标
 2. 价格形态特征
 3. 相对强弱特征
@@ -42,8 +42,8 @@ def add_advanced_technical_indicators(df: pd.DataFrame) -> pd.DataFrame:
     df['bollinger_width'] = (df['bollinger_upper'] - df['bollinger_lower']) / df['ma_20']
     df['price_to_bollinger'] = (df['close'] - df['ma_20']) / (df['std_20'] + 1e-8)
 
-    # 2. RSI相对强弱指标
-    print("  • RSI指标...")
+    # 2. RSI 相对强弱指标
+    print("  • RSI 指标...")
     def calculate_rsi(series, period=14):
         delta = series.diff()
         gain = (delta.where(delta > 0, 0)).rolling(period, min_periods=1).mean()
@@ -54,8 +54,8 @@ def add_advanced_technical_indicators(df: pd.DataFrame) -> pd.DataFrame:
     df['rsi_14'] = df.groupby('code')['close'].transform(lambda x: calculate_rsi(x, 14))
     df['rsi_28'] = df.groupby('code')['close'].transform(lambda x: calculate_rsi(x, 28))
 
-    # 3. MACD指标
-    print("  • MACD指标...")
+    # 3. MACD 指标
+    print("  • MACD 指标...")
     df['ema_12'] = df.groupby('code')['close'].transform(
         lambda x: x.ewm(span=12, adjust=False).mean()
     )
@@ -147,8 +147,8 @@ def add_relative_strength_features(df: pd.DataFrame) -> pd.DataFrame:
     market_vol = df.groupby('date')['vol_20'].transform('mean')
     df['relative_vol_20'] = df['vol_20'] / (market_vol + 1e-8)
 
-    # Beta系数（简化版）
-    print("  • Beta系数...")
+    # Beta 系数（简化版）
+    print("  • Beta 系数...")
     def rolling_beta(group_ret, market_ret, window=20):
         cov = group_ret.rolling(window, min_periods=5).cov(market_ret)
         var = market_ret.rolling(window, min_periods=5).var()
@@ -217,7 +217,7 @@ def add_microstructure_features(df: pd.DataFrame) -> pd.DataFrame:
         lambda x: x.rolling(20, min_periods=1).std() * 2
     )).astype(int)
 
-    # 4. 波动率聚类（GARCH效应）
+    # 4. 波动率聚类（GARCH 效应）
     print("  • 波动率持续性...")
     df['vol_persistence'] = df.groupby('code')['vol_5'].transform(
         lambda x: x.rolling(5, min_periods=1).std()
@@ -292,12 +292,12 @@ def main() -> int:
     print("\n" + "="*80)
     print("🔧 扩展特征工程")
     print("="*80)
-    print(f"📁 输入: {args.input}")
-    print(f"📁 输出: {args.output}")
+    print(f"📁 输入：{args.input}")
+    print(f"📁 输出：{args.output}")
     print("="*80 + "\n")
 
     if not args.input.exists():
-        print(f"❌ 输入文件不存在: {args.input}")
+        print(f"❌ 输入文件不存在：{args.input}")
         return 1
 
     try:
@@ -305,7 +305,7 @@ def main() -> int:
         print("📊 加载数据...")
         df = pd.read_csv(args.input)
         original_cols = len(df.columns)
-        print(f"  ✓ {len(df)} 行, {original_cols} 列\n")
+        print(f"  ✓ {len(df)} 行，{original_cols} 列\n")
 
         # 添加各类特征
         df = add_advanced_technical_indicators(df)
@@ -315,7 +315,7 @@ def main() -> int:
         df = add_microstructure_features(df)
         df = add_time_cycle_features(df)
 
-        # 填充NaN
+        # 填充 NaN
         print("\n📊 处理缺失值...")
         numeric_cols = df.select_dtypes(include=[np.number]).columns
         df[numeric_cols] = df[numeric_cols].fillna(0)
@@ -329,10 +329,10 @@ def main() -> int:
         print("\n" + "="*80)
         print("✅ 特征扩展完成")
         print("="*80)
-        print(f"📊 原始列数: {original_cols}")
-        print(f"📊 新增列数: {new_cols}")
-        print(f"📊 最终列数: {len(df.columns)}")
-        print(f"💾 保存至: {args.output}")
+        print(f"📊 原始列数：{original_cols}")
+        print(f"📊 新增列数：{new_cols}")
+        print(f"📊 最终列数：{len(df.columns)}")
+        print(f"💾 保存至：{args.output}")
         print("="*80 + "\n")
 
         # 打印新增特征列表
@@ -348,7 +348,7 @@ def main() -> int:
         return 0
 
     except Exception as e:
-        print(f"\n❌ 错误: {e}")
+        print(f"\n❌ 错误：{e}")
         import traceback
         traceback.print_exc()
         return 1

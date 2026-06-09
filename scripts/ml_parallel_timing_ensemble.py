@@ -9,7 +9,7 @@ trends_path = "data/alternative_data/google_trends_sentiment.csv"
 reports_dir = "reports"
 os.makedirs(reports_dir, exist_ok=True)
 
-print("🏛️ 正在启动《9只中证宽基平行时序自适应仓位集成组合》终极量化增强引擎...")
+print("🏛️ 正在启动《9 只中证宽基平行时序自适应仓位集成组合》终极量化增强引擎...")
 
 # 2. 预先在舆情本有时序上算完标准化 Z-Score (保护时序大杀器)
 trends_df = pd.read_csv(trends_path, parse_dates=['date']).set_index('date')
@@ -111,14 +111,14 @@ b_tot, b_ann, b_vol, b_sha, b_dd = calc_metrics(perf_df['Benchmark'], perf_df['B
 s_tot, s_ann, s_vol, s_sha, s_dd = calc_metrics(perf_df['Strategy'], perf_df['Strat_Cum'])
 
 print("\n" + "="*95)
-print("👑 破茧成蝶：《9只中证宽基 ETF 平行时序自适应仓位集成组合》加速增强版看板 (2026盲测)")
+print("👑 破茧成蝶：《9 只中证宽基 ETF 平行时序自适应仓位集成组合》加速增强版看板 (2026 盲测)")
 print("===============================================================================================")
 print(f"{'策略组合模式':<25}{'总收益率':<12}{'年化收益':<12}{'年化波动':<12}{'夏普比率':<12}{'最大回撤':<12}")
 print("-"*95)
-print(f"{'传统等权被动资产配置(基准)':<20}{b_tot:>10.2%}{b_ann:>12.2%}{b_vol:>12.2%}{b_sha:>12.2f}{b_dd:>12.2%}")
+print(f"{'传统等权被动资产配置 (基准)':<20}{b_tot:>10.2%}{b_ann:>12.2%}{b_vol:>12.2%}{b_sha:>12.2f}{b_dd:>12.2%}")
 print(f"{'🔥 ML 独立多轨平行择时集成组合':<15}{s_tot:>10.2%}{s_ann:>12.2%}{s_vol:>12.2%}{s_sha:>12.2f}{s_dd:>12.2%}")
 print("===============================================================================================")
 
 output_path = os.path.join(reports_dir, "ml_parallel_ensemble_report.csv")
 perf_df.to_csv(output_path)
-print(f"💾 终极多轨择时集成组合回测明细已成功重新导出至: {output_path}\n")
+print(f"💾 终极多轨择时集成组合回测明细已成功重新导出至：{output_path}\n")

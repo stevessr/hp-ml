@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""3模型集成 - 稳定提升准确率
+"""3 模型集成 - 稳定提升准确率
 
-策略:
-1. 使用3个不同随机种子的Attention LSTM
+策略：
+1. 使用 3 个不同随机种子的 Attention LSTM
 2. 加权平均集成
 3. 减少随机性，提升稳定性
 """
@@ -84,7 +84,7 @@ def ensemble_predict(models: list, X_test: pd.DataFrame, weights: list[float]) -
 
 def main() -> int:
     print("\n" + "="*80)
-    print("🎯 3模型集成实验")
+    print("🎯 3 模型集成实验")
     print("="*80 + "\n")
 
     # 加载数据
@@ -97,7 +97,7 @@ def main() -> int:
     feature_cols = [c for c in df.columns if c not in exclude_cols
                    and not c.startswith('fwd_')]
 
-    print(f"特征数: {len(feature_cols)}")
+    print(f"特征数：{len(feature_cols)}")
 
     # 切分数据
     df = df.sort_values("date")
@@ -109,12 +109,12 @@ def main() -> int:
     train_df = trainable[trainable["date"] < split_date].copy()
     test_df = trainable[trainable["date"] >= split_date].copy()
 
-    print(f"训练集: {len(train_df)} 行")
-    print(f"测试集: {len(test_df)} 行")
+    print(f"训练集：{len(train_df)} 行")
+    print(f"测试集：{len(test_df)} 行")
 
-    # 训练3个模型（不同随机种子）
+    # 训练 3 个模型（不同随机种子）
     print("\n" + "="*80)
-    print("🔧 训练3个模型...")
+    print("🔧 训练 3 个模型...")
     print("="*80)
 
     seeds = [42, 123, 456]
@@ -142,7 +142,7 @@ def main() -> int:
         ic = float(spearmanr(pred, actual)[0])
 
         print(f"模型{i} (seed={seed}):")
-        print(f"  准确率: {acc:.4f}")
+        print(f"  准确率：{acc:.4f}")
         print(f"  IC: {ic:.4f}\n")
 
         results.append({
@@ -163,7 +163,7 @@ def main() -> int:
     acc_equal = float(np.mean((ensemble_pred_equal > 0) == (actual > 0)))
     ic_equal = float(spearmanr(ensemble_pred_equal, actual)[0])
 
-    print(f"准确率: {acc_equal:.4f}")
+    print(f"准确率：{acc_equal:.4f}")
     print(f"IC: {ic_equal:.4f}\n")
 
     results.append({
@@ -173,16 +173,16 @@ def main() -> int:
         "ic": ic_equal
     })
 
-    # 集成：加权（基于IC）
+    # 集成：加权（基于 IC）
     print("="*80)
-    print("🎯 集成 - IC加权")
+    print("🎯 集成 - IC 加权")
     print("="*80 + "\n")
 
-    # 计算每个模型的IC作为权重
+    # 计算每个模型的 IC 作为权重
     ics = []
     for pred in individual_preds:
         ic = spearmanr(pred, actual)[0]
-        ics.append(max(ic, 0))  # 负IC设为0
+        ics.append(max(ic, 0))  # 负 IC 设为 0
 
     total_ic = sum(ics)
     if total_ic > 0:
@@ -190,14 +190,14 @@ def main() -> int:
     else:
         weights_ic = weights_equal
 
-    print(f"权重: {[f'{w:.3f}' for w in weights_ic]}")
+    print(f"权重：{[f'{w:.3f}' for w in weights_ic]}")
 
     ensemble_pred_ic, _ = ensemble_predict(models, X_test, weights_ic)
 
     acc_ic = float(np.mean((ensemble_pred_ic > 0) == (actual > 0)))
     ic_ic = float(spearmanr(ensemble_pred_ic, actual)[0])
 
-    print(f"准确率: {acc_ic:.4f}")
+    print(f"准确率：{acc_ic:.4f}")
     print(f"IC: {ic_ic:.4f}\n")
 
     results.append({
@@ -220,14 +220,14 @@ def main() -> int:
     total_acc = sum(accs)
     weights_acc = [acc / total_acc for acc in accs]
 
-    print(f"权重: {[f'{w:.3f}' for w in weights_acc]}")
+    print(f"权重：{[f'{w:.3f}' for w in weights_acc]}")
 
     ensemble_pred_acc, _ = ensemble_predict(models, X_test, weights_acc)
 
     acc_acc = float(np.mean((ensemble_pred_acc > 0) == (actual > 0)))
     ic_acc = float(spearmanr(ensemble_pred_acc, actual)[0])
 
-    print(f"准确率: {acc_acc:.4f}")
+    print(f"准确率：{acc_acc:.4f}")
     print(f"IC: {ic_acc:.4f}\n")
 
     results.append({
@@ -252,7 +252,7 @@ def main() -> int:
     for idx, row in results_df.iterrows():
         marker = "🔵" if row['type'] == 'single' else "⭐"
         print(f"{marker} {row['model']}")
-        print(f"   准确率: {row['accuracy']:.4f}")
+        print(f"   准确率：{row['accuracy']:.4f}")
         print(f"   IC: {row['ic']:.4f}\n")
 
     # 找出最佳
@@ -265,10 +265,10 @@ def main() -> int:
     improvement = (ensemble_best - single_avg) * 100
 
     print("="*80)
-    print(f"💡 单模型平均: {single_avg:.4f}")
-    print(f"💡 集成最佳: {ensemble_best:.4f}")
-    print(f"💡 提升幅度: {improvement:+.2f}%")
-    print(f"💡 最佳配置: {best_model}")
+    print(f"💡 单模型平均：{single_avg:.4f}")
+    print(f"💡 集成最佳：{ensemble_best:.4f}")
+    print(f"💡 提升幅度：{improvement:+.2f}%")
+    print(f"💡 最佳配置：{best_model}")
     print("="*80)
 
     if ensemble_best > single_avg:
@@ -276,7 +276,7 @@ def main() -> int:
     else:
         print(f"\n⚠️ 集成未带来提升")
 
-    print(f"\n💾 结果已保存: {output_dir}/results.csv\n")
+    print(f"\n💾 结果已保存：{output_dir}/results.csv\n")
 
     return 0
 

@@ -25,7 +25,7 @@ features = ['F_Tech', 'F_Sent', 'Return_Lag1', 'Vol_Lag1']
 train_frames = []
 test_frames = []
 
-# 🎯 设定全市场统一的盲测历史分水岭 (留出2026整年作为高纯度盲测)
+# 🎯 设定全市场统一的盲测历史分水岭 (留出 2026 整年作为高纯度盲测)
 CUTOFF_DATE = pd.to_datetime('2025-12-31')
 
 print("⚙️ 正在执行流式跨资产非对称全生命周期特征抽取...")
@@ -71,10 +71,10 @@ panel_test = pd.concat(test_frames).sort_index()
 
 print(f"📊 大数据面板构建完毕！")
 print(f" ├─ 🏛️ 历史训练吞吐量 (包含多轮完整牛熊): {len(panel_train)} 行特征样本")
-print(f" └─ 🎯 独立高纯度盲测空间 (2026全貌行情): {len(panel_test)} 行资产样本")
+print(f" └─ 🎯 独立高纯度盲测空间 (2026 全貌行情): {len(panel_test)} 行资产样本")
 
 # 5. 训练通用阿尔法决策树模型
-print("🤖 正在利用10年跨度全样本训练通用阿尔法模型...")
+print("🤖 正在利用 10 年跨度全样本训练通用阿尔法模型...")
 universal_model = RandomForestClassifier(n_estimators=200, max_depth=5, min_samples_leaf=5, random_state=42)
 universal_model.fit(panel_train[features], panel_train['Target'])
 
@@ -85,7 +85,7 @@ benchmark_returns = []
 
 print("🏃 正在启动 2026 战术组合动态资金配置流...")
 for date in test_dates:
-    # 核心自适应：捞出今天在市场上正在交易的所有资产（管你上市了10年还是10天）
+    # 核心自适应：捞出今天在市场上正在交易的所有资产（管你上市了 10 年还是 10 天）
     day_data = panel_test.loc[[date]]
     if isinstance(day_data, pd.Series): day_data = day_data.to_frame().T
     
@@ -137,18 +137,18 @@ b_tot, b_ann, b_vol, b_sha, b_dd = calc_metrics(perf_df['Benchmark'], perf_df['B
 s_tot, s_ann, s_vol, s_sha, s_dd = calc_metrics(perf_df['Strategy'], perf_df['Strat_Cum'])
 
 print("\n" + "="*95)
-print("👑 降维打击：《9只中证宽基 ETF 通用面板时序集成与动态配置组合》终极绩效看板")
+print("👑 降维打击：《9 只中证宽基 ETF 通用面板时序集成与动态配置组合》终极绩效看板")
 print("===============================================================================================")
 print(f"{'策略组合模式':<25}{'总收益率':<12}{'年化收益':<12}{'年化波动':<12}{'夏普比率':<12}{'最大回撤':<12}")
 print("-"*95)
-print(f"{'传统等权被动资配(2026基准)':<20}{b_tot:>10.2%}{b_ann:>12.2%}{b_vol:>12.2%}{b_sha:>12.2f}{b_dd:>12.2%}")
+print(f"{'传统等权被动资配 (2026 基准)':<20}{b_tot:>10.2%}{b_ann:>12.2%}{b_vol:>12.2%}{b_sha:>12.2f}{b_dd:>12.2%}")
 print(f"{'💎 ML 全要素面板自适应动态资产组合':<15}{s_tot:>10.2%}{s_ann:>12.2%}{s_vol:>12.2%}{s_sha:>12.2f}{s_dd:>12.2%}")
 print("===============================================================================================")
 
 importances = universal_model.feature_importances_
-print("🧠 10年跨度通用阿尔法大模型特征权重:")
+print("🧠 10 年跨度通用阿尔法大模型特征权重：")
 for feat, imp in zip(features, importances):
-    print(f" ├─ 特征名称: {feat:<12} | 全局树分裂权重: {imp:.4f}")
+    print(f" ├─ 特征名称：{feat:<12} | 全局树分裂权重：{imp:.4f}")
 
 perf_df.to_csv(os.path.join(reports_dir, "ml_universal_panel_final_report.csv"))
-print(f"\n💾 2026长窗口高纯度盲测细节已成功导出至 reports/ml_universal_panel_final_report.csv\n")
+print(f"\n💾 2026 长窗口高纯度盲测细节已成功导出至 reports/ml_universal_panel_final_report.csv\n")

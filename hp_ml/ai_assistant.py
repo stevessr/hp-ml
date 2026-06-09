@@ -27,7 +27,7 @@ class AIAssistedEvolution:
             model: Claude 模型版本
         """
         if not ANTHROPIC_AVAILABLE:
-            raise ImportError("Anthropic SDK 未安装，请运行: pip install anthropic")
+            raise ImportError("Anthropic SDK 未安装，请运行：pip install anthropic")
 
         self.api_key = api_key or os.environ.get("ANTHROPIC_API_KEY")
         if not self.api_key:
@@ -85,7 +85,7 @@ class AIAssistedEvolution:
             "priority": "high/medium/low"
         }}
     ],
-    "interaction_features": ["特征1 * 特征2", ...],
+    "interaction_features": ["特征 1 * 特征 2", ...],
     "rationale": "推荐理由"
 }}
 """
@@ -160,7 +160,7 @@ class AIAssistedEvolution:
         {{
             "action": "改进措施",
             "expected_impact": "预期效果",
-            "implementation_steps": ["步骤1", "步骤2"]
+            "implementation_steps": ["步骤 1", "步骤 2"]
         }}
     ],
     "hyperparameter_suggestions": {{}},

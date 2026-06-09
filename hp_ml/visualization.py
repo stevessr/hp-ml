@@ -50,7 +50,7 @@ def plot_model_comparison_metrics(
     plt.tight_layout()
     plt.savefig(output_path, dpi=150, bbox_inches="tight")
     plt.close()
-    print(f"指标对比图已保存: {output_path}")
+    print(f"指标对比图已保存：{output_path}")
 
 
 def plot_equity_curves(
@@ -78,7 +78,7 @@ def plot_equity_curves(
             ax.plot(returns_df["date"], returns_df["equity"], label=model_name, linewidth=2)
 
         except Exception as e:
-            print(f"模型 {model_name} 权益曲线绘制失败: {e}")
+            print(f"模型 {model_name} 权益曲线绘制失败：{e}")
             continue
 
     ax.axhline(y=1.0, color="gray", linestyle="--", alpha=0.5, label="初始资金")
@@ -91,7 +91,7 @@ def plot_equity_curves(
     plt.tight_layout()
     plt.savefig(output_path, dpi=150, bbox_inches="tight")
     plt.close()
-    print(f"权益曲线图已保存: {output_path}")
+    print(f"权益曲线图已保存：{output_path}")
 
 
 def plot_feature_importance(
@@ -132,10 +132,10 @@ def plot_feature_importance(
         plt.tight_layout()
         plt.savefig(output_path, dpi=150, bbox_inches="tight")
         plt.close()
-        print(f"特征重要性图已保存: {output_path}")
+        print(f"特征重要性图已保存：{output_path}")
 
     except Exception as e:
-        print(f"特征重要性图绘制失败: {e}")
+        print(f"特征重要性图绘制失败：{e}")
 
 
 def plot_prediction_distribution(
@@ -174,7 +174,7 @@ def plot_prediction_distribution(
     plt.tight_layout()
     plt.savefig(output_path, dpi=150, bbox_inches="tight")
     plt.close()
-    print(f"预测分布图已保存: {output_path}")
+    print(f"预测分布图已保存：{output_path}")
 
 
 def generate_markdown_report(
@@ -264,7 +264,7 @@ def generate_markdown_report(
     with open(output_path, "w", encoding="utf-8") as f:
         f.write("\n".join(lines))
 
-    print(f"Markdown 报告已保存: {output_path}")
+    print(f"Markdown 报告已保存：{output_path}")
 
 
 def create_all_visualizations(

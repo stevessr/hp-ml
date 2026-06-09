@@ -87,7 +87,7 @@ def evaluate_time_split(
     try:
         model = train_ridge(train_df, feature_cols, target_col, l2=l2)
     except Exception as e:
-        return {"error": f"训练失败: {e}"}
+        return {"error": f"训练失败：{e}"}
 
     train_metrics, _ = evaluate(train_df, model, target_col)
     test_metrics, test_preds = evaluate(test_df, model, target_col)
@@ -129,12 +129,12 @@ def run_time_series_cv(
     """运行时间序列交叉验证调优"""
     print("📊 加载训练面板数据...")
     panel_df = pd.read_csv(panel_path)
-    print(f"  ✓ 数据行数: {len(panel_df)}")
-    print(f"  ✓ 日期范围: {panel_df['date'].min()} ~ {panel_df['date'].max()}")
+    print(f"  ✓ 数据行数：{len(panel_df)}")
+    print(f"  ✓ 日期范围：{panel_df['date'].min()} ~ {panel_df['date'].max()}")
 
     exclude_cols = {'date', 'code', 'name', 'family_id', 'close', target_col, 'is_trainable', 'is_future'}
     feature_cols = [c for c in panel_df.columns if c not in exclude_cols and not c.startswith('fwd_')]
-    print(f"  ✓ 特征数量: {len(feature_cols)}")
+    print(f"  ✓ 特征数量：{len(feature_cols)}")
 
     df = panel_df.to_dict('records')
 
@@ -151,10 +151,10 @@ def run_time_series_cv(
     if min_pred_grid is None:
         min_pred_grid = [0.0, 0.005, 0.01]
 
-    print("\n🔍 超参数搜索空间:")
-    print(f"  L2 正则化: {l2_grid}")
+    print("\n🔍 超参数搜索空间：")
+    print(f"  L2 正则化：{l2_grid}")
     print(f"  Top K: {top_k_grid}")
-    print(f"  最小预测: {min_pred_grid}")
+    print(f"  最小预测：{min_pred_grid}")
 
     results = []
     total = len(splits) * len(l2_grid) * len(top_k_grid) * len(min_pred_grid)
@@ -179,7 +179,7 @@ def run_time_series_cv(
                         results.append(result)
 
                     if current % 10 == 0:
-                        print(f"  进度: {current}/{total} ({current/total*100:.1f}%)")
+                        print(f"  进度：{current}/{total} ({current/total*100:.1f}%)")
 
     print(f"\n✅ 评估完成！共 {len(results)} 个有效结果\n")
 
@@ -222,7 +222,7 @@ def create_visualizations(results_df: pd.DataFrame, output_dir: Path) -> None:
         value_kind="pct",
     )
 
-    print(f"📊 可视化图表已保存到: {output_dir}")
+    print(f"📊 可视化图表已保存到：{output_dir}")
 
 
 def main() -> int:
@@ -240,14 +240,14 @@ def main() -> int:
     print("\n" + "="*80)
     print("🎯 时间序列交叉验证 - 模型鲁棒性测试")
     print("="*80)
-    print(f"📁 训练面板: {args.panel}")
-    print(f"🔢 切分数量: {args.n_splits}")
-    print(f"📅 训练天数: {args.min_train_days}")
-    print(f"📅 测试天数: {args.test_days}")
+    print(f"📁 训练面板：{args.panel}")
+    print(f"🔢 切分数量：{args.n_splits}")
+    print(f"📅 训练天数：{args.min_train_days}")
+    print(f"📅 测试天数：{args.test_days}")
     print("="*80 + "\n")
 
     if not args.panel.exists():
-        print(f"❌ 训练面板文件不存在: {args.panel}")
+        print(f"❌ 训练面板文件不存在：{args.panel}")
         return 1
 
     try:
@@ -260,11 +260,11 @@ def main() -> int:
         )
 
         results_df.to_csv(args.output, index=False)
-        print(f"💾 详细结果已保存: {args.output}")
+        print(f"💾 详细结果已保存：{args.output}")
 
         with open(args.summary, "w", encoding="utf-8") as f:
             json.dump(summary, f, indent=2, ensure_ascii=False, default=str)
-        print(f"💾 汇总统计已保存: {args.summary}")
+        print(f"💾 汇总统计已保存：{args.summary}")
 
         create_visualizations(results_df, args.charts)
 
@@ -272,18 +272,18 @@ def main() -> int:
         print("📊 鲁棒性分析结果")
         print("="*80)
         print(f"\n【平均表现】")
-        print(f"  测试集方向准确率: {summary['avg_test_directional_accuracy']:.4f}")
+        print(f"  测试集方向准确率：{summary['avg_test_directional_accuracy']:.4f}")
         print(f"  测试集 Spearman IC: {summary['avg_test_spearman_ic']:.4f}")
-        print(f"  策略平均收益: {summary['avg_strategy_return']:.4f}")
+        print(f"  策略平均收益：{summary['avg_strategy_return']:.4f}")
 
         print(f"\n【稳定性指标】")
-        print(f"  准确率标准差: {summary['std_test_directional_accuracy']:.4f}")
-        print(f"  IC 标准差: {summary['std_test_spearman_ic']:.4f}")
+        print(f"  准确率标准差：{summary['std_test_directional_accuracy']:.4f}")
+        print(f"  IC 标准差：{summary['std_test_spearman_ic']:.4f}")
 
         best_acc = summary['best_by_accuracy']
         print(f"\n【最佳准确率配置】")
         print(f"  L2={best_acc['l2']}, Top_K={best_acc['top_k']}, Min_Pred={best_acc['min_pred']}")
-        print(f"  测试集准确率: {best_acc['test_directional_accuracy']:.4f}")
+        print(f"  测试集准确率：{best_acc['test_directional_accuracy']:.4f}")
 
         print("\n" + "="*80)
         print("✅ 时间序列交叉验证完成！")
@@ -292,7 +292,7 @@ def main() -> int:
         return 0
 
     except Exception as e:
-        print(f"\n❌ 错误: {e}")
+        print(f"\n❌ 错误：{e}")
         import traceback
         traceback.print_exc()
         return 1

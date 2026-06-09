@@ -61,19 +61,19 @@ def load_and_prepare_data(panel_path: Path, target_col: str = "fwd_ret_5") -> tu
     """加载并准备训练数据"""
     print("📊 加载训练面板数据...")
     panel_df = pd.read_csv(panel_path)
-    print(f"  ✓ 数据行数: {len(panel_df)}")
-    print(f"  ✓ 日期范围: {panel_df['date'].min()} ~ {panel_df['date'].max()}")
+    print(f"  ✓ 数据行数：{len(panel_df)}")
+    print(f"  ✓ 日期范围：{panel_df['date'].min()} ~ {panel_df['date'].max()}")
 
     # 提取特征列
     exclude_cols = {'date', 'code', 'name', 'family_id', 'close', target_col, 'is_trainable', 'is_future'}
     feature_cols = [c for c in panel_df.columns if c not in exclude_cols and not c.startswith('fwd_')]
-    print(f"  ✓ 特征数量: {len(feature_cols)}")
+    print(f"  ✓ 特征数量：{len(feature_cols)}")
 
     # 过滤可训练数据并按时间排序
     train_mask = (panel_df['is_trainable'] == True) & (panel_df[target_col].notna())
     train_df = panel_df[train_mask].copy()
     train_df = train_df.sort_values('date').reset_index(drop=True)
-    print(f"  ✓ 可训练行数: {len(train_df)}")
+    print(f"  ✓ 可训练行数：{len(train_df)}")
 
     return train_df, feature_cols
 
@@ -215,10 +215,10 @@ def main() -> int:
     # 检查依赖
     if args.model_type == "auto":
         model_type = check_dependencies()
-        print(f"✓ 自动选择模型: {model_type}")
+        print(f"✓ 自动选择模型：{model_type}")
     else:
         model_type = args.model_type
-        print(f"✓ 使用指定模型: {model_type}")
+        print(f"✓ 使用指定模型：{model_type}")
 
     # 加载数据
     train_df, feature_cols = load_and_prepare_data(args.panel, args.target)
@@ -229,9 +229,9 @@ def main() -> int:
     train_data = train_df.iloc[:split_idx]
     test_data = train_df.iloc[split_idx:]
 
-    print(f"\n📊 数据划分:")
-    print(f"  训练集: {len(train_data)} 行")
-    print(f"  测试集: {len(test_data)} 行")
+    print(f"\n📊 数据划分：")
+    print(f"  训练集：{len(train_data)} 行")
+    print(f"  测试集：{len(test_data)} 行")
 
     # 准备特征和标签
     X_train = train_data[feature_cols].fillna(0).values
@@ -258,16 +258,16 @@ def main() -> int:
     print("\n" + "="*80)
     print("📊 模型性能")
     print("="*80)
-    print(f"\n训练集:")
+    print(f"\n训练集：")
     print(f"  RMSE: {train_metrics['rmse']:.6f}")
     print(f"  MAE: {train_metrics['mae']:.6f}")
-    print(f"  方向准确率: {train_metrics['directional_accuracy']:.4f} ({train_metrics['directional_accuracy']*100:.2f}%)")
+    print(f"  方向准确率：{train_metrics['directional_accuracy']:.4f} ({train_metrics['directional_accuracy']*100:.2f}%)")
     print(f"  R²: {train_metrics['r2']:.4f}")
 
-    print(f"\n测试集:")
+    print(f"\n测试集：")
     print(f"  RMSE: {test_metrics['rmse']:.6f}")
     print(f"  MAE: {test_metrics['mae']:.6f}")
-    print(f"  方向准确率: {test_metrics['directional_accuracy']:.4f} ({test_metrics['directional_accuracy']*100:.2f}%)")
+    print(f"  方向准确率：{test_metrics['directional_accuracy']:.4f} ({test_metrics['directional_accuracy']*100:.2f}%)")
     print(f"  R²: {test_metrics['r2']:.4f}")
 
     # 保存模型
@@ -284,7 +284,7 @@ def main() -> int:
     with open(args.output, 'wb') as f:
         pickle.dump(model_package, f)
 
-    print(f"\n💾 模型已保存: {args.output}")
+    print(f"\n💾 模型已保存：{args.output}")
     print("="*80 + "\n")
 
     return 0

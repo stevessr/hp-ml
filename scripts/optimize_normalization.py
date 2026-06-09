@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """优化的特征归一化
 
-修复问题:
+修复问题：
 1. 过度归一化导致信号丢失
-2. 按stock分组归一化（避免跨股票标准化）
-3. 使用RobustScaler（对异常值更稳健）
+2. 按 stock 分组归一化（避免跨股票标准化）
+3. 使用 RobustScaler（对异常值更稳健）
 4. 特征重要性分析和选择
 """
 from __future__ import annotations
@@ -27,7 +27,7 @@ def robust_normalize_by_stock(df: pd.DataFrame, feature_col: str) -> pd.Series:
     """
     按股票分组的鲁棒归一化
 
-    使用中位数和IQR，对异常值更稳健
+    使用中位数和 IQR，对异常值更稳健
     """
     def normalize_group(group):
         values = group[feature_col].values
@@ -69,7 +69,7 @@ def add_optimized_features(df: pd.DataFrame) -> pd.DataFrame:
     print(f"\n  处理{len(ret_cols)}个收益率特征...")
 
     for col in ret_cols:
-        # 方案A: 滚动Z-score（20日窗口）
+        # 方案 A: 滚动 Z-score（20 日窗口）
         new_col = f'{col}_rolling_zscore'
         df[new_col] = rolling_normalize(df, col, window=20)
         new_features.append(new_col)
@@ -80,7 +80,7 @@ def add_optimized_features(df: pd.DataFrame) -> pd.DataFrame:
     print(f"\n  处理{len(vol_cols)}个波动率特征...")
 
     for col in vol_cols:
-        # 相对波动率（当前/20日均值）
+        # 相对波动率（当前/20 日均值）
         new_col = f'{col}_relative'
         df[new_col] = df.groupby('code')[col].transform(
             lambda x: x / (x.rolling(20, min_periods=1).mean() + 1e-8)
@@ -100,12 +100,12 @@ def add_optimized_features(df: pd.DataFrame) -> pd.DataFrame:
     # 4. 成交量变化 - 剪裁异常值（而非标准化）
     if 'volume_chg_5' in df.columns:
         print(f"\n  处理成交量变化...")
-        # 剪裁到[-3, 3]范围
+        # 剪裁到 [-3, 3] 范围
         df['volume_chg_5_clipped'] = df['volume_chg_5'].clip(-3, 3)
         new_features.append('volume_chg_5_clipped')
         print(f"    ✓ volume_chg_5_clipped")
 
-    # 5. 流动性冲击 - 使用RobustScaler
+    # 5. 流动性冲击 - 使用 RobustScaler
     if 'liquidity_shock_20' in df.columns:
         print(f"\n  处理流动性冲击...")
         df['liquidity_shock_robust'] = robust_normalize_by_stock(df, 'liquidity_shock_20')
@@ -127,7 +127,7 @@ def analyze_feature_importance(df: pd.DataFrame, target_col: str, feature_cols: 
     correlations = []
     for feat in feature_cols:
         if feat in df.columns:
-            # 计算Spearman相关系数（对非线性关系更稳健）
+            # 计算 Spearman 相关系数（对非线性关系更稳健）
             corr = df[[feat, target_col]].corr(method='spearman').iloc[0, 1]
             correlations.append({
                 'feature': feat,
@@ -137,11 +137,11 @@ def analyze_feature_importance(df: pd.DataFrame, target_col: str, feature_cols: 
 
     importance_df = pd.DataFrame(correlations).sort_values('correlation', ascending=False)
 
-    print("\nTop 10 最重要特征:")
+    print("\nTop 10 最重要特征：")
     for idx, row in importance_df.head(10).iterrows():
         print(f"  {idx+1}. {row['feature']}: {row['correlation']:.4f} ({row['raw_correlation']:+.4f})")
 
-    print("\nBottom 5 最不重要特征:")
+    print("\nBottom 5 最不重要特征：")
     for idx, row in importance_df.tail(5).iterrows():
         print(f"  {row['feature']}: {row['correlation']:.4f} ({row['raw_correlation']:+.4f})")
 
@@ -158,14 +158,14 @@ def select_features(importance_df: pd.DataFrame, threshold: float = 0.01) -> lis
     removed = importance_df[importance_df['correlation'] < threshold]['feature'].tolist()
 
     print(f"\n📊 特征选择（阈值={threshold}）:")
-    print(f"  保留: {len(selected)}个特征")
-    print(f"  移除: {len(removed)}个特征")
+    print(f"  保留：{len(selected)}个特征")
+    print(f"  移除：{len(removed)}个特征")
 
     if removed:
-        print(f"\n  移除的特征:")
+        print(f"\n  移除的特征：")
         for feat in removed:
             corr = importance_df[importance_df['feature'] == feat]['correlation'].values[0]
-            print(f"    • {feat} (相关性: {corr:.4f})")
+            print(f"    • {feat} (相关性：{corr:.4f})")
 
     return selected
 
@@ -190,12 +190,12 @@ def main() -> int:
     print("\n" + "="*80)
     print("🔧 优化特征归一化")
     print("="*80)
-    print(f"📁 输入: {args.input}")
-    print(f"📁 输出: {args.output}")
+    print(f"📁 输入：{args.input}")
+    print(f"📁 输出：{args.output}")
     print("="*80 + "\n")
 
     if not args.input.exists():
-        print(f"❌ 输入文件不存在: {args.input}")
+        print(f"❌ 输入文件不存在：{args.input}")
         return 1
 
     try:
@@ -203,7 +203,7 @@ def main() -> int:
         print("📊 加载数据...")
         df = pd.read_csv(args.input)
         original_cols = len(df.columns)
-        print(f"  ✓ {len(df)} 行, {original_cols} 列")
+        print(f"  ✓ {len(df)} 行，{original_cols} 列")
 
         # 添加优化特征
         df, new_features = add_optimized_features(df)
@@ -221,7 +221,7 @@ def main() -> int:
             # 保存重要性分析
             importance_path = args.output.parent / "feature_importance.csv"
             importance_df.to_csv(importance_path, index=False)
-            print(f"\n💾 特征重要性已保存: {importance_path}")
+            print(f"\n💾 特征重要性已保存：{importance_path}")
 
             # 特征选择
             if args.select:
@@ -233,7 +233,7 @@ def main() -> int:
                 keep_cols = [c for c in keep_cols if c in df.columns]
 
                 df = df[keep_cols]
-                print(f"\n📊 特征选择后: {len(df.columns)} 列")
+                print(f"\n📊 特征选择后：{len(df.columns)} 列")
 
         # 保存
         args.output.parent.mkdir(parents=True, exist_ok=True)
@@ -244,15 +244,15 @@ def main() -> int:
         print("\n" + "="*80)
         print("✅ 特征优化完成")
         print("="*80)
-        print(f"📊 原始列数: {original_cols}")
-        print(f"📊 新增列数: {len(new_features)}")
-        print(f"📊 最终列数: {len(df.columns)}")
-        print(f"💾 保存至: {args.output}")
+        print(f"📊 原始列数：{original_cols}")
+        print(f"📊 新增列数：{len(new_features)}")
+        print(f"📊 最终列数：{len(df.columns)}")
+        print(f"💾 保存至：{args.output}")
         print("="*80 + "\n")
 
         # 打印新特征
         if new_features:
-            print("🆕 新增特征:")
+            print("🆕 新增特征：")
             for feat in new_features:
                 if feat in df.columns:
                     print(f"  • {feat}")
@@ -261,7 +261,7 @@ def main() -> int:
         return 0
 
     except Exception as e:
-        print(f"\n❌ 错误: {e}")
+        print(f"\n❌ 错误：{e}")
         import traceback
         traceback.print_exc()
         return 1

@@ -61,7 +61,7 @@ def main():
     print(f"  涵盖 {predictions_df['code'].nunique()} 只股票")
 
     # 显示数据样本
-    print("\n数据样本:")
+    print("\n数据样本：")
     print(predictions_df.head(10))
 
     # 生成报告
@@ -78,13 +78,13 @@ def main():
 
     # 显示生成的文件
     print("\n[3/3] 报告生成完成！")
-    print("\n生成的文件:")
+    print("\n生成的文件：")
     for file_type, file_path in output_files.items():
         print(f"  {file_type:15s}: {file_path}")
 
     print("\n" + "=" * 80)
     print("✓ 测试完成！")
-    print(f"请查看报告: {output_files['report']}")
+    print(f"请查看报告：{output_files['report']}")
     print("=" * 80)
 
 

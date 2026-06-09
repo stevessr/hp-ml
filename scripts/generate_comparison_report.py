@@ -66,7 +66,7 @@ def create_visualizations(summary_df: pd.DataFrame, output_dir: Path) -> None:
     plt.tight_layout()
     plt.savefig(output_dir / "sequence_length_analysis.svg", dpi=150, bbox_inches='tight')
     plt.close()
-    print(f"  ✓ 保存: sequence_length_analysis.svg")
+    print(f"  ✓ 保存：sequence_length_analysis.svg")
 
     # 2. 单元数影响分析
     print("📊 生成单元数影响图...")
@@ -81,27 +81,27 @@ def create_visualizations(summary_df: pd.DataFrame, output_dir: Path) -> None:
         fig, axes = plt.subplots(1, 3, figsize=(18, 5))
 
         axes[0].bar(units_data['units'].astype(str), units_data['test_accuracy'], color='skyblue')
-        axes[0].set_xlabel('LSTM单元数', fontsize=12)
+        axes[0].set_xlabel('LSTM 单元数', fontsize=12)
         axes[0].set_ylabel('测试准确率', fontsize=12)
         axes[0].set_title('单元数对准确率的影响', fontsize=13, fontweight='bold')
         axes[0].grid(axis='y', alpha=0.3)
 
         axes[1].bar(units_data['units'].astype(str), units_data['test_ic'], color='lightcoral')
-        axes[1].set_xlabel('LSTM单元数', fontsize=12)
-        axes[1].set_ylabel('测试IC', fontsize=12)
-        axes[1].set_title('单元数对IC的影响', fontsize=13, fontweight='bold')
+        axes[1].set_xlabel('LSTM 单元数', fontsize=12)
+        axes[1].set_ylabel('测试 IC', fontsize=12)
+        axes[1].set_title('单元数对 IC 的影响', fontsize=13, fontweight='bold')
         axes[1].grid(axis='y', alpha=0.3)
 
         axes[2].bar(units_data['units'].astype(str), units_data['test_rmse'], color='lightgreen')
-        axes[2].set_xlabel('LSTM单元数', fontsize=12)
-        axes[2].set_ylabel('测试RMSE', fontsize=12)
-        axes[2].set_title('单元数对RMSE的影响', fontsize=13, fontweight='bold')
+        axes[2].set_xlabel('LSTM 单元数', fontsize=12)
+        axes[2].set_ylabel('测试 RMSE', fontsize=12)
+        axes[2].set_title('单元数对 RMSE 的影响', fontsize=13, fontweight='bold')
         axes[2].grid(axis='y', alpha=0.3)
 
         plt.tight_layout()
         plt.savefig(output_dir / "units_analysis.svg", dpi=150, bbox_inches='tight')
         plt.close()
-        print(f"  ✓ 保存: units_analysis.svg")
+        print(f"  ✓ 保存：units_analysis.svg")
 
     # 3. 所有模型对比
     print("📊 生成模型综合对比图...")
@@ -125,12 +125,12 @@ def create_visualizations(summary_df: pd.DataFrame, output_dir: Path) -> None:
     plt.tight_layout()
     plt.savefig(output_dir / "top_models_comparison.svg", dpi=150, bbox_inches='tight')
     plt.close()
-    print(f"  ✓ 保存: top_models_comparison.svg")
+    print(f"  ✓ 保存：top_models_comparison.svg")
 
 
 def generate_report(summary_df: pd.DataFrame, output_path: Path) -> None:
-    """生成Markdown报告"""
-    print("\n📝 生成Markdown报告...")
+    """生成 Markdown 报告"""
+    print("\n📝 生成 Markdown 报告...")
 
     lines = [
         "# 综合模型对比报告",
@@ -142,7 +142,7 @@ def generate_report(summary_df: pd.DataFrame, output_path: Path) -> None:
         f"- **实验总数**: {len(summary_df)}",
         f"- **模型类型**: {summary_df['model'].nunique()} 种",
         f"- **最佳准确率**: {summary_df['test_accuracy'].max():.4f}",
-        f"- **最佳IC**: {summary_df['test_ic'].max():.4f}",
+        f"- **最佳 IC**: {summary_df['test_ic'].max():.4f}",
         "",
         "## Top 10 模型配置",
         "",
@@ -200,7 +200,7 @@ def generate_report(summary_df: pd.DataFrame, output_path: Path) -> None:
             'test_ic': 'mean'
         }).reset_index()
 
-        lines.append("| 单元数 | 平均准确率 | 平均IC |")
+        lines.append("| 单元数 | 平均准确率 | 平均 IC |")
         lines.append("|--------|-----------|--------|")
         for _, row in units_analysis.iterrows():
             lines.append(f"| {int(row['units'])} | {row['test_accuracy']:.4f} | {row['test_ic']:.4f} |")
@@ -210,7 +210,7 @@ def generate_report(summary_df: pd.DataFrame, output_path: Path) -> None:
         "## 关键发现",
         "",
         "1. **最佳序列长度**: 通过实验确定最优的注意力窗口大小",
-        "2. **单元数影响**: 分析LSTM单元数对性能的影响",
+        "2. **单元数影响**: 分析 LSTM 单元数对性能的影响",
         "3. **模型类型对比**: 不同注意力机制的效果对比",
         "",
         "## 推荐配置",
@@ -230,11 +230,11 @@ def generate_report(summary_df: pd.DataFrame, output_path: Path) -> None:
         "**可视化**:",
         "- `sequence_length_analysis.svg` - 序列长度影响",
         "- `units_analysis.svg` - 单元数影响",
-        "- `top_models_comparison.svg` - Top 10对比",
+        "- `top_models_comparison.svg` - Top 10 对比",
     ])
 
     output_path.write_text("\n".join(lines), encoding="utf-8")
-    print(f"  ✓ 报告已保存: {output_path}")
+    print(f"  ✓ 报告已保存：{output_path}")
 
 
 def main() -> int:
@@ -242,7 +242,7 @@ def main() -> int:
     summary_file = comparison_dir / "model_comparison_summary.csv"
 
     if not summary_file.exists():
-        print(f"❌ 结果文件不存在: {summary_file}")
+        print(f"❌ 结果文件不存在：{summary_file}")
         print("   请先运行 comprehensive_model_comparison.py")
         return 1
 
@@ -259,9 +259,9 @@ def main() -> int:
     print("\n" + "="*80)
     print("✅ 报告生成完成！")
     print("="*80)
-    print(f"\n📁 输出目录: {comparison_dir}")
-    print(f"📄 报告: MODEL_COMPARISON_REPORT.md")
-    print(f"📊 图表: charts/\n")
+    print(f"\n📁 输出目录：{comparison_dir}")
+    print(f"📄 报告：MODEL_COMPARISON_REPORT.md")
+    print(f"📊 图表：charts/\n")
 
     return 0
 

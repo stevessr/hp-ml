@@ -29,7 +29,7 @@ def create_attention_window_analysis(results_df: pd.DataFrame, output_dir: Path)
     output_dir.mkdir(parents=True, exist_ok=True)
 
     # 1. 注意力窗口 vs 准确率（主图）
-    print("📊 生成注意力窗口-准确率关系图...")
+    print("📊 生成注意力窗口 - 准确率关系图...")
 
     fig, ax = plt.subplots(figsize=(14, 8))
 
@@ -57,7 +57,7 @@ def create_attention_window_analysis(results_df: pd.DataFrame, output_dir: Path)
     max_seq = seq_lengths[max_idx]
     max_acc = acc_mean[max_idx]
     ax.scatter([max_seq], [max_acc], s=500, color='red', marker='*',
-              edgecolors='darkred', linewidth=2, zorder=5, label=f'最佳窗口: {max_seq}步')
+              edgecolors='darkred', linewidth=2, zorder=5, label=f'最佳窗口：{max_seq}步')
     ax.annotate(f'{max_acc:.2f}%', (max_seq, max_acc),
                textcoords="offset points", xytext=(0, 15),
                ha='center', fontsize=12, fontweight='bold', color='red')
@@ -77,14 +77,14 @@ def create_attention_window_analysis(results_df: pd.DataFrame, output_dir: Path)
     ax.legend(fontsize=11, loc='lower right')
     ax.set_ylim(50, max(acc_max) + 5)
 
-    # 添加80%目标线
+    # 添加 80% 目标线
     ax.axhline(y=80, color='green', linestyle=':', linewidth=2,
-              alpha=0.7, label='目标: 80%')
+              alpha=0.7, label='目标：80%')
 
     plt.tight_layout()
     plt.savefig(output_dir / "attention_window_vs_accuracy.svg", bbox_inches='tight')
     plt.close()
-    print(f"  ✓ 保存: attention_window_vs_accuracy.svg")
+    print(f"  ✓ 保存：attention_window_vs_accuracy.svg")
 
     # 2. 多因素影响分析（热力图）
     print("📊 生成多因素影响热力图...")
@@ -109,7 +109,7 @@ def create_attention_window_analysis(results_df: pd.DataFrame, output_dir: Path)
         ax.set_yticklabels(pivot_data.index)
 
         ax.set_xlabel('序列长度（注意力窗口）', fontsize=12, fontweight='bold')
-        ax.set_ylabel('LSTM单元数', fontsize=12, fontweight='bold')
+        ax.set_ylabel('LSTM 单元数', fontsize=12, fontweight='bold')
         ax.set_title('准确率热力图：序列长度 × 单元数\n颜色越绿越好',
                     fontsize=14, fontweight='bold', pad=20)
 
@@ -129,14 +129,14 @@ def create_attention_window_analysis(results_df: pd.DataFrame, output_dir: Path)
         plt.tight_layout()
         plt.savefig(output_dir / "hyperparameter_heatmap.svg", bbox_inches='tight')
         plt.close()
-        print(f"  ✓ 保存: hyperparameter_heatmap.svg")
+        print(f"  ✓ 保存：hyperparameter_heatmap.svg")
 
     # 3. 优化历程图
     print("📊 生成优化历程图...")
 
     fig, ax = plt.subplots(figsize=(14, 7))
 
-    # 按时间顺序排序（假设results_df已按实验顺序）
+    # 按时间顺序排序（假设 results_df 已按实验顺序）
     results_sorted = results_df.sort_index()
     x = np.arange(len(results_sorted))
     accuracies = results_sorted['test_accuracy'].values * 100
@@ -150,7 +150,7 @@ def create_attention_window_analysis(results_df: pd.DataFrame, output_dir: Path)
     best_acc = accuracies[best_idx]
     ax.scatter([best_idx], [best_acc], s=300, color='red', marker='*',
               edgecolors='darkred', linewidth=2, zorder=5)
-    ax.annotate(f'最佳: {best_acc:.2f}%\n实验 #{best_idx+1}',
+    ax.annotate(f'最佳：{best_acc:.2f}%\n实验 #{best_idx+1}',
                (best_idx, best_acc),
                textcoords="offset points", xytext=(0, 20),
                ha='center', fontsize=10, fontweight='bold', color='red',
@@ -167,16 +167,16 @@ def create_attention_window_analysis(results_df: pd.DataFrame, output_dir: Path)
                 fontsize=14, fontweight='bold', pad=20)
     ax.grid(True, alpha=0.3, linestyle='--')
     ax.axhline(y=80, color='green', linestyle=':', linewidth=2,
-              alpha=0.7, label='目标: 80%')
+              alpha=0.7, label='目标：80%')
     ax.legend(fontsize=10)
 
     plt.tight_layout()
     plt.savefig(output_dir / "optimization_progress.svg", bbox_inches='tight')
     plt.close()
-    print(f"  ✓ 保存: optimization_progress.svg")
+    print(f"  ✓ 保存：optimization_progress.svg")
 
     # 4. Dropout vs 准确率
-    print("📊 生成Dropout影响图...")
+    print("📊 生成 Dropout 影响图...")
 
     dropout_data = results_df.groupby('dropout')['test_accuracy'].agg(['mean', 'max']).reset_index()
 
@@ -191,9 +191,9 @@ def create_attention_window_analysis(results_df: pd.DataFrame, output_dir: Path)
 
         ax.set_xticks(x_pos)
         ax.set_xticklabels([f'{d:.1f}' for d in dropout_data['dropout']])
-        ax.set_xlabel('Dropout率', fontsize=12, fontweight='bold')
+        ax.set_xlabel('Dropout 率', fontsize=12, fontweight='bold')
         ax.set_ylabel('测试集准确率 (%)', fontsize=12, fontweight='bold')
-        ax.set_title('Dropout率对准确率的影响',
+        ax.set_title('Dropout 率对准确率的影响',
                     fontsize=14, fontweight='bold', pad=20)
         ax.grid(axis='y', alpha=0.3, linestyle='--')
         ax.legend(fontsize=10)
@@ -201,14 +201,14 @@ def create_attention_window_analysis(results_df: pd.DataFrame, output_dir: Path)
         plt.tight_layout()
         plt.savefig(output_dir / "dropout_impact.svg", bbox_inches='tight')
         plt.close()
-        print(f"  ✓ 保存: dropout_impact.svg")
+        print(f"  ✓ 保存：dropout_impact.svg")
 
 
 def main() -> int:
     results_file = REPORTS_DIR / "optimization_80" / "optimization_results.csv"
 
     if not results_file.exists():
-        print(f"❌ 结果文件不存在: {results_file}")
+        print(f"❌ 结果文件不存在：{results_file}")
         print("   请先运行 optimize_to_80.py")
         return 1
 
@@ -224,12 +224,12 @@ def main() -> int:
     print("\n" + "="*80)
     print("✅ 图表生成完成！")
     print("="*80)
-    print(f"\n📁 输出目录: {charts_dir}")
-    print("\n生成的图表:")
-    print("  1. attention_window_vs_accuracy.svg  - 注意力窗口-准确率关系")
+    print(f"\n📁 输出目录：{charts_dir}")
+    print("\n生成的图表：")
+    print("  1. attention_window_vs_accuracy.svg  - 注意力窗口 - 准确率关系")
     print("  2. hyperparameter_heatmap.svg        - 超参数热力图")
     print("  3. optimization_progress.svg         - 优化历程")
-    print("  4. dropout_impact.svg                - Dropout影响")
+    print("  4. dropout_impact.svg                - Dropout 影响")
     print("\n" + "="*80 + "\n")
 
     return 0

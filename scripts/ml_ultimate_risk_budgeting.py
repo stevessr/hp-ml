@@ -7,15 +7,15 @@ from sklearn.preprocessing import StandardScaler
 # ==================================================================================
 # 🎛️ 工业级终极超参数与摩擦控制面板
 # ==================================================================================
-TRAIN_LOOKBACK_DAYS = 730   # 1. 机器学习滚动训练的历史回溯窗口 (2年)
-PROB_RANK_WINDOW = 20       # 2. AI胜率概率池的滚动分位数排名回溯窗口
-TECH_MA_WINDOW = 20         # 3. 本地技术面SMA均线的滤波窗口
-SENT_MA_WINDOW = 20         # 4. 搜索引擎舆情Z-Score计算窗口
+TRAIN_LOOKBACK_DAYS = 730   # 1. 机器学习滚动训练的历史回溯窗口 (2 年)
+PROB_RANK_WINDOW = 20       # 2. AI 胜率概率池的滚动分位数排名回溯窗口
+TECH_MA_WINDOW = 20         # 3. 本地技术面 SMA 均线的滤波窗口
+SENT_MA_WINDOW = 20         # 4. 搜索引擎舆情 Z-Score 计算窗口
 SENT_BREAK_THRESHOLD = 1.5  # 5. 行为金融学极端过热熔断阈值
 
 # 🚀 压轴工业参数
-FEE_RATE = 0.0010           # 6. 显式调仓双边总摩擦费率 (千分之1，真实覆盖佣金+过户费+滑点)
-INERTIA_THRESHOLD = 0.05    # 7. 调仓迟滞死区过滤器阈值 (低于5%的微调仓直接强制冻结，杜绝频繁摩擦)
+FEE_RATE = 0.0010           # 6. 显式调仓双边总摩擦费率 (千分之 1，真实覆盖佣金 + 过户费 + 滑点)
+INERTIA_THRESHOLD = 0.05    # 7. 调仓迟滞死区过滤器阈值 (低于 5% 的微调仓直接强制冻结，杜绝频繁摩擦)
 
 # 路径设置
 data_dir = "data/topic2_broad_base"
@@ -52,7 +52,7 @@ for file in etf_files:
     df_feat['Daily_Return'] = prices.pct_change().fillna(0)
     df_feat['SMA'] = prices.rolling(TECH_MA_WINDOW).mean()
     
-    # 动态滚动计算当前成分资产的【滚动20天历史年化波动率】，用于后续风险平价反比加权
+    # 动态滚动计算当前成分资产的【滚动 20 天历史年化波动率】，用于后续风险平价反比加权
     df_feat['Asset_Vol_20d'] = df_feat['Daily_Return'].rolling(20).std() * np.sqrt(252)
     
     raw_tech = (prices / df_feat['SMA'] - 1).fillna(0)
@@ -163,7 +163,7 @@ for i in range(len(test_months)-1):
         total_friction_fee = 0.0
         
         for idx, code in enumerate(active_codes):
-            w = portfolio_weights[idx]  # 获得该ETF今天的资产配置分配权重
+            w = portfolio_weights[idx]  # 获得该 ETF 今天的资产配置分配权重
             pos = day_raw_positions[code]
             ret = day_returns[code]
             
@@ -198,7 +198,7 @@ regimes = {
 }
 
 print("\n" + "="*112)
-print("👑 终极通关看板：《9只中证宽基复合动态规则策略》扣除全额交易摩擦 + 风险预算反比波动率组合稳健性检验")
+print("👑 终极通关看板：《9 只中证宽基复合动态规则策略》扣除全额交易摩擦 + 风险预算反比波动率组合稳健性检验")
 print("================================================================================================================")
 print(f"{'测试历史区间/市场机制':<32}{'模式':<10}{'总收益率':<10}{'年化收益':<10}{'年化波动':<10}{'夏普比率':<10}{'最大回撤':<10}")
 print("-"*112)
@@ -228,4 +228,4 @@ print("=========================================================================
 
 output_path = os.path.join(reports_dir, "ml_ultimate_risk_budgeting_report.csv")
 perf_df.to_csv(output_path)
-print(f"💾 扣除真实交易摩擦、经风险平价洗礼的全生命周期核心数据已安全导出至: {output_path}\n")
+print(f"💾 扣除真实交易摩擦、经风险平价洗礼的全生命周期核心数据已安全导出至：{output_path}\n")

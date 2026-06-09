@@ -273,8 +273,8 @@ class ClaudeCodeEvolution:
                     iter_result = json.load(f)
                     evolution_history.append(iter_result)
                     print(f"✓ 迭代 {iteration + 1} 完成")
-                    print(f"  改进: {iter_result.get('improvement', 'N/A')}")
-                    print(f"  性能: {iter_result.get('performance', 'N/A')}")
+                    print(f"  改进：{iter_result.get('improvement', 'N/A')}")
+                    print(f"  性能：{iter_result.get('performance', 'N/A')}")
             else:
                 print(f"⚠ 迭代 {iteration + 1} 未生成结果文件")
                 evolution_history.append({

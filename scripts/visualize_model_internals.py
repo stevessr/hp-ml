@@ -5,11 +5,11 @@
 1. 特征重要性柱状图
 2. 预测概率分布直方图
 3. 混淆矩阵热力图
-4. ROC曲线和PR曲线
+4. ROC 曲线和 PR 曲线
 5. 特征相关性矩阵
-6. 预测概率vs实际收益散点图
+6. 预测概率 vs 实际收益散点图
 7. 时间序列预测准确率曲线
-8. 学习曲线（训练集vs验证集）
+8. 学习曲线（训练集 vs 验证集）
 """
 from __future__ import annotations
 
@@ -63,7 +63,7 @@ def load_model_data(train_csv: Path) -> tuple[pd.DataFrame, HistGradientBoosting
         df['F_Sent'] = df.groupby('code')['volume_chg_5'].transform(lambda x: x.fillna(0))
         # 收益滞后
         df['Return_Lag1'] = df.groupby('code')['ret_1'].shift(1).fillna(0)
-        # 波动滞后：使用20日波动率
+        # 波动滞后：使用 20 日波动率
         df['Vol_Lag1'] = df.groupby('code')['vol_20'].shift(1).fillna(0)
 
     # 前向收益（标签）
@@ -101,8 +101,8 @@ def load_model_data(train_csv: Path) -> tuple[pd.DataFrame, HistGradientBoosting
 
 def plot_feature_importance(model: HistGradientBoostingClassifier, output_path: Path) -> None:
     """绘制特征重要性"""
-    # HistGradientBoostingClassifier没有直接的feature_importances_
-    # 使用permutation importance的简化版本
+    # HistGradientBoostingClassifier 没有直接的 feature_importances_
+    # 使用 permutation importance 的简化版本
 
     fig, ax = plt.subplots(figsize=(10, 6))
 
@@ -125,7 +125,7 @@ def plot_feature_importance(model: HistGradientBoostingClassifier, output_path: 
     plt.tight_layout()
     plt.savefig(output_path, dpi=300, bbox_inches='tight')
     plt.close()
-    print(f"✅ 特征重要性图已保存: {output_path}")
+    print(f"✅ 特征重要性图已保存：{output_path}")
 
 
 def plot_prediction_distribution(df: pd.DataFrame, output_path: Path) -> None:
@@ -157,7 +157,7 @@ def plot_prediction_distribution(df: pd.DataFrame, output_path: Path) -> None:
     plt.tight_layout()
     plt.savefig(output_path, dpi=300, bbox_inches='tight')
     plt.close()
-    print(f"✅ 预测概率分布图已保存: {output_path}")
+    print(f"✅ 预测概率分布图已保存：{output_path}")
 
 
 def plot_confusion_matrix(df: pd.DataFrame, output_path: Path) -> None:
@@ -208,51 +208,51 @@ def plot_confusion_matrix(df: pd.DataFrame, output_path: Path) -> None:
     f1 = 2 * precision * recall / (precision + recall) if (precision + recall) > 0 else 0
 
     fig.text(0.5, 0.02,
-             f'准确率: {accuracy:.3f}  |  精确率: {precision:.3f}  |  召回率: {recall:.3f}  |  F1分数: {f1:.3f}',
+             f'准确率：{accuracy:.3f}  |  精确率：{precision:.3f}  |  召回率：{recall:.3f}  |  F1 分数：{f1:.3f}',
              fontsize=10, ha='center', bbox=dict(boxstyle='round', facecolor='lightyellow', alpha=0.5))
 
     plt.tight_layout(rect=[0, 0.05, 1, 1])
     plt.savefig(output_path, dpi=300, bbox_inches='tight')
     plt.close()
-    print(f"✅ 混淆矩阵已保存: {output_path}")
+    print(f"✅ 混淆矩阵已保存：{output_path}")
 
 
 def plot_roc_pr_curves(df: pd.DataFrame, output_path: Path) -> None:
-    """绘制ROC曲线和PR曲线"""
+    """绘制 ROC 曲线和 PR 曲线"""
     y_true = (df['Return_Fwd'] > 0).astype(int)
     y_score = df['pred_proba']
 
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 6))
 
-    # ROC曲线
+    # ROC 曲线
     fpr, tpr, thresholds_roc = roc_curve(y_true, y_score)
     roc_auc = auc(fpr, tpr)
 
-    ax1.plot(fpr, tpr, color='#e74c3c', linewidth=2.5, label=f'ROC曲线 (AUC = {roc_auc:.3f})')
+    ax1.plot(fpr, tpr, color='#e74c3c', linewidth=2.5, label=f'ROC 曲线 (AUC = {roc_auc:.3f})')
     ax1.plot([0, 1], [0, 1], color='gray', linestyle='--', linewidth=1.5, label='随机猜测')
     ax1.set_xlabel('假阳性率 (FPR)', fontsize=10)
     ax1.set_ylabel('真阳性率 (TPR)', fontsize=10)
-    ax1.set_title('ROC曲线', fontsize=11, fontweight='bold')
+    ax1.set_title('ROC 曲线', fontsize=11, fontweight='bold')
     ax1.legend(fontsize=9, loc='lower right')
     ax1.grid(True, alpha=0.3, linestyle='--')
 
-    # PR曲线
+    # PR 曲线
     precision, recall, thresholds_pr = precision_recall_curve(y_true, y_score)
     pr_auc = average_precision_score(y_true, y_score)
 
-    ax2.plot(recall, precision, color='#3498db', linewidth=2.5, label=f'PR曲线 (AP = {pr_auc:.3f})')
+    ax2.plot(recall, precision, color='#3498db', linewidth=2.5, label=f'PR 曲线 (AP = {pr_auc:.3f})')
     baseline = y_true.sum() / len(y_true)
     ax2.axhline(baseline, color='gray', linestyle='--', linewidth=1.5, label=f'基线 ({baseline:.3f})')
     ax2.set_xlabel('召回率 (Recall)', fontsize=10)
     ax2.set_ylabel('精确率 (Precision)', fontsize=10)
-    ax2.set_title('精确率-召回率曲线', fontsize=11, fontweight='bold')
+    ax2.set_title('精确率 - 召回率曲线', fontsize=11, fontweight='bold')
     ax2.legend(fontsize=9, loc='best')
     ax2.grid(True, alpha=0.3, linestyle='--')
 
     plt.tight_layout()
     plt.savefig(output_path, dpi=300, bbox_inches='tight')
     plt.close()
-    print(f"✅ ROC和PR曲线已保存: {output_path}")
+    print(f"✅ ROC 和 PR 曲线已保存：{output_path}")
 
 
 def plot_feature_correlation(df: pd.DataFrame, output_path: Path) -> None:
@@ -285,11 +285,11 @@ def plot_feature_correlation(df: pd.DataFrame, output_path: Path) -> None:
     plt.tight_layout()
     plt.savefig(output_path, dpi=300, bbox_inches='tight')
     plt.close()
-    print(f"✅ 特征相关性矩阵已保存: {output_path}")
+    print(f"✅ 特征相关性矩阵已保存：{output_path}")
 
 
 def plot_prediction_vs_return(df: pd.DataFrame, output_path: Path) -> None:
-    """绘制预测概率vs实际收益散点图"""
+    """绘制预测概率 vs 实际收益散点图"""
     fig, ax = plt.subplots(figsize=(12, 7))
 
     # 按实际收益正负分组
@@ -324,13 +324,13 @@ def plot_prediction_vs_return(df: pd.DataFrame, output_path: Path) -> None:
     q4 = ((df['pred_proba'] >= 0.5) & (df['Return_Fwd'] <= 0)).sum()
 
     fig.text(0.12, 0.02,
-             f'预测✓且上涨: {q1}  |  预测✗但上涨: {q2}  |  预测✓且下跌: {q3}  |  预测✗但下跌: {q4}',
+             f'预测✓且上涨：{q1}  |  预测✗但上涨：{q2}  |  预测✓且下跌：{q3}  |  预测✗但下跌：{q4}',
              fontsize=9, ha='left', bbox=dict(boxstyle='round', facecolor='lightblue', alpha=0.3))
 
     plt.tight_layout(rect=[0, 0.04, 1, 1])
     plt.savefig(output_path, dpi=300, bbox_inches='tight')
     plt.close()
-    print(f"✅ 预测vs收益散点图已保存: {output_path}")
+    print(f"✅ 预测 vs 收益散点图已保存：{output_path}")
 
 
 def plot_time_series_accuracy(df: pd.DataFrame, output_path: Path, window: int = 60) -> None:
@@ -360,13 +360,13 @@ def plot_time_series_accuracy(df: pd.DataFrame, output_path: Path, window: int =
     above_50 = (df['rolling_accuracy'] > 50).sum() / len(df.dropna(subset=['rolling_accuracy'])) * 100
 
     fig.text(0.12, 0.02,
-             f'整体准确率: {overall_acc:.2f}%  |  超过基线比例: {above_50:.1f}%  |  最高准确率: {df["rolling_accuracy"].max():.2f}%',
+             f'整体准确率：{overall_acc:.2f}%  |  超过基线比例：{above_50:.1f}%  |  最高准确率：{df["rolling_accuracy"].max():.2f}%',
              fontsize=10, ha='left', bbox=dict(boxstyle='round', facecolor='lavender', alpha=0.5))
 
     plt.tight_layout(rect=[0, 0.04, 1, 1])
     plt.savefig(output_path, dpi=300, bbox_inches='tight')
     plt.close()
-    print(f"✅ 时间序列准确率曲线已保存: {output_path}")
+    print(f"✅ 时间序列准确率曲线已保存：{output_path}")
 
 
 def plot_calibration_curve(df: pd.DataFrame, output_path: Path, n_bins: int = 10) -> None:
@@ -426,13 +426,13 @@ def plot_calibration_curve(df: pd.DataFrame, output_path: Path, n_bins: int = 10
     plt.tight_layout()
     plt.savefig(output_path, dpi=300, bbox_inches='tight')
     plt.close()
-    print(f"✅ 校准曲线已保存: {output_path}")
+    print(f"✅ 校准曲线已保存：{output_path}")
 
 
 def main():
     parser = argparse.ArgumentParser(description='生成模型内部可视化分析')
     parser.add_argument('--data-csv', default=str(DATA_DIR / 'processed' / 'training_panel_lite.csv'),
-                        help='特征数据CSV文件路径')
+                        help='特征数据 CSV 文件路径')
     parser.add_argument('--output-dir', default=str(CHARTS_DIR),
                         help='图表输出目录')
     parser.add_argument('--rolling-window', type=int, default=60,
@@ -447,12 +447,12 @@ def main():
     print("\n" + "="*80)
     print("🔍 模型内部可视化分析工具")
     print("="*80)
-    print(f"📁 输入文件: {data_csv}")
-    print(f"📁 输出目录: {output_dir}")
+    print(f"📁 输入文件：{data_csv}")
+    print(f"📁 输出目录：{output_dir}")
     print("="*80 + "\n")
 
     if not data_csv.exists():
-        print(f"❌ 错误: 找不到输入文件 {data_csv}")
+        print(f"❌ 错误：找不到输入文件 {data_csv}")
         return 1
 
     try:
@@ -477,20 +477,20 @@ def main():
         print("\n" + "="*80)
         print("✅ 所有模型可视化图表生成完成！")
         print("="*80)
-        print(f"\n📊 生成的文件:")
-        print(f"  1. 特征重要性: {output_dir / 'feature_importance.png'}")
-        print(f"  2. 预测概率分布: {output_dir / 'prediction_distribution.png'}")
-        print(f"  3. 混淆矩阵: {output_dir / 'confusion_matrix.png'}")
-        print(f"  4. ROC和PR曲线: {output_dir / 'roc_pr_curves.png'}")
-        print(f"  5. 特征相关性: {output_dir / 'feature_correlation.png'}")
-        print(f"  6. 预测vs收益散点: {output_dir / 'prediction_vs_return.png'}")
-        print(f"  7. 时间序列准确率: {output_dir / 'time_series_accuracy.png'}")
-        print(f"  8. 模型校准曲线: {output_dir / 'calibration_curve.png'}\n")
+        print(f"\n📊 生成的文件：")
+        print(f"  1. 特征重要性：{output_dir / 'feature_importance.png'}")
+        print(f"  2. 预测概率分布：{output_dir / 'prediction_distribution.png'}")
+        print(f"  3. 混淆矩阵：{output_dir / 'confusion_matrix.png'}")
+        print(f"  4. ROC 和 PR 曲线：{output_dir / 'roc_pr_curves.png'}")
+        print(f"  5. 特征相关性：{output_dir / 'feature_correlation.png'}")
+        print(f"  6. 预测 vs 收益散点：{output_dir / 'prediction_vs_return.png'}")
+        print(f"  7. 时间序列准确率：{output_dir / 'time_series_accuracy.png'}")
+        print(f"  8. 模型校准曲线：{output_dir / 'calibration_curve.png'}\n")
 
         return 0
 
     except Exception as exc:
-        print(f"\n❌ 错误: {exc}")
+        print(f"\n❌ 错误：{exc}")
         import traceback
         traceback.print_exc()
         return 1

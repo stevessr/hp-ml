@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """在优化数据上验证性能
 
-对比三个数据集的性能:
-1. 原始数据（38特征）
-2. 过度归一化数据（50特征）
-3. 优化归一化数据（33特征）
+对比三个数据集的性能：
+1. 原始数据（38 特征）
+2. 过度归一化数据（50 特征）
+3. 优化归一化数据（33 特征）
 """
 from __future__ import annotations
 
@@ -31,7 +31,7 @@ def train_and_evaluate(
     """训练并评估模型"""
 
     print(f"\n{'='*80}")
-    print(f"📊 测试数据集: {data_name}")
+    print(f"📊 测试数据集：{data_name}")
     print(f"{'='*80}")
 
     # 加载数据
@@ -42,7 +42,7 @@ def train_and_evaluate(
     feature_cols = [c for c in df.columns if c not in exclude_cols
                    and not c.startswith('fwd_')]
 
-    print(f"  特征数: {len(feature_cols)}")
+    print(f"  特征数：{len(feature_cols)}")
 
     # 切分数据
     df = df.sort_values("date")
@@ -54,8 +54,8 @@ def train_and_evaluate(
     train_df = trainable[trainable["date"] < split_date].copy()
     test_df = trainable[trainable["date"] >= split_date].copy()
 
-    print(f"  训练集: {len(train_df)} 行")
-    print(f"  测试集: {len(test_df)} 行")
+    print(f"  训练集：{len(train_df)} 行")
+    print(f"  测试集：{len(test_df)} 行")
 
     # 训练模型
     print(f"\n  🔧 训练 Attention LSTM (seq={seq_length})...")
@@ -86,8 +86,8 @@ def train_and_evaluate(
         "rmse": float(np.sqrt(np.mean((test_pred - test_actual) ** 2))),
     }
 
-    print(f"\n  📊 结果:")
-    print(f"    准确率: {metrics['accuracy']:.4f}")
+    print(f"\n  📊 结果：")
+    print(f"    准确率：{metrics['accuracy']:.4f}")
     print(f"    IC:     {metrics['ic']:.4f}")
     print(f"    RMSE:   {metrics['rmse']:.6f}")
 
@@ -109,21 +109,21 @@ def main() -> int:
     # 1. 原始数据（基线）
     results.append(train_and_evaluate(
         PROCESSED_DIR / "training_panel_lite.csv",
-        "原始数据（38特征）",
+        "原始数据（38 特征）",
         seq_length=20
     ))
 
     # 2. 优化归一化数据
     results.append(train_and_evaluate(
         PROCESSED_DIR / "training_panel_optimized.csv",
-        "优化归一化（33特征）",
+        "优化归一化（33 特征）",
         seq_length=20
     ))
 
     # 3. 优化数据 seq=25
     results.append(train_and_evaluate(
         PROCESSED_DIR / "training_panel_optimized.csv",
-        "优化归一化（33特征, seq=25）",
+        "优化归一化（33 特征，seq=25）",
         seq_length=25
     ))
 
@@ -141,9 +141,9 @@ def main() -> int:
 
     for idx, row in results_df.iterrows():
         print(f"{idx+1}. {row['data_name']}")
-        print(f"   准确率: {row['accuracy']:.4f}")
+        print(f"   准确率：{row['accuracy']:.4f}")
         print(f"   IC:     {row['ic']:.4f}")
-        print(f"   特征数: {row['num_features']}")
+        print(f"   特征数：{row['num_features']}")
         print()
 
     # 计算提升
@@ -151,16 +151,16 @@ def main() -> int:
     best_acc = results_df['accuracy'].max()
     improvement = (best_acc - baseline_acc) * 100
 
-    print(f"💡 最佳准确率: {best_acc:.4f}")
-    print(f"💡 基线准确率: {baseline_acc:.4f}")
-    print(f"💡 提升幅度: {improvement:+.2f}%")
+    print(f"💡 最佳准确率：{best_acc:.4f}")
+    print(f"💡 基线准确率：{baseline_acc:.4f}")
+    print(f"💡 提升幅度：{improvement:+.2f}%")
 
     if best_acc > baseline_acc:
         print(f"\n✅ 优化归一化成功！性能提升 {improvement:.2f}%")
     else:
         print(f"\n⚠️ 优化归一化未带来提升，差异 {improvement:.2f}%")
 
-    print(f"\n💾 结果已保存: {output_dir}/comparison_results.csv\n")
+    print(f"\n💾 结果已保存：{output_dir}/comparison_results.csv\n")
 
     return 0
 

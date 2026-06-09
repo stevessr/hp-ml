@@ -45,8 +45,8 @@ def main():
     print("=" * 80)
     print("🧬 AI 驱动的模型自动进化系统")
     print("=" * 80)
-    print(f"\n目标: {args.goal}")
-    print(f"最大迭代: {args.max_iterations}")
+    print(f"\n目标：{args.goal}")
+    print(f"最大迭代：{args.max_iterations}")
     print()
 
     # 获取项目目录
@@ -57,7 +57,7 @@ def main():
         assistant = ClaudeCodeEvolution(claude_code_path=args.claude_code_path)
         print("✓ Claude Code 助手已就绪\n")
     except Exception as e:
-        print(f"✗ 无法初始化 Claude Code 助手: {e}")
+        print(f"✗ 无法初始化 Claude Code 助手：{e}")
         print("\n请确保：")
         print("1. 已安装 Claude Code: https://claude.ai/download")
         print("2. Claude Code 在 PATH 中，或通过 --claude-code-path 指定路径")
@@ -84,7 +84,7 @@ def main():
         improvement = record.get("improvement", "N/A")
         print(f"  迭代 {i}: {status} - {improvement}")
 
-    print(f"\n详细记录已保存到: {project_dir / 'reports' / 'evolution_*.json'}")
+    print(f"\n详细记录已保存到：{project_dir / 'reports' / 'evolution_*.json'}")
 
     # 检查是否达到目标
     final_performance = evolution_history[-1].get("performance", {}) if evolution_history else {}
@@ -93,7 +93,7 @@ def main():
     if sharpe >= 1.5:
         print("\n✓ 目标达成！")
     else:
-        print(f"\n⚠ 当前夏普比率: {sharpe:.2f}，继续优化可能需要更多迭代")
+        print(f"\n⚠ 当前夏普比率：{sharpe:.2f}，继续优化可能需要更多迭代")
 
 
 if __name__ == "__main__":

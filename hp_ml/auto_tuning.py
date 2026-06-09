@@ -36,7 +36,7 @@ class HyperparameterTuner:
             random_state: 随机种子
         """
         if not OPTUNA_AVAILABLE:
-            raise ImportError("Optuna 未安装，请运行: pip install optuna")
+            raise ImportError("Optuna 未安装，请运行：pip install optuna")
 
         self.model_type = model_type.lower()
         self.n_trials = n_trials
@@ -111,7 +111,7 @@ class HyperparameterTuner:
         try:
             import xgboost as xgb
         except ImportError:
-            raise ImportError("XGBoost 未安装，请运行: pip install xgboost")
+            raise ImportError("XGBoost 未安装，请运行：pip install xgboost")
 
         from sklearn.model_selection import cross_val_score
 
@@ -142,7 +142,7 @@ class HyperparameterTuner:
         try:
             import lightgbm as lgb
         except ImportError:
-            raise ImportError("LightGBM 未安装，请运行: pip install lightgbm")
+            raise ImportError("LightGBM 未安装，请运行：pip install lightgbm")
 
         from sklearn.model_selection import cross_val_score
 
@@ -200,7 +200,7 @@ class HyperparameterTuner:
         }
 
         if self.model_type not in objective_map:
-            raise ValueError(f"不支持的模型类型: {self.model_type}")
+            raise ValueError(f"不支持的模型类型：{self.model_type}")
 
         objective_func = objective_map[self.model_type]
 
@@ -260,7 +260,7 @@ def auto_tune_model(
         cv_folds: 交叉验证折数
 
     Returns:
-        (最佳参数, 最佳得分)
+        (最佳参数，最佳得分)
     """
     tuner = HyperparameterTuner(
         model_type=model_type,

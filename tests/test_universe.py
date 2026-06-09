@@ -16,7 +16,7 @@ def test_avoids_non_csi_generic_names():
     assert classify_name("深证 100ETF 富国")[0] is None
     assert classify_name("民企 300ETF 前海开源")[0] is None
     assert classify_name("沪港深 500ETF 富国")[0] is None
-    assert classify_name("南方中证全指农牧渔ETF")[0] is None
+    assert classify_name("南方中证全指农牧渔 ETF")[0] is None
 
 
 def test_excludes_style_or_theme_by_default():
@@ -39,7 +39,7 @@ def test_build_multi_scale_analysis_summarizes_horizons():
             {"date": "2024-01-04", "close": 1.0},
         ]
     }
-    universe = [{"code": "510300", "name": "沪深300ETF", "family_id": "CSI_300"}]
+    universe = [{"code": "510300", "name": "沪深 300ETF", "family_id": "CSI_300"}]
 
     result = build_multi_scale_analysis(histories, universe, [1, 2])
 

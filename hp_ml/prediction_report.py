@@ -98,7 +98,7 @@ class PredictionReportGenerator:
         )
         output_files["report"] = report_path
 
-        print(f"✓ 报告生成完成，保存至: {self.output_dir}")
+        print(f"✓ 报告生成完成，保存至：{self.output_dir}")
         return output_files
 
     def _plot_prediction_vs_actual_timeseries(
@@ -110,7 +110,7 @@ class PredictionReportGenerator:
         date_col: str | None,
         code_col: str | None,
     ) -> Path:
-        """绘制预测vs实际时间序列"""
+        """绘制预测 vs 实际时间序列"""
         fig, axes = plt.subplots(2, 1, figsize=(16, 10))
 
         # 如果有多只股票，随机选择一只展示
@@ -118,7 +118,7 @@ class PredictionReportGenerator:
             unique_codes = df[code_col].unique()
             sample_code = unique_codes[0] if len(unique_codes) > 0 else None
             df_plot = df[df[code_col] == sample_code].copy() if sample_code else df.copy()
-            title_suffix = f" (股票: {sample_code})" if sample_code else ""
+            title_suffix = f" (股票：{sample_code})" if sample_code else ""
         else:
             df_plot = df.copy()
             title_suffix = ""
@@ -164,7 +164,7 @@ class PredictionReportGenerator:
     def _plot_prediction_scatter(
         self, df: pd.DataFrame, pred_col: str, actual_col: str, model_name: str
     ) -> Path:
-        """绘制预测vs实际散点图"""
+        """绘制预测 vs 实际散点图"""
         fig, ax = plt.subplots(figsize=(10, 10))
 
         # 散点图
@@ -227,7 +227,7 @@ class PredictionReportGenerator:
         ax1 = fig.add_subplot(gs[0, 0])
         ax1.hist(error, bins=50, color="#2E86AB", alpha=0.7, edgecolor="black")
         ax1.axvline(0, color="red", linestyle="--", linewidth=2)
-        ax1.axvline(error.mean(), color="green", linestyle="--", linewidth=2, label=f"均值: {error.mean():.4f}")
+        ax1.axvline(error.mean(), color="green", linestyle="--", linewidth=2, label=f"均值：{error.mean():.4f}")
         ax1.set_xlabel("误差")
         ax1.set_ylabel("频数")
         ax1.set_title("误差分布直方图")
@@ -292,7 +292,7 @@ MAPE:               {(abs_error / (np.abs(df[actual_col]) + 1e-8)).mean() * 100:
     ) -> Path:
         """按股票代码绘制对比图"""
         unique_codes = df[code_col].unique()
-        n_codes = min(len(unique_codes), 9)  # 最多显示9只股票
+        n_codes = min(len(unique_codes), 9)  # 最多显示 9 只股票
 
         fig, axes = plt.subplots(3, 3, figsize=(18, 14))
         axes = axes.flatten()
@@ -428,10 +428,10 @@ RMSE:          {rmse:.6f}
 MAPE:          {mape:.2f}%
 
 误差统计：
-均值:          {error.mean():.6f}
-标准差:        {error.std():.6f}
-最大正误差:    {error.max():.6f}
-最大负误差:    {error.min():.6f}
+均值：         {error.mean():.6f}
+标准差：       {error.std():.6f}
+最大正误差：   {error.max():.6f}
+最大负误差：   {error.min():.6f}
         """
 
         ax7.text(0.1, 0.5, metrics_text, fontsize=10, verticalalignment="center", family="monospace")
@@ -467,7 +467,7 @@ MAPE:          {mape:.2f}%
         # 生成 Markdown
         report_content = f"""# {model_name} - 预测报告
 
-生成时间: {pd.Timestamp.now().strftime('%Y-%m-%d %H:%M:%S')}
+生成时间：{pd.Timestamp.now().strftime('%Y-%m-%d %H:%M:%S')}
 
 ---
 
@@ -551,7 +551,7 @@ MAPE:          {mape:.2f}%
             report_content += "- ✅ 预测无明显偏差\n"
         else:
             bias_direction = "高估" if error.mean() > 0 else "低估"
-            report_content += f"- ⚠️ 预测存在系统性{bias_direction}（均值误差: {error.mean():.4f}）\n"
+            report_content += f"- ⚠️ 预测存在系统性{bias_direction}（均值误差：{error.mean():.4f}）\n"
 
         if mape < 10:
             report_content += "- ✅ 相对误差小 (MAPE < 10%)\n"

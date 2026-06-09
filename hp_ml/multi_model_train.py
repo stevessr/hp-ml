@@ -33,7 +33,7 @@ def build_parser() -> argparse.ArgumentParser:
         "--models",
         nargs="+",
         default=["hgb", "ridge", "enhanced_rf"],
-        help="训练的模型列表，可选: hgb, ridge, rf, enhanced_rf, prophet, lstm"
+        help="训练的模型列表，可选：hgb, ridge, rf, enhanced_rf, prophet, lstm"
     )
 
     parser.add_argument("--train-ratio", type=float, default=0.6, help="训练集比例")
@@ -115,7 +115,7 @@ def main(argv: list[str] | None = None) -> None:
     panel, feature_cols, target_col = build_feature_panel(histories, universe=universe, horizon=args.horizon)
     panel_path = PROCESSED_DIR / "training_panel.csv"
     panel.to_csv(panel_path, index=False)
-    print(f"特征面板: {len(panel)} 行, {len(feature_cols)} 个特征")
+    print(f"特征面板：{len(panel)} 行，{len(feature_cols)} 个特征")
 
     # 4. 数据划分
     print("\n划分训练集/验证集/测试集...")
@@ -127,9 +127,9 @@ def main(argv: list[str] | None = None) -> None:
         test_ratio=args.test_ratio,
     )
 
-    print(f"训练集: {len(split_data.train)} 行 ({split_data.train_dates[0].date()} ~ {split_data.train_dates[1].date()})")
-    print(f"验证集: {len(split_data.val)} 行 ({split_data.val_dates[0].date()} ~ {split_data.val_dates[1].date()})")
-    print(f"测试集: {len(split_data.test)} 行 ({split_data.test_dates[0].date()} ~ {split_data.test_dates[1].date()})")
+    print(f"训练集：{len(split_data.train)} 行 ({split_data.train_dates[0].date()} ~ {split_data.train_dates[1].date()})")
+    print(f"验证集：{len(split_data.val)} 行 ({split_data.val_dates[0].date()} ~ {split_data.val_dates[1].date()})")
+    print(f"测试集：{len(split_data.test)} 行 ({split_data.test_dates[0].date()} ~ {split_data.test_dates[1].date()})")
 
     # 5. 训练多个模型
     models_results = {}
@@ -152,14 +152,14 @@ def main(argv: list[str] | None = None) -> None:
 
             all_predictions[model_type] = predictions
 
-            print(f"\n{model_type.upper()} 模型评估:")
+            print(f"\n{model_type.upper()} 模型评估：")
             print(f"  MAE: {metrics['mae']:.6f}")
             print(f"  RMSE: {metrics['rmse']:.6f}")
-            print(f"  方向准确率: {metrics['directional_accuracy']:.2%}")
+            print(f"  方向准确率：{metrics['directional_accuracy']:.2%}")
             print(f"  Spearman IC: {metrics.get('spearman_ic_by_date', 0):.4f}")
 
         except Exception as e:
-            print(f"\n{model_type.upper()} 模型训练失败: {e}")
+            print(f"\n{model_type.upper()} 模型训练失败：{e}")
             continue
 
     if not models_results:
@@ -175,7 +175,7 @@ def main(argv: list[str] | None = None) -> None:
         transaction_cost=args.transaction_cost,
     )
 
-    print("\n回测结果排名:")
+    print("\n回测结果排名：")
     print(backtest_comparison.to_string(index=False))
 
     # 7. 保存结果
@@ -270,14 +270,14 @@ def main(argv: list[str] | None = None) -> None:
                 date_col="date" if "date" in predictions.columns else None,
                 code_col="code" if "code" in predictions.columns else None,
             )
-            print(f"    ✓ 报告已生成: {report_files.get('report', 'N/A')}")
+            print(f"    ✓ 报告已生成：{report_files.get('report', 'N/A')}")
         except Exception as e:
-            print(f"    ✗ 报告生成失败: {e}")
+            print(f"    ✗ 报告生成失败：{e}")
 
-    print(f"\n训练完成！最佳模型: {summary['best_model']}")
-    print(f"报告保存至: {REPORTS_DIR}")
-    print(f"图表保存至: {charts_dir}")
-    print(f"预测报告保存至: {prediction_reports_dir}")
+    print(f"\n训练完成！最佳模型：{summary['best_model']}")
+    print(f"报告保存至：{REPORTS_DIR}")
+    print(f"图表保存至：{charts_dir}")
+    print(f"预测报告保存至：{prediction_reports_dir}")
 
 
 if __name__ == "__main__":

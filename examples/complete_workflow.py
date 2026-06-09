@@ -51,16 +51,16 @@ def main():
     # ========== 步骤 3: 构建特征面板 ==========
     print("\n[3/7] 构建特征面板...")
     panel, feature_cols, target_col = build_feature_panel(histories, universe=universe, horizon=5)
-    print(f"  面板大小: {len(panel)} 行")
-    print(f"  特征数量: {len(feature_cols)}")
-    print(f"  目标变量: {target_col}")
+    print(f"  面板大小：{len(panel)} 行")
+    print(f"  特征数量：{len(feature_cols)}")
+    print(f"  目标变量：{target_col}")
 
     # ========== 步骤 4: 数据划分 ==========
     print("\n[4/7] 划分训练集/验证集/测试集...")
     split = time_series_split(panel, target_col=target_col, train_ratio=0.6, val_ratio=0.2, test_ratio=0.2)
-    print(f"  训练集: {len(split.train)} 行 ({split.train_dates[0].date()} ~ {split.train_dates[1].date()})")
-    print(f"  验证集: {len(split.val)} 行")
-    print(f"  测试集: {len(split.test)} 行")
+    print(f"  训练集：{len(split.train)} 行 ({split.train_dates[0].date()} ~ {split.train_dates[1].date()})")
+    print(f"  验证集：{len(split.val)} 行")
+    print(f"  测试集：{len(split.test)} 行")
 
     # ========== 步骤 5: 训练多个模型 ==========
     print("\n[5/7] 训练多个模型...")
@@ -103,7 +103,7 @@ def main():
         transaction_cost=0.001,
     )
 
-    print("\n回测结果:")
+    print("\n回测结果：")
     print(backtest_comparison.to_string(index=False))
 
     # ========== 步骤 7: 生成可视化和报告 ==========
@@ -134,8 +134,8 @@ def main():
 
     print("\n" + "=" * 80)
     print("示例完成！")
-    print(f"图表保存至: {charts_dir}")
-    print(f"报告保存至: {REPORTS_DIR / 'example_report.md'}")
+    print(f"图表保存至：{charts_dir}")
+    print(f"报告保存至：{REPORTS_DIR / 'example_report.md'}")
     print("=" * 80)
 
 

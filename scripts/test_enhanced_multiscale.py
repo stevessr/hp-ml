@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-"""增强多尺度LSTM - 5个时间尺度
+"""增强多尺度 LSTM - 5 个时间尺度
 
-从3尺度扩展到5尺度:
-- 3天: 超短期（日内波动）
-- 5天: 短期（周内趋势）
-- 10天: 中期（双周动量）
-- 15天: 中长期（月中信息）
-- 20天: 长期（完整月度）
+从 3 尺度扩展到 5 尺度：
+- 3 天：超短期（日内波动）
+- 5 天：短期（周内趋势）
+- 10 天：中期（双周动量）
+- 15 天：中长期（月中信息）
+- 20 天：长期（完整月度）
 """
 from __future__ import annotations
 
@@ -31,7 +31,7 @@ except ImportError:
 
 
 class EnhancedMultiScaleLSTM:
-    """增强多尺度LSTM - 5个时间尺度"""
+    """增强多尺度 LSTM - 5 个时间尺度"""
 
     def __init__(
         self,
@@ -43,7 +43,7 @@ class EnhancedMultiScaleLSTM:
         batch_size: int = 32,
     ):
         if not TF_AVAILABLE:
-            raise ImportError("TensorFlow未安装")
+            raise ImportError("TensorFlow 未安装")
 
         self.seq_length = seq_length
         self.units = units
@@ -56,10 +56,10 @@ class EnhancedMultiScaleLSTM:
         self.feature_names_ = []
 
     def _build_model(self, input_shape: tuple[int, int]) -> keras.Model:
-        """构建增强多尺度LSTM"""
+        """构建增强多尺度 LSTM"""
         inputs = keras.Input(shape=input_shape)
 
-        # 5个时间尺度分支
+        # 5 个时间尺度分支
         scales = [3, 5, 10, 15, 20]
         scale_features = []
 
@@ -70,7 +70,7 @@ class EnhancedMultiScaleLSTM:
             else:
                 scale_input = inputs
 
-            # LSTM处理
+            # LSTM 处理
             lstm_units = self.units // 4 if scale <= 5 else self.units // 3
             lstm_out = keras.layers.LSTM(
                 lstm_units,
@@ -187,7 +187,7 @@ class EnhancedMultiScaleLSTM:
 
 
 class MultiScaleAttentionLSTM:
-    """多尺度注意力LSTM - 在每个尺度上添加注意力"""
+    """多尺度注意力 LSTM - 在每个尺度上添加注意力"""
 
     def __init__(
         self,
@@ -199,7 +199,7 @@ class MultiScaleAttentionLSTM:
         batch_size: int = 32,
     ):
         if not TF_AVAILABLE:
-            raise ImportError("TensorFlow未安装")
+            raise ImportError("TensorFlow 未安装")
 
         self.seq_length = seq_length
         self.units = units
@@ -230,10 +230,10 @@ class MultiScaleAttentionLSTM:
         return attended
 
     def _build_model(self, input_shape: tuple[int, int]) -> keras.Model:
-        """构建多尺度注意力LSTM"""
+        """构建多尺度注意力 LSTM"""
         inputs = keras.Input(shape=input_shape)
 
-        # 3个主要时间尺度（带注意力）
+        # 3 个主要时间尺度（带注意力）
         scales = [5, 10, 20]
         scale_features = []
 
@@ -380,14 +380,14 @@ def main() -> int:
     train_df = trainable[trainable["date"] < split_date].copy()
     test_df = trainable[trainable["date"] >= split_date].copy()
 
-    print(f"训练集: {len(train_df)} 行")
-    print(f"测试集: {len(test_df)} 行\n")
+    print(f"训练集：{len(train_df)} 行")
+    print(f"测试集：{len(test_df)} 行\n")
 
     results = []
 
-    # 1. 增强多尺度LSTM (5个尺度)
+    # 1. 增强多尺度 LSTM (5 个尺度)
     print("="*80)
-    print("🔧 训练增强多尺度LSTM (5尺度)...")
+    print("🔧 训练增强多尺度 LSTM (5 尺度)...")
     print("="*80)
 
     model1 = EnhancedMultiScaleLSTM(
@@ -406,7 +406,7 @@ def main() -> int:
     acc1 = float(np.mean((pred1 > 0) == (actual > 0)))
     ic1 = float(spearmanr(pred1, actual)[0])
 
-    print(f"  准确率: {acc1:.4f}")
+    print(f"  准确率：{acc1:.4f}")
     print(f"  IC: {ic1:.4f}\n")
 
     results.append({
@@ -415,9 +415,9 @@ def main() -> int:
         "ic": ic1
     })
 
-    # 2. 多尺度注意力LSTM
+    # 2. 多尺度注意力 LSTM
     print("="*80)
-    print("🔧 训练多尺度注意力LSTM...")
+    print("🔧 训练多尺度注意力 LSTM...")
     print("="*80)
 
     model2 = MultiScaleAttentionLSTM(
@@ -435,7 +435,7 @@ def main() -> int:
     acc2 = float(np.mean((pred2 > 0) == (actual > 0)))
     ic2 = float(spearmanr(pred2, actual)[0])
 
-    print(f"  准确率: {acc2:.4f}")
+    print(f"  准确率：{acc2:.4f}")
     print(f"  IC: {ic2:.4f}\n")
 
     results.append({
@@ -456,26 +456,26 @@ def main() -> int:
     print("="*80 + "\n")
 
     # 添加基线对比
-    print("基线对比:")
-    print(f"  多尺度LSTM (3尺度): 68.08%, IC: 0.3976\n")
+    print("基线对比：")
+    print(f"  多尺度 LSTM (3 尺度): 68.08%, IC: 0.3976\n")
 
-    print("新架构:")
+    print("新架构：")
     for idx, row in results_df.iterrows():
         print(f"{idx+1}. {row['model']}")
-        print(f"   准确率: {row['accuracy']:.4f}")
+        print(f"   准确率：{row['accuracy']:.4f}")
         print(f"   IC: {row['ic']:.4f}\n")
 
     best_acc = results_df['accuracy'].max()
-    print(f"💡 最佳准确率: {best_acc:.4f}")
+    print(f"💡 最佳准确率：{best_acc:.4f}")
 
     if best_acc > 0.6808:
         improvement = (best_acc - 0.6808) * 100
-        print(f"💡 超越基线: +{improvement:.2f}%")
+        print(f"💡 超越基线：+{improvement:.2f}%")
         print(f"\n✅ 架构增强成功！")
     else:
         print(f"\n⚠️ 未超越基线 (68.08%)")
 
-    print(f"\n💾 结果已保存: {output_dir}/results.csv\n")
+    print(f"\n💾 结果已保存：{output_dir}/results.csv\n")
 
     return 0
 

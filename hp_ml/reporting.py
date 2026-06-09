@@ -51,7 +51,7 @@ def make_training_summary(
     lines.append("")
     lines.append("### 成交额靠前候选")
     lines.append("")
-    lines.append("|代码|名称|指数族|最新价|成交额|族内排名|")
+    lines.append("|代码 | 名称 | 指数族 | 最新价 | 成交额 | 族内排名|")
     lines.append("|---|---|---|---:|---:|---:|")
     for _, row in top_candidates.iterrows():
         lines.append(
@@ -68,7 +68,7 @@ def make_training_summary(
     lines.append("")
     lines.append("## 3. 时间切分验证指标")
     lines.append("")
-    lines.append("|指标|值|")
+    lines.append("|指标 | 值|")
     lines.append("|---|---:|")
     for key in [
         "model_type",
@@ -102,7 +102,7 @@ def make_training_summary(
             ("最新预测排序图", "latest_prediction_rank"),
             ("候选指数族覆盖图", "candidate_family_counts"),
             ("验证指标快照图", "holdout_metric_snapshot"),
-            ("Holdout累计曲线", "holdout_cumulative"),
+            ("Holdout 累计曲线", "holdout_cumulative"),
         ]:
             path_text = chart_paths.get(key)
             if not path_text:
@@ -121,7 +121,7 @@ def make_training_summary(
 
     lines.append("## 5. 最新候选排序")
     lines.append("")
-    lines.append("|排名|日期|代码|名称|指数族|收盘价|预测未来收益|近5日|近20日|20日波动|20日回撤|")
+    lines.append("|排名 | 日期 | 代码 | 名称 | 指数族 | 收盘价 | 预测未来收益 | 近 5 日 | 近 20 日|20 日波动|20 日回撤|")
     lines.append("|---:|---|---|---|---|---:|---:|---:|---:|---:|---:|")
     pred_col = f"pred_fwd_ret_{horizon}"
     for _, row in top_predictions.iterrows():

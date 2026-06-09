@@ -122,7 +122,7 @@ def create_comprehensive_comparison(df, output_dir):
     # 保存
     output_path = output_dir / "comprehensive_memory_transformer_comparison.svg"
     plt.savefig(output_path, dpi=300, bbox_inches='tight')
-    print(f"📊 综合对比图表已保存: {output_path}")
+    print(f"📊 综合对比图表已保存：{output_path}")
 
     plt.close()
 
@@ -141,7 +141,7 @@ def print_summary(df):
         emoji = "🏆" if i == 1 else "🥈" if i == 2 else "🥉" if i == 3 else "  "
         category_badge = "[MT]" if row.category == "Memory Transformer" else "[BL]"
         print(f"{emoji} {i:2d}. {category_badge} {row.model.upper():25s} - "
-              f"准确率: {row.test_directional_accuracy:.4f}, "
+              f"准确率：{row.test_directional_accuracy:.4f}, "
               f"IC: {row.test_spearman_ic:.4f}, "
               f"RMSE: {row.test_rmse:.6f}")
 
@@ -153,21 +153,21 @@ def print_summary(df):
     mt_models = df_sorted[df_sorted['category'] == 'Memory Transformer']
     baseline_models = df_sorted[df_sorted['category'] == 'Baseline']
 
-    print(f"\nMemory Transformer 模型数量: {len(mt_models)}")
-    print(f"基线模型数量: {len(baseline_models)}")
+    print(f"\nMemory Transformer 模型数量：{len(mt_models)}")
+    print(f"基线模型数量：{len(baseline_models)}")
 
     print(f"\n最佳 Memory Transformer: {mt_models.iloc[0]['model'].upper()}")
-    print(f"  准确率: {mt_models.iloc[0]['test_directional_accuracy']:.4f}")
+    print(f"  准确率：{mt_models.iloc[0]['test_directional_accuracy']:.4f}")
     print(f"  Spearman IC: {mt_models.iloc[0]['test_spearman_ic']:.4f}")
 
-    print(f"\n最佳基线模型: {baseline_models.iloc[0]['model'].upper()}")
-    print(f"  准确率: {baseline_models.iloc[0]['test_directional_accuracy']:.4f}")
+    print(f"\n最佳基线模型：{baseline_models.iloc[0]['model'].upper()}")
+    print(f"  准确率：{baseline_models.iloc[0]['test_directional_accuracy']:.4f}")
     print(f"  Spearman IC: {baseline_models.iloc[0]['test_spearman_ic']:.4f}")
 
     # Top 3 统计
     top3 = df_sorted.head(3)
     mt_in_top3 = len(top3[top3['category'] == 'Memory Transformer'])
-    print(f"\nTop 3 中 Memory Transformer 占比: {mt_in_top3}/3")
+    print(f"\nTop 3 中 Memory Transformer 占比：{mt_in_top3}/3")
 
     print("\n" + "="*80)
 
@@ -193,7 +193,7 @@ def main():
     output_path = REPORTS_DIR / "comprehensive_model_comparison.csv"
     df_sorted = df.sort_values('test_directional_accuracy', ascending=False)
     df_sorted.to_csv(output_path, index=False)
-    print(f"\n💾 综合对比表格已保存: {output_path}")
+    print(f"\n💾 综合对比表格已保存：{output_path}")
 
     print("\n✅ 对比报告生成完成！")
     return 0

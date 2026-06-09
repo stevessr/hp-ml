@@ -9,7 +9,7 @@ trends_path = "data/alternative_data/google_trends_sentiment.csv"
 reports_dir = "reports"
 os.makedirs(reports_dir, exist_ok=True)
 
-print("🏛️ 正在启动《9只中证宽基多资产时序集成与动态配置》终极量化增强引擎...")
+print("🏛️ 正在启动《9 只中证宽基多资产时序集成与动态配置》终极量化增强引擎...")
 
 # 2. 加载并清洗全球舆情特征
 trends_df = pd.read_csv(trends_path, parse_dates=['date']).set_index('date')
@@ -136,11 +136,11 @@ b_tot, b_ann, b_vol, b_sha, b_dd = get_metrics(perf_df['Benchmark'], perf_df['Be
 s_tot, s_ann, s_vol, s_sha, s_dd = get_metrics(perf_df['Strategy'], perf_df['Strat_Cum'])
 
 print("\n" + "="*95)
-print("👑 降维打击：《9只中证宽基 ETF 时序集成与动态仓位投资组合》盲测绩效看板")
+print("👑 降维打击：《9 只中证宽基 ETF 时序集成与动态仓位投资组合》盲测绩效看板")
 print("===============================================================================================")
 print(f"{'策略组合模式':<25}{'总收益率':<12}{'年化收益':<12}{'年化波动':<12}{'夏普比率':<12}{'最大回撤':<12}")
 print("-"*95)
-print(f"{'传统等权被动资产配置(基准)':<20}{b_tot:>10.2%}{b_ann:>12.2%}{b_vol:>12.2%}{b_sha:>12.2f}{b_dd:>12.2%}")
+print(f"{'传统等权被动资产配置 (基准)':<20}{b_tot:>10.2%}{b_ann:>12.2%}{b_vol:>12.2%}{b_sha:>12.2f}{b_dd:>12.2%}")
 print(f"{'💎 ML 独立时序集成动态配置组合':<16}{s_tot:>10.2%}{s_ann:>12.2%}{s_vol:>12.2%}{s_sha:>12.2f}{s_dd:>12.2%}")
 print("===============================================================================================")
 

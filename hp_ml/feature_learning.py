@@ -28,7 +28,7 @@ class TechnicalIndicatorGenerator:
                 ['momentum', 'trend', 'volatility', 'volume', 'others']
         """
         if not TA_AVAILABLE:
-            raise ImportError("ta 库未安装，请运行: pip install ta")
+            raise ImportError("ta 库未安装，请运行：pip install ta")
 
         self.include_groups = include_groups or ["momentum", "trend", "volatility", "volume"]
         self.generated_features_: list[str] = []
@@ -48,7 +48,7 @@ class TechnicalIndicatorGenerator:
         required_cols = ["open", "high", "low", "close", "volume"]
         for col in required_cols:
             if col not in result.columns:
-                raise ValueError(f"缺少必需列: {col}")
+                raise ValueError(f"缺少必需列：{col}")
 
         # 确保数值类型
         for col in required_cols:
@@ -238,7 +238,7 @@ class FeatureSelector:
             self._select_by_mutual_info(X, y, feature_names)
 
         else:
-            raise ValueError(f"不支持的方法: {self.method}")
+            raise ValueError(f"不支持的方法：{self.method}")
 
         return self
 
@@ -284,7 +284,7 @@ class FeatureSelector:
         self.feature_scores_ = dict(zip(feature_names, rfe.ranking_))
 
     def _select_by_univariate(self, X: pd.DataFrame, y: pd.Series, feature_names: list[str]) -> None:
-        """单变量F检验"""
+        """单变量 F 检验"""
         X_filled = X.fillna(X.median())
 
         k = self.n_features or "all"

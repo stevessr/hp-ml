@@ -272,10 +272,10 @@ def main() -> int:
     print("=" * 80)
     print("超参数调优")
     print("=" * 80)
-    print(f"数据路径: {args.panel}")
-    print(f"模型类型: {args.model_type}")
-    print(f"特征数量: {len(feature_cols)}")
-    print(f"交叉验证折数: {args.n_splits}")
+    print(f"数据路径：{args.panel}")
+    print(f"模型类型：{args.model_type}")
+    print(f"特征数量：{len(feature_cols)}")
+    print(f"交叉验证折数：{args.n_splits}")
 
     best_params, results_df = search_configurations(
         panel_df=panel_df,
@@ -309,13 +309,13 @@ def main() -> int:
     print("=" * 80)
     for key, value in best_params.items():
         print(f"{key}: {value}")
-    print(f"平均测试准确率: {best_accuracy:.4f}")
+    print(f"平均测试准确率：{best_accuracy:.4f}")
     if best_accuracy >= 0.80:
         print("已达到 80% 目标")
     else:
         print(f"距离 80% 目标还差 {(0.80 - best_accuracy):.4f}")
-    print(f"结果已保存到: {args.output}")
-    print(f"详细结果已保存到: {args.csv_output}")
+    print(f"结果已保存到：{args.output}")
+    print(f"详细结果已保存到：{args.csv_output}")
 
     return 0
 

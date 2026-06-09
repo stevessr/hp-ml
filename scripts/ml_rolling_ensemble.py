@@ -9,7 +9,7 @@ trends_path = "data/alternative_data/google_trends_sentiment.csv"
 reports_dir = "reports"
 os.makedirs(reports_dir, exist_ok=True)
 
-print("🏛️ 正在启动《2年期流式滚动面板 + 自适应时序分位数仓位控制》终极增强引擎...")
+print("🏛️ 正在启动《2 年期流式滚动面板 + 自适应时序分位数仓位控制》终极增强引擎...")
 
 # 2. 预先清洗舆情时序 Z-Score
 trends_df = pd.read_csv(trends_path, parse_dates=['date']).set_index('date')
@@ -112,7 +112,7 @@ for i in range(len(test_months)-1):
         strat_day_ret = (np.array(day_positions) * day_data['Daily_Return'].values).mean()
         all_rolling_strat_returns.append(strat_day_ret)
 
-print("🎉 2026年 终极流式分位数回测顺利收官！")
+print("🎉 2026 年 终极流式分位数回测顺利收官！")
 
 # 5. 绩效精算大看板
 perf_df = pd.DataFrame(index=executed_dates)
@@ -135,14 +135,14 @@ b_tot, b_ann, b_vol, b_sha, b_dd = calc_metrics(perf_df['Benchmark'], perf_df['B
 s_tot, s_ann, s_vol, s_sha, s_dd = calc_metrics(perf_df['Strategy'], perf_df['Strat_Cum'])
 
 print("\n" + "="*95)
-print("👑 破茧成蝶：《2年期流式滚动面板集成组合策略》终极分位数自适应看板 (2026完美收官)")
+print("👑 破茧成蝶：《2 年期流式滚动面板集成组合策略》终极分位数自适应看板 (2026 完美收官)")
 print("===============================================================================================")
 print(f"{'策略组合模式':<25}{'总收益率':<12}{'年化收益':<12}{'年化波动':<12}{'夏普比率':<12}{'最大回撤':<12}")
 print("-"*95)
-print(f"{'传统等权被动配置(2026基准)':<20}{b_tot:>10.2%}{b_ann:>12.2%}{b_vol:>12.2%}{b_sha:>12.2f}{b_dd:>12.2%}")
-print(f"{'🔥 ML 2年流式滚动分位数配置组合':<15}{s_tot:>10.2%}{s_ann:>12.2%}{s_vol:>12.2%}{s_sha:>12.2f}{s_dd:>12.2%}")
+print(f"{'传统等权被动配置 (2026 基准)':<20}{b_tot:>10.2%}{b_ann:>12.2%}{b_vol:>12.2%}{b_sha:>12.2f}{b_dd:>12.2%}")
+print(f"{'🔥 ML 2 年流式滚动分位数配置组合':<15}{s_tot:>10.2%}{s_ann:>12.2%}{s_vol:>12.2%}{s_sha:>12.2f}{s_dd:>12.2%}")
 print("===============================================================================================")
 
 output_path = os.path.join(reports_dir, "ml_rolling_ensemble_final_report.csv")
 perf_df.to_csv(output_path)
-print(f"💾 滚动流全量明细已安全重新覆盖至: {output_path}\n")
+print(f"💾 滚动流全量明细已安全重新覆盖至：{output_path}\n")

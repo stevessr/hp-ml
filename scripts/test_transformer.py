@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""Transformer架构 - 突破单模型天花板
+"""Transformer 架构 - 突破单模型天花板
 
-Transformer的优势:
+Transformer 的优势：
 1. 全局注意力 - 捕捉所有时间步的关系
 2. 位置编码 - 理解时间序列的顺序
 3. 多头注意力 - 从多个角度学习
@@ -30,7 +30,7 @@ except ImportError:
 
 
 class TransformerEncoder(keras.layers.Layer):
-    """Transformer编码器层"""
+    """Transformer 编码器层"""
 
     def __init__(self, d_model, num_heads, dff, dropout_rate=0.1):
         super().__init__()
@@ -81,9 +81,9 @@ class PositionalEncoding(keras.layers.Layer):
             d_model
         )
 
-        # 偶数索引使用sin
+        # 偶数索引使用 sin
         angle_rads[:, 0::2] = np.sin(angle_rads[:, 0::2])
-        # 奇数索引使用cos
+        # 奇数索引使用 cos
         angle_rads[:, 1::2] = np.cos(angle_rads[:, 1::2])
 
         pos_encoding = angle_rads[np.newaxis, ...]
@@ -94,7 +94,7 @@ class PositionalEncoding(keras.layers.Layer):
 
 
 class TransformerModel:
-    """基于Transformer的时间序列预测模型"""
+    """基于 Transformer 的时间序列预测模型"""
 
     def __init__(
         self,
@@ -109,7 +109,7 @@ class TransformerModel:
         batch_size: int = 32,
     ):
         if not TF_AVAILABLE:
-            raise ImportError("TensorFlow未安装")
+            raise ImportError("TensorFlow 未安装")
 
         self.seq_length = seq_length
         self.d_model = d_model
@@ -125,17 +125,17 @@ class TransformerModel:
         self.feature_names_ = []
 
     def _build_model(self, input_shape: tuple[int, int]) -> keras.Model:
-        """构建Transformer模型"""
+        """构建 Transformer 模型"""
         inputs = keras.Input(shape=input_shape)
 
-        # 输入投影到d_model维度
+        # 输入投影到 d_model 维度
         x = keras.layers.Dense(self.d_model)(inputs)
 
         # 位置编码
         x = PositionalEncoding(self.seq_length, self.d_model)(x)
         x = keras.layers.Dropout(self.dropout)(x)
 
-        # Transformer编码器层
+        # Transformer 编码器层
         for _ in range(self.num_layers):
             x = TransformerEncoder(
                 self.d_model,
@@ -251,7 +251,7 @@ class HybridTransformerLSTM:
         batch_size: int = 32,
     ):
         if not TF_AVAILABLE:
-            raise ImportError("TensorFlow未安装")
+            raise ImportError("TensorFlow 未安装")
 
         self.seq_length = seq_length
         self.d_model = d_model
@@ -269,7 +269,7 @@ class HybridTransformerLSTM:
         """构建混合模型"""
         inputs = keras.Input(shape=input_shape)
 
-        # Transformer分支
+        # Transformer 分支
         trans_x = keras.layers.Dense(self.d_model)(inputs)
         trans_x = PositionalEncoding(self.seq_length, self.d_model)(trans_x)
         trans_x = TransformerEncoder(
@@ -277,7 +277,7 @@ class HybridTransformerLSTM:
         )(trans_x, training=True)
         trans_out = keras.layers.GlobalAveragePooling1D()(trans_x)
 
-        # LSTM分支
+        # LSTM 分支
         lstm_out = keras.layers.LSTM(self.lstm_units, return_sequences=False)(inputs)
         lstm_out = keras.layers.LayerNormalization()(lstm_out)
 
@@ -374,9 +374,9 @@ class HybridTransformerLSTM:
 
 
 def main() -> int:
-    """测试Transformer架构"""
+    """测试 Transformer 架构"""
     print("\n" + "="*80)
-    print("🚀 测试Transformer架构")
+    print("🚀 测试 Transformer 架构")
     print("="*80 + "\n")
 
     # 加载数据
@@ -399,14 +399,14 @@ def main() -> int:
     train_df = trainable[trainable["date"] < split_date].copy()
     test_df = trainable[trainable["date"] >= split_date].copy()
 
-    print(f"训练集: {len(train_df)} 行")
-    print(f"测试集: {len(test_df)} 行\n")
+    print(f"训练集：{len(train_df)} 行")
+    print(f"测试集：{len(test_df)} 行\n")
 
     results = []
 
-    # 1. 纯Transformer
+    # 1. 纯 Transformer
     print("="*80)
-    print("🔧 训练Transformer...")
+    print("🔧 训练 Transformer...")
     print("="*80)
 
     model1 = TransformerModel(
@@ -428,7 +428,7 @@ def main() -> int:
     acc1 = float(np.mean((pred1 > 0) == (actual > 0)))
     ic1 = float(spearmanr(pred1, actual)[0])
 
-    print(f"  准确率: {acc1:.4f}")
+    print(f"  准确率：{acc1:.4f}")
     print(f"  IC: {ic1:.4f}\n")
 
     results.append({
@@ -439,7 +439,7 @@ def main() -> int:
 
     # 2. 混合架构
     print("="*80)
-    print("🔧 训练Transformer+LSTM混合架构...")
+    print("🔧 训练 Transformer+LSTM 混合架构...")
     print("="*80)
 
     model2 = HybridTransformerLSTM(
@@ -459,7 +459,7 @@ def main() -> int:
     acc2 = float(np.mean((pred2 > 0) == (actual > 0)))
     ic2 = float(spearmanr(pred2, actual)[0])
 
-    print(f"  准确率: {acc2:.4f}")
+    print(f"  准确率：{acc2:.4f}")
     print(f"  IC: {ic2:.4f}\n")
 
     results.append({
@@ -479,26 +479,26 @@ def main() -> int:
     print("📊 结果对比")
     print("="*80 + "\n")
 
-    print("基线对比:")
-    print(f"  多尺度LSTM: 68.08%, IC: 0.3976\n")
+    print("基线对比：")
+    print(f"  多尺度 LSTM: 68.08%, IC: 0.3976\n")
 
-    print("Transformer架构:")
+    print("Transformer 架构：")
     for idx, row in results_df.iterrows():
         print(f"{idx+1}. {row['model']}")
-        print(f"   准确率: {row['accuracy']:.4f}")
+        print(f"   准确率：{row['accuracy']:.4f}")
         print(f"   IC: {row['ic']:.4f}\n")
 
     best_acc = results_df['accuracy'].max()
-    print(f"💡 最佳准确率: {best_acc:.4f}")
+    print(f"💡 最佳准确率：{best_acc:.4f}")
 
     if best_acc > 0.6808:
         improvement = (best_acc - 0.6808) * 100
-        print(f"💡 超越基线: +{improvement:.2f}%")
-        print(f"\n✅ Transformer突破成功！")
+        print(f"💡 超越基线：+{improvement:.2f}%")
+        print(f"\n✅ Transformer 突破成功！")
     else:
         print(f"\n⚠️ 未超越基线 (68.08%)")
 
-    print(f"\n💾 结果已保存: {output_dir}/results.csv\n")
+    print(f"\n💾 结果已保存：{output_dir}/results.csv\n")
 
     return 0
 

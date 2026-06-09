@@ -111,7 +111,7 @@ def create_comparison_chart(results, output_path):
     # 保存
     output_path.parent.mkdir(parents=True, exist_ok=True)
     plt.savefig(output_path, dpi=300, bbox_inches='tight')
-    print(f"📊 对比图表已保存: {output_path}")
+    print(f"📊 对比图表已保存：{output_path}")
 
     return df
 
@@ -127,13 +127,13 @@ def print_summary(df):
 
     print("\n按方向准确率排序：")
     for i, row in enumerate(df_sorted.itertuples(), 1):
-        print(f"{i}. {row.model.upper():20s} - 准确率: {row.directional_accuracy:.4f}, "
+        print(f"{i}. {row.model.upper():20s} - 准确率：{row.directional_accuracy:.4f}, "
               f"IC: {row.spearman_ic:.4f}, RMSE: {row.rmse:.6f}")
 
     # 找出最佳模型
     best_acc_model = df_sorted.iloc[0]
     print(f"\n🏆 最佳模型（准确率）: {best_acc_model['model'].upper()}")
-    print(f"   准确率: {best_acc_model['directional_accuracy']:.4f}")
+    print(f"   准确率：{best_acc_model['directional_accuracy']:.4f}")
     print(f"   Spearman IC: {best_acc_model['spearman_ic']:.4f}")
     print(f"   RMSE: {best_acc_model['rmse']:.6f}")
 
@@ -141,8 +141,8 @@ def print_summary(df):
     if 'lstm_transformer' in df['model'].values:
         lt_row = df[df['model'] == 'lstm_transformer'].iloc[0]
         lt_rank = df_sorted[df_sorted['model'] == 'lstm_transformer'].index[0] + 1
-        print(f"\n🤖 LSTM-Transformer 排名: #{lt_rank}")
-        print(f"   准确率: {lt_row['directional_accuracy']:.4f}")
+        print(f"\n🤖 LSTM-Transformer 排名：#{lt_rank}")
+        print(f"   准确率：{lt_row['directional_accuracy']:.4f}")
         print(f"   Spearman IC: {lt_row['spearman_ic']:.4f}")
         print(f"   RMSE: {lt_row['rmse']:.6f}")
 
@@ -172,7 +172,7 @@ def main():
         # 保存对比表格
         summary_path = REPORTS_DIR / "all_models_comparison.csv"
         df.to_csv(summary_path, index=False)
-        print(f"\n💾 对比表格已保存: {summary_path}")
+        print(f"\n💾 对比表格已保存：{summary_path}")
 
     print("\n✅ 对比完成！")
     return 0

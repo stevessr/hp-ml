@@ -1302,7 +1302,7 @@ def mechanism_tags(row: pd.Series | dict[str, Any]) -> str:
     get = row.get if isinstance(row, dict) else row.get
     tags: list[str] = []
     if (to_float(get("source_etf_pred_fwd_ret_5_best"), 0.0) or 0.0) >= 0:
-        tags.append("ETF信号牵引")
+        tags.append("ETF 信号牵引")
     if (to_float(get("stock_ret_5"), 0.0) or 0.0) > 0 and (to_float(get("stock_ret_20"), 0.0) or 0.0) > 0:
         tags.append("价格动量")
     if (to_float(get("history_amount_ratio_20"), 0.0) or 0.0) >= 1.5 or (to_float(get("history_amount_z20"), 0.0) or 0.0) >= 1.0:
@@ -1319,7 +1319,7 @@ def mechanism_tags(row: pd.Series | dict[str, Any]) -> str:
     if (to_float(get("top_free_institution_ratio_sum_pct"), 0.0) or 0.0) >= 10:
         tags.append("机构股东参与")
     if (to_float(get("component_roe_pct"), 0.0) or 0.0) >= 10:
-        tags.append("ROE支撑")
+        tags.append("ROE 支撑")
     return ";".join(tags) if tags else "待观察"
 
 
@@ -1480,7 +1480,7 @@ def _holder_detail_table(details: pd.DataFrame, holder_kind: str) -> list[str]:
         return lines
     sub["rank_sort"] = pd.to_numeric(sub.get("rank"), errors="coerce").fillna(9999)
     sub = sub.sort_values("rank_sort").head(10)
-    lines.append("|排名|股东名称|类型|股份类型|持股数|占总股本|占流通股本|占比变化|方向|参考市值|")
+    lines.append("|排名 | 股东名称 | 类型 | 股份类型 | 持股数 | 占总股本 | 占流通股本 | 占比变化 | 方向 | 参考市值|")
     lines.append("|---:|---|---|---|---:|---:|---:|---:|---|---:|")
     for _, row in sub.iterrows():
         lines.append(
@@ -1597,20 +1597,20 @@ def write_company_shareholder_reports(
             "",
             "## 1. 公司交易与 ETF 线索",
             "",
-            "|项目|数值|",
+            "|项目 | 数值|",
             "|---|---:|",
             f"|行业/地区|{stock.get('industry', '')} / {stock.get('region', '')}|",
             f"|最新价|{_fmt_number(stock.get('latest_price'), 2)}|",
             f"|成交额|{human_amount(to_float(stock.get('quote_amount')) or to_float(stock.get('history_amount')))}|",
             f"|换手率|{_fmt_pct_value(stock.get('quote_turnover_rate') or stock.get('history_turnover_rate'))}|",
-            f"|5日收益|{_fmt_ratio(stock.get('stock_ret_5'))}|",
-            f"|20日收益|{_fmt_ratio(stock.get('stock_ret_20'))}|",
-            f"|20日成交额放大倍数|{_fmt_number(stock.get('history_amount_ratio_20'), 2)}|",
+            f"|5 日收益|{_fmt_ratio(stock.get('stock_ret_5'))}|",
+            f"|20 日收益|{_fmt_ratio(stock.get('stock_ret_20'))}|",
+            f"|20 日成交额放大倍数|{_fmt_number(stock.get('history_amount_ratio_20'), 2)}|",
             f"|主力净流入|{human_amount(to_float(stock.get('main_net_inflow')))} ({_fmt_pct_value(stock.get('main_net_inflow_pct'))})|",
             "",
             "## 2. 股东结构快照",
             "",
-            "|项目|数值|",
+            "|项目 | 数值|",
             "|---|---:|",
             f"|流通股东报告期|{stock.get('holder_report_date_free', '')}|",
             f"|前十大流通股东合计占流通股本|{_fmt_pct_value(stock.get('top_free_holder_ratio_sum_pct'))}|",
@@ -1637,7 +1637,7 @@ def write_company_shareholder_reports(
             lines.append("")
         else:
             summary = stock_history_summary.sort_values(["report_date", "holder_kind"], ascending=[False, True])
-            lines.append("|报告期|口径|前十大占比|个人股东数|个人股东占比|个人股东|机构占比|基金/社保/QFII占比|")
+            lines.append("|报告期 | 口径 | 前十大占比 | 个人股东数 | 个人股东占比 | 个人股东 | 机构占比 | 基金/社保/QFII 占比|")
             lines.append("|---|---|---:|---:|---:|---|---:|---:|")
             for _, item in summary.head(16).iterrows():
                 kind_label = "流通股东" if item.get("holder_kind") == "free" else "十大股东"
@@ -1656,7 +1656,7 @@ def write_company_shareholder_reports(
             if changes.empty:
                 lines.append("- 最近报告期内前十大名单未出现个人股东，或个人股东无可计算变化。")
             else:
-                lines.append("|从|到|口径|个人股东|状态|上一期占比|本期占比|占比变化|上一期排名|本期排名|")
+                lines.append("|从 | 到|口径 | 个人股东 | 状态 | 上一期占比 | 本期占比 | 占比变化 | 上一期排名 | 本期排名|")
                 lines.append("|---|---|---|---|---|---:|---:|---:|---:|---:|")
                 for _, item in changes.head(24).iterrows():
                     kind_label = "流通" if item.get("holder_kind") == "free" else "总股本"
@@ -1727,7 +1727,7 @@ def write_markdown_report(
             "",
             "## 1. ETF 信号入口",
             "",
-            "|排名|日期|ETF|名称|指数族|预测5日收益|信号原因|",
+            "|排名 | 日期|ETF|名称 | 指数族 | 预测 5 日收益 | 信号原因|",
             "|---:|---|---|---|---|---:|---|",
         ]
     )
@@ -1742,7 +1742,7 @@ def write_markdown_report(
         lines.append("- 暂无可输出的股票行。")
     else:
         lines.append(
-            "|排名|股票|行业|ETF/指数线索|机制标签|评分|成交额|换手|5日收益|20日收益|前十大流通股东占比|机构流通占比|第一流通股东|"
+            "|排名 | 股票 | 行业|ETF/指数线索 | 机制标签 | 评分 | 成交额 | 换手|5 日收益|20 日收益 | 前十大流通股东占比 | 机构流通占比 | 第一流通股东|"
         )
         lines.append("|---:|---|---|---|---|---:|---:|---:|---:|---:|---:|---:|---|")
         for _, row in rows.head(30).iterrows():
@@ -1813,7 +1813,7 @@ def write_markdown_report(
     if errors:
         lines.extend(["", "## 5. 拉取异常", ""])
         for key, value in list(errors.items())[:30]:
-            lines.append(f"- `{key}`：{value}")
+            lines.append(f"- `{key}`:{value}")
         if len(errors) > 30:
             lines.append(f"- 其余 {len(errors) - 30} 条异常见摘要 JSON。")
     lines.extend(

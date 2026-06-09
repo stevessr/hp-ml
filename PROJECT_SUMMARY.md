@@ -6,11 +6,11 @@
 
 ## 完成内容概览
 
-### 1️⃣ 新增模型（3种）
+### 1️⃣ 新增模型（3 种）
 
 | 模型 | 文件 | 特点 | 状态 |
 |------|------|------|------|
-| Prophet | `hp_ml/models_extended.py` | 时间序列趋势+季节性 | ✅ 完成 |
+| Prophet | `hp_ml/models_extended.py` | 时间序列趋势 + 季节性 | ✅ 完成 |
 | LSTM | `hp_ml/models_extended.py` | 深度学习序列模型 | ✅ 完成 |
 | 增强随机森林 | `hp_ml/models_extended.py` | 特征重要性分析 | ✅ 完成 |
 
@@ -59,7 +59,7 @@
 
 | 文档 | 内容 | 状态 |
 |------|------|------|
-| `docs/QUICKSTART.md` | 5分钟快速入门 | ✅ 完成 |
+| `docs/QUICKSTART.md` | 5 分钟快速入门 | ✅ 完成 |
 | `docs/MULTI_MODEL.md` | 详细功能文档 | ✅ 完成 |
 | `docs/FORMULAS.md` | 算法公式与架构 | ✅ 完成 |
 | `docs/SUMMARY.md` | 功能总结 | ✅ 完成 |
@@ -92,7 +92,7 @@ keras>=3.0         # Keras API
 
 ## 新增文件清单
 
-### 核心模块（5个）
+### 核心模块（5 个）
 ```
 hp_ml/
 ├── data_pipeline.py      # 数据划分管道 [新增]
@@ -102,7 +102,7 @@ hp_ml/
 └── multi_model_train.py  # 多模型训练主程序 [新增]
 ```
 
-### 文档（5个）
+### 文档（5 个）
 ```
 docs/
 ├── QUICKSTART.md   # 快速入门 [新增]
@@ -112,7 +112,7 @@ docs/
 └── README.md       # 文档索引 [新增]
 ```
 
-### 测试与示例（3个）
+### 测试与示例（3 个）
 ```
 tests/
 ├── test_data_pipeline.py  # 数据管道测试 [新增]
@@ -130,7 +130,7 @@ scripts/
 ### 🎯 模型多样性
 - **线性模型**: Ridge 回归（可解释、快速）
 - **集成学习**: HGB、随机森林（高性能、鲁棒）
-- **时间序列**: Prophet（趋势+季节性）
+- **时间序列**: Prophet（趋势 + 季节性）
 - **深度学习**: LSTM（复杂模式）
 
 ### 📊 完整指标体系
@@ -265,17 +265,17 @@ models/
 
 ## 后续优化方向
 
-### 短期（1-2周）
+### 短期（1-2 周）
 - [ ] 添加模型集成学习（Stacking/Blending）
 - [ ] 支持更多技术指标特征
 - [ ] 添加参数自动调优
 
-### 中期（1-3月）
+### 中期（1-3 月）
 - [ ] 实时预测 API
 - [ ] 交互式仪表板
 - [ ] 风险管理模块
 
-### 长期（3-6月）
+### 长期（3-6 月）
 - [ ] 强化学习策略
 - [ ] 多因子选股扩展
 - [ ] 分布式训练支持
@@ -294,10 +294,10 @@ models/
 
 ## 联系方式
 
-- 项目路径: `/home/steve/文档/vibe coding/hp-ml`
-- 文档路径: `docs/`
-- 测试命令: `make test-multi`
-- 完整训练: `make train-multi`
+- 项目路径：`/home/steve/文档/vibe coding/hp-ml`
+- 文档路径：`docs/`
+- 测试命令：`make test-multi`
+- 完整训练：`make train-multi`
 
 ---
 

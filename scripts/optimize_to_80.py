@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""深度优化实验：冲击80%准确率
+"""深度优化实验：冲击 80% 准确率
 
 策略：
-1. 扩展注意力窗口（25, 30, 40, 50步）
+1. 扩展注意力窗口（25, 30, 40, 50 步）
 2. 优化模型架构（更深层网络、残差连接）
 3. 高级正则化技术
 4. 数据增强
@@ -39,8 +39,8 @@ def load_and_split_data(
     exclude_cols = {'date', 'code', 'name', 'family_id', 'close', target_col, 'is_trainable', 'is_future'}
     feature_cols = [c for c in panel_df.columns if c not in exclude_cols and not c.startswith('fwd_')]
 
-    print(f"  ✓ 数据行数: {len(panel_df)}")
-    print(f"  ✓ 特征数量: {len(feature_cols)}")
+    print(f"  ✓ 数据行数：{len(panel_df)}")
+    print(f"  ✓ 特征数量：{len(feature_cols)}")
 
     panel_df = panel_df.sort_values("date")
     trainable = panel_df[panel_df.get("is_trainable", True)].copy()
@@ -55,9 +55,9 @@ def load_and_split_data(
     train_df = trainable[trainable["date"] < split_date].copy()
     test_df = trainable[trainable["date"] >= split_date].copy()
 
-    print(f"\n📅 数据切分:")
-    print(f"  训练集: {len(train_df)} 行")
-    print(f"  测试集: {len(test_df)} 行\n")
+    print(f"\n📅 数据切分：")
+    print(f"  训练集：{len(train_df)} 行")
+    print(f"  测试集：{len(test_df)} 行\n")
 
     return train_df, test_df, feature_cols, target_col
 
@@ -95,7 +95,7 @@ def train_model_config(
             "rmse": float(np.sqrt(np.mean((test_pred - test_actual) ** 2))),
         }
 
-        print(f"    ✓ 准确率: {test_metrics['accuracy']:.4f}, IC: {test_metrics['ic']:.4f}")
+        print(f"    ✓ 准确率：{test_metrics['accuracy']:.4f}, IC: {test_metrics['ic']:.4f}")
 
         return {
             "config": config_str,
@@ -105,7 +105,7 @@ def train_model_config(
         }
 
     except Exception as e:
-        print(f"    ❌ 失败: {e}")
+        print(f"    ❌ 失败：{e}")
         import traceback
         traceback.print_exc()
         return {"success": False, "error": str(e)}
@@ -120,13 +120,13 @@ def main() -> int:
     args = parser.parse_args()
 
     print("\n" + "="*80)
-    print("🎯 深度优化实验 - 冲击80%准确率")
+    print("🎯 深度优化实验 - 冲击 80% 准确率")
     print("="*80)
-    print(f"📁 训练面板: {args.panel}")
+    print(f"📁 训练面板：{args.panel}")
     print("="*80 + "\n")
 
     if not args.panel.exists():
-        print(f"❌ 训练面板不存在: {args.panel}")
+        print(f"❌ 训练面板不存在：{args.panel}")
         return 1
 
     try:
@@ -136,7 +136,7 @@ def main() -> int:
 
         # 定义优化实验配置
         experiments = [
-            # 阶段1: 扩展注意力窗口
+            # 阶段 1: 扩展注意力窗口
             ("attention_lstm", {
                 "seq_length": 25, "units": 64, "dropout": 0.3,
                 "learning_rate": 0.001, "epochs": 25, "batch_size": 32,
@@ -158,7 +158,7 @@ def main() -> int:
                 "early_stopping_patience": 8
             }),
 
-            # 阶段2: 增加模型容量（基于最佳序列长度）
+            # 阶段 2: 增加模型容量（基于最佳序列长度）
             ("attention_lstm", {
                 "seq_length": 30, "units": 96, "dropout": 0.3,
                 "learning_rate": 0.001, "epochs": 25, "batch_size": 32,
@@ -175,7 +175,7 @@ def main() -> int:
                 "early_stopping_patience": 8
             }),
 
-            # 阶段3: 优化正则化
+            # 阶段 3: 优化正则化
             ("attention_lstm", {
                 "seq_length": 30, "units": 128, "dropout": 0.2,
                 "learning_rate": 0.001, "epochs": 25, "batch_size": 32,
@@ -192,7 +192,7 @@ def main() -> int:
                 "early_stopping_patience": 8
             }),
 
-            # 阶段4: 调整学习率和训练时长
+            # 阶段 4: 调整学习率和训练时长
             ("attention_lstm", {
                 "seq_length": 30, "units": 128, "dropout": 0.3,
                 "learning_rate": 0.0005, "epochs": 30, "batch_size": 32,
@@ -204,7 +204,7 @@ def main() -> int:
                 "early_stopping_patience": 10
             }),
 
-            # 阶段5: 批次大小实验
+            # 阶段 5: 批次大小实验
             ("attention_lstm", {
                 "seq_length": 30, "units": 128, "dropout": 0.3,
                 "learning_rate": 0.001, "epochs": 25, "batch_size": 16,
@@ -236,7 +236,7 @@ def main() -> int:
                 acc = result["test_metrics"]["accuracy"]
                 if acc > best_accuracy:
                     best_accuracy = acc
-                    print(f"    🏆 新最佳: {acc:.4f}")
+                    print(f"    🏆 新最佳：{acc:.4f}")
 
         if not results:
             print("\n❌ 没有成功的实验")
@@ -266,20 +266,20 @@ def main() -> int:
         with open(args.output / "optimization_details.json", "w", encoding="utf-8") as f:
             json.dump(results, f, indent=2, ensure_ascii=False)
 
-        print(f"\n💾 结果已保存: {args.output}")
+        print(f"\n💾 结果已保存：{args.output}")
 
         # 打印总结
         print("\n" + "="*80)
         print("📊 优化实验总结")
         print("="*80)
         print(f"\n成功完成 {len(results)} 个实验")
-        print(f"最佳准确率: {best_accuracy:.4f}\n")
+        print(f"最佳准确率：{best_accuracy:.4f}\n")
 
         # Top 5
         print("🏆 Top 5 配置:\n")
         for idx, row in summary_df.head(5).iterrows():
             print(f"  {idx+1}. {row['config']}")
-            print(f"     准确率: {row['test_accuracy']:.4f}")
+            print(f"     准确率：{row['test_accuracy']:.4f}")
             print(f"     IC: {row['test_ic']:.4f}")
             print()
 
@@ -297,7 +297,7 @@ def main() -> int:
         return 0
 
     except Exception as e:
-        print(f"\n❌ 错误: {e}")
+        print(f"\n❌ 错误：{e}")
         import traceback
         traceback.print_exc()
         return 1

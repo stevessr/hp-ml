@@ -281,4 +281,4 @@ def create_ensemble(
         return WeightedAverageEnsemble(base_models, **kwargs)
 
     else:
-        raise ValueError(f"不支持的集成类型: {ensemble_type}")
+        raise ValueError(f"不支持的集成类型：{ensemble_type}")

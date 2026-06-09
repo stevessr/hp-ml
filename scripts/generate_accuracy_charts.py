@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """生成模型准确度对比图表
 
-使用matplotlib创建专业的准确度对比图表
+使用 matplotlib 创建专业的准确度对比图表
 """
 from __future__ import annotations
 
@@ -41,8 +41,8 @@ def create_accuracy_comparison_chart(output_dir: Path) -> None:
         ("MultiHead\nseq=10", 55.00, -0.0074, "注意力变种"),
         ("GRU\nseq=10", 46.15, -0.1886, "记忆门模型"),
         ("BiLSTM\nseq=10", 46.15, -0.1062, "记忆门模型"),
-        ("Ridge\n(最佳)", 71.76, None, "传统ML"),
-        ("Ridge\n(平均)", 49.72, None, "传统ML"),
+        ("Ridge\n(最佳)", 71.76, None, "传统 ML"),
+        ("Ridge\n(平均)", 49.72, None, "传统 ML"),
     ]
 
     # 1. 主要准确度对比图（横向条形图）
@@ -59,7 +59,7 @@ def create_accuracy_comparison_chart(output_dir: Path) -> None:
         "综合对比": "#4ECDC4",      # 青色
         "记忆门模型": "#95E1D3",    # 浅绿
         "注意力变种": "#FFE66D",    # 黄色
-        "传统ML": "#C7CEEA",        # 紫灰
+        "传统 ML": "#C7CEEA",        # 紫灰
         "基础模型": "#FFA07A",      # 橙色
     }
 
@@ -100,13 +100,13 @@ def create_accuracy_comparison_chart(output_dir: Path) -> None:
     plt.tight_layout()
     plt.savefig(output_dir / "accuracy_comparison_main.svg", bbox_inches='tight')
     plt.close()
-    print(f"  ✓ 保存: accuracy_comparison_main.svg")
+    print(f"  ✓ 保存：accuracy_comparison_main.svg")
 
     # 2. 准确率 vs IC 散点图
-    print("📊 生成准确率-IC散点图...")
+    print("📊 生成准确率-IC 散点图...")
     fig, ax = plt.subplots(figsize=(12, 8))
 
-    # 过滤有IC的数据
+    # 过滤有 IC 的数据
     scatter_data = [(m[0], m[1], m[2], m[3]) for m in models_data if m[2] is not None]
 
     for cat in color_map.keys():
@@ -135,7 +135,7 @@ def create_accuracy_comparison_chart(output_dir: Path) -> None:
     plt.tight_layout()
     plt.savefig(output_dir / "accuracy_vs_ic_scatter.svg", bbox_inches='tight')
     plt.close()
-    print(f"  ✓ 保存: accuracy_vs_ic_scatter.svg")
+    print(f"  ✓ 保存：accuracy_vs_ic_scatter.svg")
 
     # 3. 序列长度影响（折线图）
     print("📊 生成序列长度影响图...")
@@ -176,17 +176,17 @@ def create_accuracy_comparison_chart(output_dir: Path) -> None:
     plt.tight_layout()
     plt.savefig(output_dir / "sequence_length_impact.svg", bbox_inches='tight')
     plt.close()
-    print(f"  ✓ 保存: sequence_length_impact.svg")
+    print(f"  ✓ 保存：sequence_length_impact.svg")
 
     # 4. 模型发展历程（时间线图）
     print("📊 生成模型发展历程图...")
     fig, ax = plt.subplots(figsize=(14, 8))
 
     stages = [
-        ("传统ML\nRidge", 49.72, "阶段1"),
-        ("基础LSTM\nseq=10", 56.41, "阶段2"),
-        ("Attention LSTM\nseq=10", 65.13, "阶段3"),
-        ("Attention LSTM\nseq=20", 66.67, "阶段4"),
+        ("传统 ML\nRidge", 49.72, "阶段 1"),
+        ("基础 LSTM\nseq=10", 56.41, "阶段 2"),
+        ("Attention LSTM\nseq=10", 65.13, "阶段 3"),
+        ("Attention LSTM\nseq=20", 66.67, "阶段 4"),
     ]
 
     stage_names = [s[0] for s in stages]
@@ -213,7 +213,7 @@ def create_accuracy_comparison_chart(output_dir: Path) -> None:
     ax.set_xticks(x_pos)
     ax.set_xticklabels(stage_names, fontsize=11, fontweight='bold')
     ax.set_ylabel('测试集准确率 (%)', fontsize=12, fontweight='bold')
-    ax.set_title('模型发展历程\n从传统ML到深度学习的演进',
+    ax.set_title('模型发展历程\n从传统 ML 到深度学习的演进',
                  fontsize=14, fontweight='bold', pad=20)
     ax.set_ylim(0, 75)
     ax.grid(axis='y', alpha=0.3, linestyle='--')
@@ -226,14 +226,14 @@ def create_accuracy_comparison_chart(output_dir: Path) -> None:
     plt.tight_layout()
     plt.savefig(output_dir / "model_evolution_timeline.svg", bbox_inches='tight')
     plt.close()
-    print(f"  ✓ 保存: model_evolution_timeline.svg")
+    print(f"  ✓ 保存：model_evolution_timeline.svg")
 
     # 5. Top 5 模型雷达图
-    print("📊 生成Top 5模型雷达图...")
+    print("📊 生成 Top 5 模型雷达图...")
     fig, ax = plt.subplots(figsize=(10, 10), subplot_kw=dict(projection='polar'))
 
     top5_models = [
-        ("Attention LSTM\nseq=20", [66.67, 0.3183*100, 95, 100, 90]),  # 准确率, IC*100, 稳定性, 可解释性, 易用性
+        ("Attention LSTM\nseq=20", [66.67, 0.3183*100, 95, 100, 90]),  # 准确率，IC*100, 稳定性，可解释性，易用性
         ("Attention LSTM\nseq=15", [64.49, 0.2799*100, 90, 100, 90]),
         ("LSTM seq=10", [63.97, 0.1605*100, 85, 70, 95]),
         ("Self-Attention", [63.59, 0.2259*100, 80, 60, 70]),
@@ -252,7 +252,7 @@ def create_accuracy_comparison_chart(output_dir: Path) -> None:
     colors_radar = ['#FF6B6B', '#4ECDC4', '#95E1D3', '#FFE66D', '#FFA07A']
 
     for i, (name, values) in enumerate(top5_models):
-        # 归一化准确率到0-100范围（但不改变实际显示）
+        # 归一化准确率到 0-100 范围（但不改变实际显示）
         values_plot = values + values[:1]
         ax.plot(angles, values_plot, 'o-', linewidth=2,
                label=name, color=colors_radar[i])
@@ -269,7 +269,7 @@ def create_accuracy_comparison_chart(output_dir: Path) -> None:
     plt.tight_layout()
     plt.savefig(output_dir / "top5_radar_chart.svg", bbox_inches='tight')
     plt.close()
-    print(f"  ✓ 保存: top5_radar_chart.svg")
+    print(f"  ✓ 保存：top5_radar_chart.svg")
 
 
 def main() -> int:
@@ -286,19 +286,19 @@ def main() -> int:
         print("\n" + "="*80)
         print("✅ 所有图表生成完成！")
         print("="*80)
-        print(f"\n📁 输出目录: {output_dir}")
-        print("\n生成的图表:")
+        print(f"\n📁 输出目录：{output_dir}")
+        print("\n生成的图表：")
         print("  1. accuracy_comparison_main.svg      - 主要准确度对比")
-        print("  2. accuracy_vs_ic_scatter.svg        - 准确率vs IC散点图")
+        print("  2. accuracy_vs_ic_scatter.svg        - 准确率 vs IC 散点图")
         print("  3. sequence_length_impact.svg        - 序列长度影响")
         print("  4. model_evolution_timeline.svg      - 模型发展历程")
-        print("  5. top5_radar_chart.svg              - Top 5雷达图")
+        print("  5. top5_radar_chart.svg              - Top 5 雷达图")
         print("\n" + "="*80 + "\n")
 
         return 0
 
     except Exception as e:
-        print(f"\n❌ 错误: {e}")
+        print(f"\n❌ 错误：{e}")
         import traceback
         traceback.print_exc()
         return 1

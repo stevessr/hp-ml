@@ -35,8 +35,8 @@ def load_and_split_data(
     exclude_cols = {'date', 'code', 'name', 'family_id', 'close', target_col, 'is_trainable', 'is_future'}
     feature_cols = [c for c in panel_df.columns if c not in exclude_cols and not c.startswith('fwd_')]
 
-    print(f"  ✓ 数据行数: {len(panel_df)}")
-    print(f"  ✓ 特征数量: {len(feature_cols)}")
+    print(f"  ✓ 数据行数：{len(panel_df)}")
+    print(f"  ✓ 特征数量：{len(feature_cols)}")
 
     panel_df = panel_df.sort_values("date")
     trainable = panel_df[panel_df.get("is_trainable", True)].copy()
@@ -51,9 +51,9 @@ def load_and_split_data(
     train_df = trainable[trainable["date"] < split_date].copy()
     test_df = trainable[trainable["date"] >= split_date].copy()
 
-    print(f"\n📅 数据切分:")
-    print(f"  训练集: {len(train_df)} 行")
-    print(f"  测试集: {len(test_df)} 行\n")
+    print(f"\n📅 数据切分：")
+    print(f"  训练集：{len(train_df)} 行")
+    print(f"  测试集：{len(test_df)} 行\n")
 
     return train_df, test_df, feature_cols, target_col
 
@@ -72,7 +72,7 @@ def train_model_with_config(
 ) -> dict[str, Any]:
     """训练单个模型配置"""
     config_str = f"{model_name}_seq{seq_length}_u{units}_d{dropout:.1f}"
-    print(f"  🔧 配置: {config_str}")
+    print(f"  🔧 配置：{config_str}")
 
     try:
         model = make_extended_model(
@@ -122,7 +122,7 @@ def train_model_with_config(
         }
 
     except Exception as e:
-        print(f"    ❌ 失败: {e}")
+        print(f"    ❌ 失败：{e}")
         return {"success": False, "error": str(e)}
 
 
@@ -138,12 +138,12 @@ def main() -> int:
     print("\n" + "="*80)
     print("🎯 综合模型对比与优化")
     print("="*80)
-    print(f"📁 训练面板: {args.panel}")
-    print(f"🔄 训练轮数: {args.epochs}")
+    print(f"📁 训练面板：{args.panel}")
+    print(f"🔄 训练轮数：{args.epochs}")
     print("="*80 + "\n")
 
     if not args.panel.exists():
-        print(f"❌ 训练面板不存在: {args.panel}")
+        print(f"❌ 训练面板不存在：{args.panel}")
         return 1
 
     try:
@@ -201,9 +201,9 @@ def main() -> int:
             if result["success"]:
                 results.append(result)
                 test_m = result["test_metrics"]
-                print(f"    ✓ 测试准确率: {test_m['accuracy']:.4f}")
-                print(f"    ✓ 测试IC: {test_m['ic']:.4f}")
-                print(f"    ✓ 测试RMSE: {test_m['rmse']:.6f}")
+                print(f"    ✓ 测试准确率：{test_m['accuracy']:.4f}")
+                print(f"    ✓ 测试 IC: {test_m['ic']:.4f}")
+                print(f"    ✓ 测试 RMSE: {test_m['rmse']:.6f}")
 
         if not results:
             print("\n❌ 没有成功的实验")
@@ -212,7 +212,7 @@ def main() -> int:
         # 保存结果
         args.output.mkdir(parents=True, exist_ok=True)
 
-        # 转换为DataFrame
+        # 转换为 DataFrame
         summary_data = []
         for r in results:
             summary_data.append({
@@ -237,7 +237,7 @@ def main() -> int:
         with open(args.output / "model_comparison_details.json", "w", encoding="utf-8") as f:
             json.dump(results, f, indent=2, ensure_ascii=False)
 
-        print(f"\n💾 结果已保存: {args.output}")
+        print(f"\n💾 结果已保存：{args.output}")
 
         # 打印总结
         print("\n" + "="*80)
@@ -249,7 +249,7 @@ def main() -> int:
         print("🏆 Top 5 模型配置（按测试准确率）:\n")
         for idx, row in summary_df.head(5).iterrows():
             print(f"  {idx+1}. {row['config']}")
-            print(f"     准确率: {row['test_accuracy']:.4f}")
+            print(f"     准确率：{row['test_accuracy']:.4f}")
             print(f"     IC: {row['test_ic']:.4f}")
             print(f"     RMSE: {row['test_rmse']:.6f}")
             print()
@@ -273,7 +273,7 @@ def main() -> int:
         return 0
 
     except Exception as e:
-        print(f"\n❌ 错误: {e}")
+        print(f"\n❌ 错误：{e}")
         import traceback
         traceback.print_exc()
         return 1

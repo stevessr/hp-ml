@@ -30,7 +30,7 @@ def normalize_price_features(df: pd.DataFrame) -> pd.DataFrame:
     # 1. 标准化涨跌幅特征（已经是比例，进一步归一化）
     ret_cols = [col for col in df.columns if col.startswith('ret_')]
     for col in ret_cols:
-        # Z-score 归一化（按code分组）
+        # Z-score 归一化（按 code 分组）
         df[f'{col}_zscore'] = df.groupby('code')[col].transform(
             lambda x: (x - x.mean()) / (x.std() + 1e-8)
         )
@@ -72,17 +72,17 @@ def add_shareholder_features(df: pd.DataFrame, shareholder_data_path: Path) -> p
     print("\n📊 添加股东结构特征...")
 
     if not shareholder_data_path.exists():
-        print(f"  ⚠ 股东数据文件不存在: {shareholder_data_path}")
+        print(f"  ⚠ 股东数据文件不存在：{shareholder_data_path}")
         return df
 
     try:
         shareholder_df = pd.read_csv(shareholder_data_path)
-        print(f"  ✓ 加载股东数据: {len(shareholder_df)} 行")
+        print(f"  ✓ 加载股东数据：{len(shareholder_df)} 行")
 
         # 确保有必需的列
         required_cols = ['code', 'date']
         if not all(col in shareholder_df.columns for col in required_cols):
-            print(f"  ⚠ 缺少必需列: {required_cols}")
+            print(f"  ⚠ 缺少必需列：{required_cols}")
             return df
 
         # 计算股东结构特征
@@ -110,10 +110,10 @@ def add_shareholder_features(df: pd.DataFrame, shareholder_data_path: Path) -> p
         if shareholder_features:
             shareholder_df = pd.concat(shareholder_features, ignore_index=True)
             df = pd.merge(df, shareholder_df, on=['code', 'date'], how='left')
-            print(f"  ✓ 添加股东特征: {len([c for c in df.columns if c in ['individual_ratio', 'state_ratio', 'concentration']])} 个")
+            print(f"  ✓ 添加股东特征：{len([c for c in df.columns if c in ['individual_ratio', 'state_ratio', 'concentration']])} 个")
 
     except Exception as e:
-        print(f"  ❌ 处理股东数据失败: {e}")
+        print(f"  ❌ 处理股东数据失败：{e}")
 
     return df
 
@@ -137,7 +137,7 @@ def add_trading_flow_features(df: pd.DataFrame) -> pd.DataFrame:
             lambda x: x['volume'] if x['price_change'] < 0 else 0, axis=1
         )
 
-        # 计算买卖比例（5日窗口）
+        # 计算买卖比例（5 日窗口）
         df['buy_ratio_5d'] = df.groupby('code')['buy_volume_proxy'].transform(
             lambda x: x.rolling(5, min_periods=1).sum() / (x.rolling(5, min_periods=1).sum() +
                      df.loc[x.index, 'sell_volume_proxy'].rolling(5, min_periods=1).sum() + 1e-6)
@@ -160,14 +160,14 @@ def enhance_panel_data(input_path: Path, output_path: Path, shareholder_path: Pa
     print("\n" + "="*80)
     print("🔧 增强特征工程")
     print("="*80)
-    print(f"📁 输入: {input_path}")
-    print(f"📁 输出: {output_path}")
+    print(f"📁 输入：{input_path}")
+    print(f"📁 输出：{output_path}")
     print("="*80 + "\n")
 
     # 加载数据
     print("📊 加载原始面板数据...")
     df = pd.read_csv(input_path)
-    print(f"  ✓ 加载 {len(df)} 行, {len(df.columns)} 列")
+    print(f"  ✓ 加载 {len(df)} 行，{len(df.columns)} 列")
 
     original_cols = len(df.columns)
 
@@ -187,16 +187,16 @@ def enhance_panel_data(input_path: Path, output_path: Path, shareholder_path: Pa
     print("\n" + "="*80)
     print("✅ 特征增强完成")
     print("="*80)
-    print(f"📊 原始特征数: {original_cols}")
-    print(f"📊 新增特征数: {new_cols}")
-    print(f"📊 总特征数: {len(df.columns)}")
-    print(f"💾 保存至: {output_path}")
+    print(f"📊 原始特征数：{original_cols}")
+    print(f"📊 新增特征数：{new_cols}")
+    print(f"📊 总特征数：{len(df.columns)}")
+    print(f"💾 保存至：{output_path}")
     print("="*80 + "\n")
 
     # 打印新特征列表
     new_features = [col for col in df.columns if col not in pd.read_csv(input_path).columns]
     if new_features:
-        print("🆕 新增特征:")
+        print("🆕 新增特征：")
         for feat in new_features:
             print(f"  • {feat}")
         print()
@@ -211,19 +211,19 @@ def main() -> int:
     parser.add_argument("--output", type=Path,
                        default=PROCESSED_DIR / "training_panel_enhanced.csv")
     parser.add_argument("--shareholder", type=Path,
-                       help="股东数据CSV路径（可选）")
+                       help="股东数据 CSV 路径（可选）")
 
     args = parser.parse_args()
 
     if not args.input.exists():
-        print(f"❌ 输入文件不存在: {args.input}")
+        print(f"❌ 输入文件不存在：{args.input}")
         return 1
 
     try:
         enhance_panel_data(args.input, args.output, args.shareholder)
         return 0
     except Exception as e:
-        print(f"\n❌ 错误: {e}")
+        print(f"\n❌ 错误：{e}")
         import traceback
         traceback.print_exc()
         return 1

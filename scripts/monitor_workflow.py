@@ -27,7 +27,7 @@ def monitor_workflow():
         print("❌ 未找到活动工作流")
         return
 
-    print(f"✓ 工作流目录: {latest.name}")
+    print(f"✓ 工作流目录：{latest.name}")
 
     # 查找输出文件
     output_files = list(latest.glob("*.jsonl")) + list(latest.glob("*.json"))

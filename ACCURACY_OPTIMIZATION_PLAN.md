@@ -122,10 +122,10 @@
 | 阶段 | 方法 | 预期准确率 | 置信度 |
 |------|------|-----------|--------|
 | 当前 | Ridge 回归 | 71.76% | 已确认 |
-| 阶段1 | LightGBM 基础 | 74-78% | 高 |
-| 阶段2 | + 特征工程 | 77-82% | 中-高 |
-| 阶段3 | + 超参数调优 | 79-85% | 中 |
-| 阶段4 | + 模型集成 | 81-87% | 中 |
+| 阶段 1 | LightGBM 基础 | 74-78% | 高 |
+| 阶段 2 | + 特征工程 | 77-82% | 中 - 高 |
+| 阶段 3 | + 超参数调优 | 79-85% | 中 |
+| 阶段 4 | + 模型集成 | 81-87% | 中 |
 
 **关键假设**:
 - 梯度提升树可捕获非线性关系 (+3-6%)
@@ -156,7 +156,7 @@ python scripts/hyperparameter_tune.py --model-type xgboost --max-configs 100
 ```
 
 ### 3. `scripts/enhanced_cv_validation.py`
-**功能**: 增强的时间序列交叉验证 (5折)
+**功能**: 增强的时间序列交叉验证 (5 折)
 
 **使用方法**:
 ```bash
@@ -169,7 +169,7 @@ python scripts/enhanced_cv_validation.py --model models/ensemble_model.pkl --n-s
 ## 🎯 成功标准
 
 ### 主要目标
-- ✅ **测试集准确率 ≥ 80%** (当前: 71.76%)
+- ✅ **测试集准确率 ≥ 80%** (当前：71.76%)
 
 ### 次要目标
 - 交叉验证平均准确率 ≥ 80%
@@ -203,7 +203,7 @@ python scripts/enhanced_cv_validation.py --model models/ensemble_model.pkl --n-s
 
 ## 🔍 监控指标
 
-在优化过程中持续监控:
+在优化过程中持续监控：
 
 1. **准确率指标**
    - 训练集准确率
@@ -229,7 +229,7 @@ python scripts/enhanced_cv_validation.py --model models/ensemble_model.pkl --n-s
 
 ## 💡 后续优化方向
 
-如果 80% 目标达成，可继续优化:
+如果 80% 目标达成，可继续优化：
 
 1. **更高目标**: 85%+ 准确率
 2. **策略优化**: 提升实际收益

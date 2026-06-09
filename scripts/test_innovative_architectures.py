@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""创新架构：残差LSTM + 多尺度注意力
+"""创新架构：残差 LSTM + 多尺度注意力
 
-创新点:
+创新点：
 1. 残差连接 - 缓解梯度消失
 2. 多尺度特征提取 - 捕捉不同时间尺度
 3. 门控融合 - 自适应特征融合
@@ -30,7 +30,7 @@ except ImportError:
 
 
 class ResidualAttentionLSTM:
-    """残差注意力LSTM - 创新架构"""
+    """残差注意力 LSTM - 创新架构"""
 
     def __init__(
         self,
@@ -42,7 +42,7 @@ class ResidualAttentionLSTM:
         batch_size: int = 32,
     ):
         if not TF_AVAILABLE:
-            raise ImportError("TensorFlow未安装")
+            raise ImportError("TensorFlow 未安装")
 
         self.seq_length = seq_length
         self.units = units
@@ -55,10 +55,10 @@ class ResidualAttentionLSTM:
         self.feature_names_ = []
 
     def _build_model(self, input_shape: tuple[int, int]) -> keras.Model:
-        """构建残差注意力LSTM"""
+        """构建残差注意力 LSTM"""
         inputs = keras.Input(shape=input_shape)
 
-        # 主LSTM分支
+        # 主 LSTM 分支
         lstm_out = keras.layers.LSTM(
             self.units,
             return_sequences=True,
@@ -171,7 +171,7 @@ class ResidualAttentionLSTM:
 
 
 class MultiScaleLSTM:
-    """多尺度LSTM - 捕捉不同时间尺度的模式"""
+    """多尺度 LSTM - 捕捉不同时间尺度的模式"""
 
     def __init__(
         self,
@@ -183,7 +183,7 @@ class MultiScaleLSTM:
         batch_size: int = 32,
     ):
         if not TF_AVAILABLE:
-            raise ImportError("TensorFlow未安装")
+            raise ImportError("TensorFlow 未安装")
 
         self.seq_length = seq_length
         self.units = units
@@ -196,20 +196,20 @@ class MultiScaleLSTM:
         self.feature_names_ = []
 
     def _build_model(self, input_shape: tuple[int, int]) -> keras.Model:
-        """构建多尺度LSTM"""
+        """构建多尺度 LSTM"""
         inputs = keras.Input(shape=input_shape)
 
-        # 短期分支（最近5天）
+        # 短期分支（最近 5 天）
         short_term = inputs[:, -5:, :]
         short_lstm = keras.layers.LSTM(self.units // 2, return_sequences=False)(short_term)
         short_lstm = keras.layers.LayerNormalization()(short_lstm)
 
-        # 中期分支（最近10天）
+        # 中期分支（最近 10 天）
         mid_term = inputs[:, -10:, :]
         mid_lstm = keras.layers.LSTM(self.units // 2, return_sequences=False)(mid_term)
         mid_lstm = keras.layers.LayerNormalization()(mid_lstm)
 
-        # 长期分支（全部20天）
+        # 长期分支（全部 20 天）
         long_lstm = keras.layers.LSTM(self.units, return_sequences=False)(inputs)
         long_lstm = keras.layers.LayerNormalization()(long_lstm)
 
@@ -325,14 +325,14 @@ def main() -> int:
     train_df = trainable[trainable["date"] < split_date].copy()
     test_df = trainable[trainable["date"] >= split_date].copy()
 
-    print(f"训练集: {len(train_df)} 行")
-    print(f"测试集: {len(test_df)} 行\n")
+    print(f"训练集：{len(train_df)} 行")
+    print(f"测试集：{len(test_df)} 行\n")
 
     results = []
 
-    # 1. 残差注意力LSTM
+    # 1. 残差注意力 LSTM
     print("="*80)
-    print("🔧 训练残差注意力LSTM...")
+    print("🔧 训练残差注意力 LSTM...")
     print("="*80)
 
     model1 = ResidualAttentionLSTM(
@@ -351,7 +351,7 @@ def main() -> int:
     acc1 = float(np.mean((pred1 > 0) == (actual > 0)))
     ic1 = float(spearmanr(pred1, actual)[0])
 
-    print(f"  准确率: {acc1:.4f}")
+    print(f"  准确率：{acc1:.4f}")
     print(f"  IC: {ic1:.4f}\n")
 
     results.append({
@@ -360,9 +360,9 @@ def main() -> int:
         "ic": ic1
     })
 
-    # 2. 多尺度LSTM
+    # 2. 多尺度 LSTM
     print("="*80)
-    print("🔧 训练多尺度LSTM...")
+    print("🔧 训练多尺度 LSTM...")
     print("="*80)
 
     model2 = MultiScaleLSTM(
@@ -380,7 +380,7 @@ def main() -> int:
     acc2 = float(np.mean((pred2 > 0) == (actual > 0)))
     ic2 = float(spearmanr(pred2, actual)[0])
 
-    print(f"  准确率: {acc2:.4f}")
+    print(f"  准确率：{acc2:.4f}")
     print(f"  IC: {ic2:.4f}\n")
 
     results.append({
@@ -402,13 +402,13 @@ def main() -> int:
 
     for idx, row in results_df.iterrows():
         print(f"{idx+1}. {row['model']}")
-        print(f"   准确率: {row['accuracy']:.4f}")
+        print(f"   准确率：{row['accuracy']:.4f}")
         print(f"   IC: {row['ic']:.4f}\n")
 
     best_acc = results_df['accuracy'].max()
-    print(f"💡 最佳准确率: {best_acc:.4f}")
+    print(f"💡 最佳准确率：{best_acc:.4f}")
 
-    print(f"\n💾 结果已保存: {output_dir}/results.csv\n")
+    print(f"\n💾 结果已保存：{output_dir}/results.csv\n")
 
     return 0
 

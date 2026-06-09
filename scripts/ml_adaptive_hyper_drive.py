@@ -7,15 +7,15 @@ from sklearn.preprocessing import StandardScaler
 # ==================================================================================
 # 👑 工业界对冲基金【非对称变结构自适应滤波器】控制面板 (绝杀时滞与摩擦)
 # ==================================================================================
-TRAIN_LOOKBACK_DAYS = 730   # 1. 机器学习滚动训练的历史回溯窗口 (2年)
-TECH_MA_WINDOW = 20         # 2. 本地技术面SMA均线的滤波窗口
-SENT_MA_WINDOW = 20         # 3. 搜索引擎舆情Z-Score计算窗口
+TRAIN_LOOKBACK_DAYS = 730   # 1. 机器学习滚动训练的历史回溯窗口 (2 年)
+TECH_MA_WINDOW = 20         # 2. 本地技术面 SMA 均线的滤波窗口
+SENT_MA_WINDOW = 20         # 3. 搜索引擎舆情 Z-Score 计算窗口
 SENT_BREAK_THRESHOLD = 1.6  # 4. 舆情过热熔断门槛
-FEE_RATE = 0.0010           # 5. 显式调仓双边总摩擦费率 (千分之1滑点，严苛扣费)
+FEE_RATE = 0.0010           # 5. 显式调仓双边总摩擦费率 (千分之 1 滑点，严苛扣费)
 
 # 🚀 变结构非对称核心控制阀
-ALPHA_BUY_ACCEL = 0.85      # 6. 极致加仓追踪系数 (0.85瞬间满仓，摧毁买入时滞)
-ALPHA_SELL_BUFFER = 0.12    # 7. 防御减仓缓冲系数 (0.12慢速离场，绞杀调仓费自噬)
+ALPHA_BUY_ACCEL = 0.85      # 6. 极致加仓追踪系数 (0.85 瞬间满仓，摧毁买入时滞)
+ALPHA_SELL_BUFFER = 0.12    # 7. 防御减仓缓冲系数 (0.12 慢速离场，绞杀调仓费自噬)
 
 # 路径设置
 data_dir = "data/topic2_broad_base"
@@ -125,7 +125,7 @@ for i in range(len(test_months)-1):
         if day_sent_z > SENT_BREAK_THRESHOLD:
             pass # 触发熔断全盘归零
         else:
-            # 筛选出严格处于上升上升通道且具备AI正向置信度的成分
+            # 筛选出严格处于上升上升通道且具备 AI 正向置信度的成分
             bullish_assets = []
             for code in day_probs.keys():
                 if code in day_env_dict:
@@ -136,7 +136,7 @@ for i in range(len(test_months)-1):
                         bullish_assets.append(code)
             
             if bullish_assets:
-                # 💎 截面多头饱和配置：将100%的资金完全平铺进看多先锋阵营中，决不留一分钱拖累现金
+                # 💎 截面多头饱和配置：将 100% 的资金完全平铺进看多先锋阵营中，决不留一分钱拖累现金
                 alloc = 1.0 / len(bullish_assets)
                 for code in bullish_assets:
                     target_weights[code] = alloc
@@ -184,7 +184,7 @@ regimes = {
 }
 
 print("\n" + "="*112)
-print("👑 终极封神战报：《9只中证宽基全要素HGB》非对称自适应滤波 + 截面满载组合终极全摩擦实证")
+print("👑 终极封神战报：《9 只中证宽基全要素 HGB》非对称自适应滤波 + 截面满载组合终极全摩擦实证")
 print("================================================================================================================")
 print(f"{'测试历史区间/市场机制':<32}{'模式':<10}{'总收益率':<10}{'年化收益':<10}{'年化波动':<10}{'夏普比率':<10}{'最大回撤':<10}")
 print("-"*112)
@@ -214,4 +214,4 @@ print("=========================================================================
 
 output_path = os.path.join(reports_dir, "ml_adaptive_hyper_drive_report.csv")
 perf_df.to_csv(output_path)
-print(f"💾 时滞毒瘤被完全粉碎、扣费后全面暴杀基准的终极超神时序已成功导出: {output_path}\n")
+print(f"💾 时滞毒瘤被完全粉碎、扣费后全面暴杀基准的终极超神时序已成功导出：{output_path}\n")

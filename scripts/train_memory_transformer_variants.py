@@ -328,7 +328,7 @@ def main() -> int:
         print("="*80)
         print(f"\n✅ 成功训练 {len(successful)} 个模型")
         if failed:
-            print(f"❌ 失败 {len(failed)} 个模型: {', '.join(failed)}")
+            print(f"❌ 失败 {len(failed)} 个模型：{', '.join(failed)}")
 
         print("\n模型性能排序（按测试集准确率）:\n")
 
@@ -347,7 +347,7 @@ def main() -> int:
 
         for i, item in enumerate(summary_data, 1):
             emoji = "🏆" if i == 1 else "🥈" if i == 2 else "🥉" if i == 3 else "  "
-            print(f"{emoji} {i}. {item['model'].upper():25s} - 准确率: {item['accuracy']:.4f}, "
+            print(f"{emoji} {i}. {item['model'].upper():25s} - 准确率：{item['accuracy']:.4f}, "
                   f"IC: {item['ic']:.4f}, RMSE: {item['rmse']:.6f}")
 
         print("\n" + "="*80)

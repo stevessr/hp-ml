@@ -20,28 +20,28 @@
 ## 训练的模型
 
 ### 1. LSTM（长短期记忆网络）
-- **架构**: 2层LSTM + Dense层
-- **参数**: 64单元 → 32单元 → 输出
+- **架构**: 2 层 LSTM + Dense 层
+- **参数**: 64 单元 → 32 单元 → 输出
 - **Dropout**: 0.3
 
 ### 2. GRU（门控循环单元）
-- **架构**: 2层GRU + Dense层
-- **参数**: 64单元 → 32单元 → 输出
+- **架构**: 2 层 GRU + Dense 层
+- **参数**: 64 单元 → 32 单元 → 输出
 - **Dropout**: 0.3
 
-### 3. BiLSTM（双向LSTM）
-- **架构**: 2层双向LSTM + Dense层
-- **参数**: 64×2单元 → 32×2单元 → 输出
+### 3. BiLSTM（双向 LSTM）
+- **架构**: 2 层双向 LSTM + Dense 层
+- **参数**: 64×2 单元 → 32×2 单元 → 输出
 - **Dropout**: 0.3
 
-### 4. Attention LSTM（带注意力机制的LSTM）
-- **架构**: LSTM + 注意力层 + Dense层
-- **参数**: 64单元 + 注意力权重 → 输出
+### 4. Attention LSTM（带注意力机制的 LSTM）
+- **架构**: LSTM + 注意力层 + Dense 层
+- **参数**: 64 单元 + 注意力权重 → 输出
 - **Dropout**: 0.3
 
 ## 训练结果对比
 
-| 模型 | 训练准确率 | 训练IC | 训练RMSE | 测试准确率 | 测试IC | 测试RMSE |
+| 模型 | 训练准确率 | 训练 IC | 训练 RMSE | 测试准确率 | 测试 IC | 测试 RMSE |
 |------|-----------|--------|----------|-----------|--------|----------|
 | **LSTM** | 52.69% | 0.0637 | 0.0392 | **56.41%** | **0.1590** | **0.0284** |
 | **GRU** | 51.03% | 0.0382 | 0.0346 | 46.15% | -0.1886 | 0.0293 |
@@ -53,45 +53,45 @@
 ### 🏆 最佳模型：Attention LSTM
 
 **测试集表现**:
-- 方向准确率: **60.26%** （最高）
+- 方向准确率：**60.26%** （最高）
 - Spearman IC: 0.0499
 - RMSE: 0.0287
 
 **优势分析**:
 1. **注意力机制的优势**: 能够自适应地关注序列中的重要时间步
-2. **最佳准确率**: 在4个模型中测试集准确率最高
-3. **稳定的RMSE**: 误差控制良好
+2. **最佳准确率**: 在 4 个模型中测试集准确率最高
+3. **稳定的 RMSE**: 误差控制良好
 
 ### 📊 各模型表现分析
 
 #### LSTM（经典记忆门模型）
 - ✅ **次佳表现**: 测试准确率 56.41%，IC 0.1590
-- ✅ **正向IC**: 排序能力良好
+- ✅ **正向 IC**: 排序能力良好
 - ⚠️ 比 Attention LSTM 略逊一筹
 
 #### GRU（简化的记忆门）
 - ⚠️ **欠拟合**: 测试准确率仅 46.15%
-- ❌ **负IC**: -0.1886，排序能力差
+- ❌ **负 IC**: -0.1886，排序能力差
 - 💡 **原因分析**: GRU 的简化结构可能不足以捕捉复杂的金融时间序列模式
 
 #### BiLSTM（双向记忆门）
 - ⚠️ **未达预期**: 测试准确率 46.15%
-- ❌ **负IC**: -0.1062
+- ❌ **负 IC**: -0.1062
 - 💡 **原因分析**: 双向结构虽然能看到未来，但可能引入了前瞻偏差（look-ahead bias）
 
 #### Attention LSTM（注意力增强）
 - ✅ **最佳准确率**: 60.26%，显著优于其他模型
-- ✅ **正向IC**: 0.0499，虽不如LSTM但仍为正
+- ✅ **正向 IC**: 0.0499，虽不如 LSTM 但仍为正
 - ✅ **注意力优势**: 能够动态权衡序列中的信息
 
 ## 模型比较：传统 vs 记忆门
 
-### 之前的传统模型（Ridge回归）
-- 测试准确率: ~49.72%（时间序列CV平均）
-- 最佳配置准确率: 71.76%（但使用了更长的训练期）
+### 之前的传统模型（Ridge 回归）
+- 测试准确率：~49.72%（时间序列 CV 平均）
+- 最佳配置准确率：71.76%（但使用了更长的训练期）
 
 ### 记忆门模型
-- 最佳测试准确率: 60.26%（Attention LSTM）
+- 最佳测试准确率：60.26%（Attention LSTM）
 - **优势**: 能够捕捉时间序列的长期依赖
 - **劣势**: 需要更多数据和计算资源
 
@@ -100,18 +100,18 @@
 ### 1. 记忆门机制
 - **LSTM**: 输入门、遗忘门、输出门
 - **GRU**: 更新门、重置门（更简单）
-- **BiLSTM**: 前向+后向双重信息流
+- **BiLSTM**: 前向 + 后向双重信息流
 - **Attention**: 动态加权关注重要时间步
 
 ### 2. 序列建模
-- 序列长度: 10个时间步
-- 每个时间步包含31个特征
+- 序列长度：10 个时间步
+- 每个时间步包含 31 个特征
 - 自动捕捉时间依赖关系
 
 ### 3. 正则化
 - Dropout: 0.3（防止过拟合）
-- Early Stopping: 耐心值5轮
-- 验证集比例: 20%
+- Early Stopping: 耐心值 5 轮
+- 验证集比例：20%
 
 ## 深入分析
 
@@ -131,24 +131,24 @@
 
 1. **表达能力**: GRU 结构更简单，可能不足以建模复杂的金融模式
 2. **遗忘机制**: LSTM 的独立遗忘门提供了更精细的控制
-3. **数据复杂度**: 金融时序数据可能需要LSTM的完整门控机制
+3. **数据复杂度**: 金融时序数据可能需要 LSTM 的完整门控机制
 
 ## 可视化输出
 
 生成的图表文件位于 `reports/charts/memory_models/`:
 
-1. **prediction_distribution_lstm.svg** - LSTM模型预测分布
-2. **prediction_distribution_gru.svg** - GRU模型预测分布
-3. **prediction_distribution_bilstm.svg** - BiLSTM模型预测分布
-4. **prediction_distribution_attention_lstm.svg** - Attention LSTM模型预测分布
+1. **prediction_distribution_lstm.svg** - LSTM 模型预测分布
+2. **prediction_distribution_gru.svg** - GRU 模型预测分布
+3. **prediction_distribution_bilstm.svg** - BiLSTM 模型预测分布
+4. **prediction_distribution_attention_lstm.svg** - Attention LSTM 模型预测分布
 
 ## 下一步建议
 
 ### 立即可行
 
 1. **超参数优化**
-   - 增加序列长度（10 → 15或20）
-   - 调整LSTM单元数（64 → 128）
+   - 增加序列长度（10 → 15 或 20）
+   - 调整 LSTM 单元数（64 → 128）
    - 尝试更多训练轮数（15 → 30）
 
 2. **集成学习**
@@ -163,15 +163,15 @@
 
 ### 中期优化
 
-1. **Transformer模型**
+1. **Transformer 模型**
    - 尝试纯注意力架构（Transformer）
-   - 可能比LSTM+Attention更强大
+   - 可能比 LSTM+Attention 更强大
    - 需要更多数据支持
 
 2. **混合架构**
-   - CNN提取局部模式 + LSTM捕捉长期依赖
+   - CNN 提取局部模式 + LSTM 捕捉长期依赖
    - 多尺度时间卷积网络（TCN）
-   - GRU + Attention的组合
+   - GRU + Attention 的组合
 
 3. **对抗训练**
    - 使用生成对抗网络增强鲁棒性
@@ -197,7 +197,7 @@
 
 ## 结论
 
-成功训练了4个记忆门模型，**Attention LSTM 表现最佳**，测试集准确率达到 **60.26%**。
+成功训练了 4 个记忆门模型，**Attention LSTM 表现最佳**，测试集准确率达到 **60.26%**。
 
 **核心成果**:
 - ✅ 记忆门模型能够捕捉时间序列的长期依赖关系
@@ -210,16 +210,16 @@
 - ⚠️ 需要更多的特征工程和超参数优化
 
 **推荐配置**:
-- 主模型: **Attention LSTM**
-- 备选: **LSTM**（次佳，更稳定的IC）
-- 集成: Ridge（鲁棒） + Attention LSTM（准确） 的加权组合
+- 主模型：**Attention LSTM**
+- 备选：**LSTM**（次佳，更稳定的 IC）
+- 集成：Ridge（鲁棒） + Attention LSTM（准确）的加权组合
 
 ---
 
 **数据文件**:
-- 汇总结果: `reports/memory_models/memory_models_summary.csv`
-- 详细指标: `reports/memory_models/memory_models_details.json`
-- 可视化: `reports/charts/memory_models/*.svg`
+- 汇总结果：`reports/memory_models/memory_models_summary.csv`
+- 详细指标：`reports/memory_models/memory_models_details.json`
+- 可视化：`reports/charts/memory_models/*.svg`
 
 **脚本**: `scripts/train_memory_models.py`  
 **模型代码**: `hp_ml/models_extended.py`

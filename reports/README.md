@@ -1,4 +1,4 @@
-# 📊 ETF策略回测报告索引
+# 📊 ETF 策略回测报告索引
 
 ## 快速导航
 
@@ -30,9 +30,9 @@
 7. **[特征重要性](charts/model_analysis/feature_importance.png)** - 识别关键预测因子
 8. **[预测概率分布](charts/model_analysis/prediction_distribution.png)** - 模型置信度分析
 9. **[混淆矩阵](charts/model_analysis/confusion_matrix.png)** - 分类准确性评估
-10. **[ROC和PR曲线](charts/model_analysis/roc_pr_curves.png)** - 综合性能指标
+10. **[ROC 和 PR 曲线](charts/model_analysis/roc_pr_curves.png)** - 综合性能指标
 11. **[特征相关性](charts/model_analysis/feature_correlation.png)** - 多重共线性检查
-12. **[预测vs实际收益](charts/model_analysis/prediction_vs_return.png)** - 预测可靠性验证
+12. **[预测 vs 实际收益](charts/model_analysis/prediction_vs_return.png)** - 预测可靠性验证
 13. **[时间序列准确率](charts/model_analysis/time_series_accuracy.png)** - 性能稳定性监控
 14. **[模型校准曲线](charts/model_analysis/calibration_curve.png)** - 概率校准评估
 
@@ -41,9 +41,9 @@
 ### 📁 数据文件
 
 1. **[性能摘要表](charts/performance_summary.csv)** - 关键指标汇总
-2. **[日度收益明细](ml_auto_tune_until_baseline.csv)** - 303天完整数据
-3. **[所有试验结果](ml_auto_tune_trials.csv)** - 144次参数搜索结果
-4. **[策略摘要JSON](ml_auto_tune_summary.json)** - 机器可读配置
+2. **[日度收益明细](ml_auto_tune_until_baseline.csv)** - 303 天完整数据
+3. **[所有试验结果](ml_auto_tune_trials.csv)** - 144 次参数搜索结果
+4. **[策略摘要 JSON](ml_auto_tune_summary.json)** - 机器可读配置
 
 ---
 
@@ -60,10 +60,10 @@
 
 ### 策略特点
 
-- ✅ **高超额收益**: 年化超额37.11%
-- ✅ **机器学习驱动**: HistGradientBoosting模型
-- ✅ **动态仓位**: EMA平滑机制，低换手率22.43%
-- ✅ **趋势保护**: SMA过滤避免逆势
+- ✅ **高超额收益**: 年化超额 37.11%
+- ✅ **机器学习驱动**: HistGradientBoosting 模型
+- ✅ **动态仓位**: EMA 平滑机制，低换手率 22.43%
+- ✅ **趋势保护**: SMA 过滤避免逆势
 
 ---
 
@@ -83,7 +83,7 @@
 
 3. **[auto_etf_mining_loop.py](../scripts/auto_etf_mining_loop.py)**
    - 完整端到端循环
-   - ETF挖掘 → 股票深挖 → 策略测试
+   - ETF 挖掘 → 股票深挖 → 策略测试
 
 ### 使用示例
 
@@ -107,22 +107,22 @@ python scripts/auto_etf_mining_loop.py --max-iterations 5
 
 ### 1. 策略有效性 ✅
 
-- **回测期**: 2024-11-01 至 2026-01-28 (14个月)
-- **交易日**: 303天
-- **活跃日**: 114天 (37.62%)
+- **回测期**: 2024-11-01 至 2026-01-28 (14 个月)
+- **交易日**: 303 天
+- **活跃日**: 114 天 (37.62%)
 - **结论**: 策略显著跑赢等权基准
 
 ### 2. 风险特征 ⚠️
 
-- **高波动**: 年化波动34.71% (基准15.93%)
-- **深回撤**: 最大-24.92% (基准-13.88%)
+- **高波动**: 年化波动 34.71% (基准 15.93%)
+- **深回撤**: 最大 -24.92% (基准 -13.88%)
 - **需要**: 较高风险承受能力
 
 ### 3. 交易特点
 
-- **低换手**: 平均22.43%，降低成本
-- **单标的**: 每次持有1只ETF，集中度高
-- **情绪驱动**: 结合A股搜索热度
+- **低换手**: 平均 22.43%，降低成本
+- **单标的**: 每次持有 1 只 ETF，集中度高
+- **情绪驱动**: 结合 A 股搜索热度
 
 ---
 
@@ -131,9 +131,9 @@ python scripts/auto_etf_mining_loop.py --max-iterations 5
 ### [完整回测报告](COMPLETE_BACKTEST_REPORT.md) 包含：
 
 1. **执行摘要** - 策略概述和核心指标
-2. **可视化分析** - 6张专业图表详解
+2. **可视化分析** - 6 张专业图表详解
 3. **策略配置** - 完整参数说明
-4. **风险提示** - 5大风险因素
+4. **风险提示** - 5 大风险因素
 5. **实施建议** - 仓位管理和优化方向
 
 ### [自动挖掘报告](AUTO_MINING_SUCCESS_REPORT.md) 包含：
@@ -150,19 +150,19 @@ python scripts/auto_etf_mining_loop.py --max-iterations 5
 ### 累计收益率曲线
 <img src="charts/cumulative_returns.png" width="600">
 
-*策略(红线)显著跑赢基准(蓝虚线)*
+*策略 (红线) 显著跑赢基准 (蓝虚线)*
 
 ### 回撤曲线
 <img src="charts/drawdown.png" width="600">
 
-*策略最大回撤-24.92%，出现在2024年12月*
+*策略最大回撤 -24.92%，出现在 2024 年 12 月*
 
 ---
 
 ## ⚠️ 重要提示
 
 1. **历史表现 ≠ 未来收益**
-   - 仅14个月回测数据
+   - 仅 14 个月回测数据
    - 未经历完整牛熊周期
 
 2. **参数优化风险**
@@ -171,7 +171,7 @@ python scripts/auto_etf_mining_loop.py --max-iterations 5
 
 3. **适用场景**
    - 适合风险偏好较高的投资者
-   - 建议仅配置部分仓位(20-30%)
+   - 建议仅配置部分仓位 (20-30%)
 
 4. **监控要求**
    - 需持续跟踪策略表现
