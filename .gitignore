@@ -14,3 +14,4 @@ ref
 reports/auto_mining_loop_log.json
 reports/charts/example_*.svg
 *.backup
+data/raw/history
