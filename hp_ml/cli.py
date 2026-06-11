@@ -494,10 +494,13 @@ def execute_training(model_config: dict, params: dict):
         last_config = load_last_config()
         last_selected = last_config.get("multi_models", ["ridge", "hgb"])
 
+        # 确保 default 值在 choices 中
+        valid_defaults = [m for m in last_selected if m in all_models]
+
         models_to_train = questionary.checkbox(
             "选择要训练的模型（空格选择，Enter 确认）：",
             choices=all_models,
-            default=last_selected,
+            default=valid_defaults if valid_defaults else None,
             style=custom_style,
         ).ask()
 
